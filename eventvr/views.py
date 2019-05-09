@@ -14,18 +14,18 @@ def date_and_time():
     return now.strftime("%A, %d %B, %Y at %X")
 
 
-def check_id(request, userid):
+def check_id(request, visitorid):
     """
     TODO: This is a terrible id checker. Make a good id checker.
     """
     # Filter the id argument to letters only using regular expressions. URL arguments
     # can contain arbitrary text, so we restrict to safe characters only.
-    match_object = re.match("[a-zA-Z]+", userid)
+    match_object = re.match("[a-zA-Z]+", visitorid)
     if match_object:
-        clean_userid = match_object.group(0)
+        clean_visitorid = match_object.group(0)
     else:
-        clean_userid = "Friend"
-    return userid == clean_userid
+        clean_visitorid = "Friend"
+    return visitorid == clean_visitorid
 
 
 User = get_user_model()
@@ -35,9 +35,9 @@ def index(request):
     return render(request, "eventvr/index.html", {})
 
 
-def queue(request, userid):
+def queue(request, visitorid):
     return render(
-        request, "eventvr/queue.html", {"userid_json": mark_safe(json.dumps(userid))}
+        request, "eventvr/queue.html", {"visitorid_json": mark_safe(json.dumps(visitorid))}
     )
 
 

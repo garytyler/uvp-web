@@ -12,11 +12,11 @@ asdfasdfasdf
 
 <script>
 
-    var userid = {{ userid_json }};
-    console.log(userid)
+    var visitorid = {{ visitorid_json }};
+    console.log(visitorid)
     var ws = new WebSocket(
         'ws://' + window.location.host +
-        '/queuews/' + userid + '/');
+        '/queuews/' + visitorid + '/');
 
     {% comment %}
 

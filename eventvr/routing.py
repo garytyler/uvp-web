@@ -3,7 +3,7 @@ from django.conf.urls import url
 from eventvr.consumers import QueueConsumer, PlayerConsumer
 
 websocket_urlpatterns = [
-    url(r"^queuews/(?P<userid>[^/]+)/$", QueueConsumer),
+    url(r"^queuews/(?P<visitorid>[^/]+)/$", QueueConsumer),
     url(r"^player", PlayerConsumer),
 ]
 

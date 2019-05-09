@@ -31,13 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "channels",
+    "eventvr",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "eventvr",
 ]
 
 MIDDLEWARE = [
@@ -116,7 +117,7 @@ STATIC_URL = "/static/"
 
 
 # Channels
-ASGI_APPLICATION = "eventvr_project.routing.application"
+ASGI_APPLICATION = "eventvr_proj.routing.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",

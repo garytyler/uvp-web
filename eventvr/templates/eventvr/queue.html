@@ -1,57 +1,184 @@
 {% extends 'eventvr/base.html' %}
 
-{% block content %}
-
-asdfasdfasdf
-
-{% endblock content %}
-
 {% block script %}
-
-
-
 <script>
+$(document).ready(function () {
 
-    var visitorid = {{ visitorid_json }};
-    console.log(visitorid)
-    var ws = new WebSocket(
-        'ws://' + window.location.host +
-        '/queuews/' + visitorid + '/');
+    function logger(msg) {
+        $('#log').append('<br>' + $('<div/>').text(msg).html());
+        return false
+    }
+
+    var status = {
+        connected: false,
+        active: false,
+        setConnected: function (value) {
+            this.connected = value;
+            $('#status_connected').text(this.connected);
+        },
+        setActive: function (value) {
+            this.active = value;
+            $('#status_active').text(this.active);
+        }
+    }
+
+    var motionDataSenderNative = {
+        start: function () {
+            window.ondeviceorientation = function (e) {
+                viewer_socket.send(JSON.stringify({
+                    visitorid: visitorid,
+                    native_euler: {
+                        alpha: e.alpha,
+                        beta: e.beta,
+                        gamma: e.gamma
+                    },
+                }));
+            }
+        },
+        stop: function () {
+            window.ondeviceorientation = null;
+        }
+    }
 
     {% comment %}
+    var motionDataSenderGyronorm = {
+        gn: new GyroNorm(),
+        start: function () {
+            this.gn.start(this.handler);
+        },
+        stop: function () {
+            this.gn.stop();
+        },
+        handler: function (data) {
+            $('#deviceorientation_alpha').text(data.do.alpha);
+            $('#deviceorientation_beta').text(data.do.beta);
+            $('#deviceorientation_gamma').text(data.do.gamma);
+            viewer_socket.send(JSON.stringify({
+                visitorid: visitorid,
+                gn_euler: {
+                    alpha: data.do.alpha,
+                    beta: data.do.beta,
+                    gamma: data.do.gamma
+                }
+            }));
+        }
+    }
+    motionDataSenderGyronorm.gn.init({})
+    {% endcomment %}
 
-    ws.onmessage = function(e) {
-        var data = JSON.parse(e.data);
-        var message = data['message'];
-        document.querySelector('#chat-log').value += (message + '\n');
+    $('#start').click(function (e) {
+        logger('Start');
+
+        motionDataSenderNative.start();
+        // motionDataSenderGyronorm.start();
+
+        status.setActive(true);
+
+        // Switch start button for stop button
+        e.preventDefault();
+        $(this).hide();
+        $("#stop").show();
+    });
+
+    $('#stop').click(function (e) {
+        logger('Stop');
+
+        motionDataSenderNative.stop();
+        // motionDataSenderGyronorm.stop();
+
+        status.setActive(false);
+
+        // Switch stop button for start button
+        e.preventDefault();
+        $(this).hide();
+        $("#start").show();
+    });
+
+    var visitorid = {{ visitorid_json }};
+    console.log("VISITOR ID: " + visitorid);
+
+    if (window.location.protocol == "https:") {
+    var ws_scheme = "wss://";
+    } else {
+    var ws_scheme = "ws://"
     };
 
-    ws.onclose = function(e) {
+    var queue_socket = new WebSocket(
+        ws_scheme + window.location.host + '/ws/queue/' + visitorid + '/'
+        );
+    queue_socket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        console.log(data)
+        //var visitorid = data['visitorid'];
+    };
+    queue_socket.onclose = function() {
+        console.error('Chat socket closed unexpectedly');
+        // Maybe receive channel_name, then send that channel_name to viewer to remove from queue
+    };
+
+    var viewer_socket = new WebSocket(
+        ws_scheme + window.location.host + '/ws/viewer/'
+        );
+    viewer_socket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        console.log(JSON.stringify(data))
+    };
+    viewer_socket.onclose = function() {
         console.error('Chat socket closed unexpectedly');
     };
 
+});
+</script>
+{% endblock script %}
 
+{% block content %}
+<div class="container">
 
-    document.querySelector('#chat-message-input').focus();
-    document.querySelector('#chat-message-input').onkeyup = function(e) {
-        if (e.keyCode === 13) {  // enter, return
-            document.querySelector('#chat-message-submit').click();
-        }
-    };
+    <h1>eventvr</h1>
 
-    document.querySelector('#chat-message-submit').onclick = function(e) {
-        var messageInputDom = document.querySelector('#chat-message-input');
-        var message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({
-            'message': message
-        }));
+    <br>
 
-        messageInputDom.value = '';
-    };
+    <h2>Status</h2>
+    <table class="table" style="width:50%">
+        <tbody>
+            <tr>
+                <th scope="row"><b>Connected</b></td>
+                <td id="status_connected">
+            </tr>
+            <tr>
+                <th scope="row"><b>Active</b></td>
+                <td id="status_active">
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    {% comment %} For entering visitorid with the start button on this page
+
+    <form id="start" method="POST" action="#">
+        <br>
+        <input type="text" class="visitorid" placeholder="What's your name?" />
+        <input type="submit" value="Start">
+    </form>
 
     {% endcomment %}
-</script>
 
+    <form id="start" method="POST" action="#">
+        <br>
+        <input type="button" value="Start">
+    </form>
 
+    <form id="stop" method="POST" action="#" style="display:none;">
+        <br>
+        <input type="button" value="Stop">
+    </form>
 
-{% endblock script %}
+    <br>
+
+    <h2>Log</h2>
+    <span id="log">
+    </span>
+
+</div>
+{% endblock content %}

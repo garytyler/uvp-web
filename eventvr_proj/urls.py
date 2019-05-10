@@ -14,11 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import include, url
+from django.urls import include, path
 from django.contrib import admin
+from django.conf import settings
 
-# from eventvr import views
 
-urlpatterns = [
-    url(r"^admin/", admin.site.urls),
-    url(r"^eventvr/", include("eventvr.urls")),
-]
+urlpatterns = [url(r"^admin/", admin.site.urls), url(r"^", include("eventvr.urls"))]
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns.append(path("__debug__/", include(debug_toolbar.urls)))

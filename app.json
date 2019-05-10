@@ -1,0 +1,8 @@
+{
+    "name": "eventvr",
+    "repository": "https://github.com/garytyler/eventvr-web",
+    "scripts": {
+        "postdeploy": "python manage.py migrate"
+    },
+    "addons": ["heroku-postgresql", "heroku-redis"]
+}

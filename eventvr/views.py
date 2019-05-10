@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.urls import reverse
 from django.shortcuts import render, redirect
 from django.utils.safestring import mark_safe
+from django.middleware.csrf import CsrfViewMiddleware
 
 
 def date_and_time():
@@ -37,8 +38,16 @@ def index(request):
 
 def queue(request, visitorid):
     return render(
-        request, "eventvr/queue.html", {"visitorid_json": mark_safe(json.dumps(visitorid))}
+        request,
+        "eventvr/queue.html",
+        {"visitorid_json": mark_safe(json.dumps(visitorid))},
     )
+    # return CsrfViewMiddleware.process_view(
+    #     callback=request,
+    #     # "eventvr/queue.html",
+    #     callback_args=[],
+    #     callback_kwargs={"visitorid_json": mark_safe(json.dumps(visitorid))},
+    # )
 
 
 @login_required(login_url="/log_in/")

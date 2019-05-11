@@ -1,11 +1,12 @@
-from django.conf.urls import url
+from django.urls import path, re_path
 from eventvr import views
 
 app_name = "eventvr"
+
 urlpatterns = [
-    url(r"^$", views.index, name="index"),
-    url(r"^queue/(?P<visitorid>[^/]+)/$", views.queue, name="queue"),
-    url(r"^log_in/$", views.log_in, name="log_in"),
-    url(r"^log_out/$", views.log_out, name="log_out"),
-    url(r"^sign_up/$", views.sign_up, name="sign_up"),
+    path("", views.index, name="index"),
+    re_path(r"^queue/(?P<visitorid>[^/]+)/$", views.queue, name="queue"),
+    re_path(r"^log_in/$", views.log_in, name="log_in"),
+    re_path(r"^log_out/$", views.log_out, name="log_out"),
+    re_path(r"^sign_up/$", views.sign_up, name="sign_up"),
 ]

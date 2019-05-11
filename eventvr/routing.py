@@ -1,8 +1,8 @@
-from django.conf.urls import url
+from django.urls import re_path
 from eventvr import consumers
 
 websocket_urlpatterns = [
-    url(r"^ws/queue", consumers.QueueConsumer),
-    url(r"^ws/viewer", consumers.ViewerConsumer),
-    url(r"^mediaplayer", consumers.PlayerConsumer),
+    re_path(r"^ws/queue", consumers.QueueConsumer),
+    re_path(r"^ws/viewer", consumers.ViewerConsumer),
+    re_path(r"^mediaplayer", consumers.PlayerConsumer),
 ]

@@ -13,6 +13,8 @@ daphne = "*"
 
 [dev-packages]
 django-debug-toolbar = "*"
+pre-commit = "*"
+isort = {extras = ["pipfile"],version = "*"}
 
 [requires]
 python_version = "3.7"

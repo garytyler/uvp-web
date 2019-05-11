@@ -15,6 +15,7 @@ daphne = "*"
 django-debug-toolbar = "*"
 pre-commit = "*"
 isort = {extras = ["pipfile"],version = "*"}
+flake8 = "*"
 
 [requires]
 python_version = "3.7"

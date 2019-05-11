@@ -1,6 +1,5 @@
 import os
 
-
 if os.getenv("DJANGO_SETTINGS_MODULE").endswith("dev"):
     from eventvr_proj.settings import *
 

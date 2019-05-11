@@ -1,13 +1,14 @@
-import re
 import json
+import re
 from datetime import datetime
+
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.urls import reverse
-from django.shortcuts import render, redirect
-from django.utils.safestring import mark_safe
 from django.middleware.csrf import CsrfViewMiddleware
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 
 
 def date_and_time():

@@ -1,8 +1,6 @@
+import eventvr.routing
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-
-import eventvr.routing
-
 
 application = ProtocolTypeRouter(
     {

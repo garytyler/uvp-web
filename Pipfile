@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+psycopg2-binary = "*"
 django = "*"
 channels = "*"
 channels-redis = "*"
@@ -11,6 +12,7 @@ django-heroku = "*"
 daphne = "*"
 
 [dev-packages]
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3.7"

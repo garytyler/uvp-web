@@ -25,6 +25,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Redis
+*.rdb
+
 # C extensions
 *.so
 

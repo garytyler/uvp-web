@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class eventvrConfig(AppConfig):
+class EventVRConfig(AppConfig):
     name = "eventvr"
 
     def ready(self):

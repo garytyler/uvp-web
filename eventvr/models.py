@@ -8,3 +8,7 @@ class LoggedInUser(models.Model):
         related_name="logged_in_user",
         on_delete=models.CASCADE,
     )
+
+
+class MediaPlayerConnection(models.Model):
+    channel_name = models.CharField(max_length=200, blank=True, editable=False)

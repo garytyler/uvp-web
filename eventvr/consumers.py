@@ -1,8 +1,13 @@
+import logging
 import time
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from channels.layers import get_channel_layer
+
+from .models import MediaPlayerConnection
+
+log = logging.getLogger("django.server")
 
 
 class QueueConsumer(JsonWebsocketConsumer):
@@ -10,7 +15,7 @@ class QueueConsumer(JsonWebsocketConsumer):
 
     def connect(self):
         self.accept()
-        print("CONNECTED: queue_socket")
+        log.info("CONNECTED: queue_socket")
 
     def receive_json(self, event=None):
         pass
@@ -23,11 +28,12 @@ class ViewerConsumer(JsonWebsocketConsumer):
     groups = ["viewers"]
 
     def connect(self):
+        # print(self.channel_name)
         self.accept()
-        print("CONNECTED: viewersocket")
+        log.info("CONNECTED: viewersocket")
 
     def receive_json(self, event):
-        print(event)
+        log.info(event)
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             "players", {"type": "player.view", "event": event}
@@ -37,7 +43,8 @@ class ViewerConsumer(JsonWebsocketConsumer):
         pass
 
 
-class PlayerConsumer(JsonWebsocketConsumer):
+class MediaPlayerConsumer(JsonWebsocketConsumer):
+
     groups = ["players"]
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
@@ -49,7 +56,9 @@ class PlayerConsumer(JsonWebsocketConsumer):
 
     def connect(self):
         self.accept()
-        print("CONNECTED: player")
+        self.connection = MediaPlayerConnection(pk=1, channel_name=self.channel_name)
+        self.connection.save()
+        log.info("CONNECTED: player")
 
     def receive_json(self, event=None):
         pass

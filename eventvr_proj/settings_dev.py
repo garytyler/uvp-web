@@ -5,6 +5,7 @@ if os.getenv("DJANGO_SETTINGS_MODULE").endswith("dev"):
 
 print("* DJANGO DEVELOPMENT ENVIRONMENT *")
 
+
 # DEBUG
 DEBUG = True
 

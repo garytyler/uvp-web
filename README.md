@@ -14,7 +14,8 @@
 ## PostgreSQL Setup
 
 ```psql
-CREATE DATABASE eventvr_database; CREATE USER eventvr_db_admin WITH PASSWORD '';
+CREATE DATABASE eventvr_database;
+CREATE USER eventvr_db_admin WITH PASSWORD '';
 ALTER ROLE eventvr_db_admin SET client_encoding TO 'utf8';
 ALTER ROLE eventvr_db_admin SET default_transaction_isolation TO 'read committed';
 ALTER ROLE eventvr_db_admin SET timezone TO 'UTC';

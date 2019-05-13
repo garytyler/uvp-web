@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from channels.layers import get_channel_layer
 
-from .models import MediaPlayerConnection
+from .models import DisplayClient
 
 log = logging.getLogger("django.server")
 
@@ -56,9 +56,10 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
 
     def connect(self):
         self.accept()
-        self.connection = MediaPlayerConnection(pk=1, channel_name=self.channel_name)
-        self.connection.save()
-        log.info("CONNECTED: player")
+        self.display_client = DisplayClient(pk=1)
+        self.display_client.channel_name = self.channel_name
+        self.display_client.save()
+        # log.info("CONNECTED: player")
 
     def receive_json(self, event=None):
         pass
@@ -67,4 +68,5 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
         self.send_json(group_event["event"])
 
     def disconnect(self, close_code):
+        # self.display_client.channel_name.set(None)
         pass

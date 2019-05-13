@@ -83,7 +83,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "eventvr_database",
         "USER": "eventvr_db_admin",
-        "PASSWORD": os.getenv("EVENTVR_DB_PASS"),
+        "PASSWORD": os.getenv("PGPASSWORD"),
         "HOST": "localhost",
         "PORT": "",
     }

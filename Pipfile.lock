@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "00fa413ede7f8af329cdfefa2bea87d806c9b2d30c05a22c267ee9e314fbbd0c"
+            "sha256": "581d67655a41d0aa2eebc9b985ae717618b77aaae0db41bb41fc9f51982bb44d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -46,10 +46,10 @@
         },
         "autobahn": {
             "hashes": [
-                "sha256:d522202b220d0e73901b9f83909e34c9cb1a77b5dadcc5a485f926f8d2ba8940",
-                "sha256:e92f40ab26fb51672c25cd301ae79a549c6ff7748effe6abdea2ef31d5363a4f"
+                "sha256:2eee98f68ba4eb8d8ea3f15e411db9e69433d9367799c85bdca0ff2de4c101d3",
+                "sha256:40f07474e5b4b662f5a1106f2c89667c9e2fa52ddc3bab59e1b04adb4a30908d"
             ],
-            "version": "==19.3.3"
+            "version": "==19.5.1"
         },
         "automat": {
             "hashes": [
@@ -407,6 +407,14 @@
             "index": "pypi",
             "version": "==1.11"
         },
+        "django-extensions": {
+            "hashes": [
+                "sha256:109004f80b6f45ad1f56addaa59debca91d94aa0dc1cb19678b9364b4fe9b6f4",
+                "sha256:307766e5e6c1caffe76c5d99239d8115d14ae3f7cab2cd991fcffd763dad904b"
+            ],
+            "index": "pypi",
+            "version": "==2.1.6"
+        },
         "docopt": {
             "hashes": [
                 "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"
@@ -461,11 +469,11 @@
                 "pipfile"
             ],
             "hashes": [
-                "sha256:1349c6f7c2a0f7539f5f2ace51a9a8e4a37086ce4de6f78f5f53fb041d0a3cd5",
-                "sha256:f09911f6eb114e5592abe635aded8bf3d2c3144ebcfcaf81ee32e7af7b7d1870"
+                "sha256:49293e2ff590cc8d48bc1f51970548b5b102bf038439ca1af77f352164725628",
+                "sha256:ba69a4be8474be11720636bc2f0cf66f7054d417d4c1dbc1dfe504bb8e739541"
             ],
             "index": "pypi",
-            "version": "==4.3.18"
+            "version": "==4.3.19"
         },
         "mccabe": {
             "hashes": [
@@ -648,10 +656,10 @@
         },
         "wheel": {
             "hashes": [
-                "sha256:20c39930e770523bbfd73078306206cb4a69ef72ff2b67f93bcd7d30d5d794df",
-                "sha256:bd330c9e074b361ad68b8b6f8771f6ba81b6506e21dc77391056199bf01e7d9f"
+                "sha256:5e79117472686ac0c4aef5bad5172ea73a1c2d1646b808c35926bd26bdfb0c08",
+                "sha256:62fcfa03d45b5b722539ccbc07b190e4bfff4bb9e3a4d470dd9f6a0981002565"
             ],
-            "version": "==0.33.3"
+            "version": "==0.33.4"
         },
         "yarg": {
             "hashes": [

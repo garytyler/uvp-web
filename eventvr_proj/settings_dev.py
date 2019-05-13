@@ -15,7 +15,7 @@ if allowed_hosts:
     ALLOWED_HOSTS += allowed_hosts.split(",")
 
 # INSTALLED_APPS
-INSTALLED_APPS += ["debug_toolbar"]
+INSTALLED_APPS += ["debug_toolbar", "django_extensions"]
 
 MIDDLEWARE += ("debug_toolbar.middleware.DebugToolbarMiddleware",)
 
@@ -25,3 +25,4 @@ if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
 
 # Django debug toolbar
 DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG}
+SHELL_PLUS_PRINT_SQL = True

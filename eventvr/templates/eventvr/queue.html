@@ -9,6 +9,8 @@ $(document).ready(function () {
         return false
     }
 
+    //window.dispatchEvent(new Event('orientationchange'));
+
     var status = {
         connected: false,
         active: false,
@@ -68,9 +70,9 @@ $(document).ready(function () {
 
     $('#start').click(function (e) {
         logger('Start');
-
-        motionDataSenderNative.start();
-        // motionDataSenderGyronorm.start();
+        {% comment %} window.location.reload(true); {% endcomment %}
+        //motionDataSenderNative.start();
+        motionDataSenderGyronorm.start();
 
         status.setActive(true);
 
@@ -83,8 +85,8 @@ $(document).ready(function () {
     $('#stop').click(function (e) {
         logger('Stop');
 
-        motionDataSenderNative.stop();
-        // motionDataSenderGyronorm.stop();
+        // motionDataSenderNative.stop();
+        motionDataSenderGyronorm.stop();
 
         status.setActive(false);
 

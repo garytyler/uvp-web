@@ -34,10 +34,18 @@ class ViewerConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, event):
         log.info(event)
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            "players", {"type": "player.view", "event": event}
-        )
+        display_client = DisplayClient.objects.first()
+
+        log.info(display_client.channel_name)
+        display_channel_layer = get_channel_layer(display_client.channel_name)
+
+        display_channel_layer.send(display_client.channel_name)
+
+        # log.info(channel_layer)
+        # self.disconnect
+        # async_to_sync(channel_layer.group_send)(
+        #     "players", {"type": "player.view", "event": event}
+        # )
 
     def disconnect(self, close_code):
         pass
@@ -55,18 +63,20 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
         view["gn_euler"]["gamma"] += 0.3
 
     def connect(self):
+        DisplayClient(pk=1, channel_name=self.channel_name).save()
+        log.info(DisplayClient.objects.first())
+
+        log.info(f"MediaPlayer CONNECT: {self.channel_name}")
         self.accept()
-        self.display_client = DisplayClient(pk=1)
-        self.display_client.channel_name = self.channel_name
-        self.display_client.save()
-        # log.info("CONNECTED: player")
 
     def receive_json(self, event=None):
+        print(event)
         pass
 
     def player_view(self, group_event):
         self.send_json(group_event["event"])
 
     def disconnect(self, close_code):
-        # self.display_client.channel_name.set(None)
-        pass
+        DisplayClient(pk=1, channel_name="").save()
+        # TODO Notify all consumers of the media player disconnect with a signal
+        log.info(f"MediaPlayer DISCONNECT: {self.channel_name}")

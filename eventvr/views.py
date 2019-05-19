@@ -5,10 +5,44 @@ from datetime import datetime
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.http import HttpResponse
 from django.middleware.csrf import CsrfViewMiddleware
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+
+
+def index(request):
+    return render(request, "eventvr/index.html", {})
+
+
+def queue(request, visitorid):
+    pass
+    # return CsrfViewMiddleware.process_view(
+    #     callback=request,
+    #     # "eventvr/queue.html",
+    #     callback_args=[],
+    #     callback_kwargs={"visitorid_json": mark_safe(json.dumps(visitorid))},
+    # )
+
+
+def interact(request, visitorid):
+    return render(
+        request,
+        "eventvr/interact.html",
+        {"visitorid_json": mark_safe(json.dumps(visitorid))},
+    )
+
+
+def login(request):
+    if request.method == "POST":
+        if request.session.test_cookie_worked():
+            request.session.delete_test_cookie()
+            return HttpResponse("You're logged in.")
+        else:
+            return HttpResponse("Please enable cookies and try again.")
+    request.session.set_test_cookie()
+    return render(request, "foo/login_form.html")
 
 
 def date_and_time():
@@ -31,24 +65,6 @@ def check_id(request, visitorid):
 
 
 User = get_user_model()
-
-
-def index(request):
-    return render(request, "eventvr/index.html", {})
-
-
-def queue(request, visitorid):
-    return render(
-        request,
-        "eventvr/queue.html",
-        {"visitorid_json": mark_safe(json.dumps(visitorid))},
-    )
-    # return CsrfViewMiddleware.process_view(
-    #     callback=request,
-    #     # "eventvr/queue.html",
-    #     callback_args=[],
-    #     callback_kwargs={"visitorid_json": mark_safe(json.dumps(visitorid))},
-    # )
 
 
 @login_required(login_url="/log_in/")

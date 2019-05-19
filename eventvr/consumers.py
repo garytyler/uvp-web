@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from channels.layers import get_channel_layer
 
-from .models import DisplayClient
+from .models import MediaDisplayerClient
 
 log = logging.getLogger("django.server")
 
@@ -24,9 +24,9 @@ class QueueConsumer(JsonWebsocketConsumer):
         pass
 
 
-class ViewOperatorConsumer(JsonWebsocketConsumer):
+class InteractorConsumer(JsonWebsocketConsumer):
     def connect(self):
-        mediaplayer_client = DisplayClient.objects.first()
+        mediaplayer_client = MediaDisplayerClient.objects.first()
         if mediaplayer_client:
             self.mediaplayer_channel_name = mediaplayer_client.channel_name
             self.accept()
@@ -47,9 +47,8 @@ class ViewOperatorConsumer(JsonWebsocketConsumer):
         pass
 
 
-class MediaPlayerConsumer(JsonWebsocketConsumer):
+class MediaDisplayerConsumer(JsonWebsocketConsumer):
 
-    # groups = ["players"]
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
     def incr_view(self, view):
@@ -59,8 +58,8 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
         view["gn_euler"]["gamma"] += 0.3
 
     def connect(self):
-        DisplayClient(pk=1, channel_name=self.channel_name).save()
-        log.info(DisplayClient.objects.first())
+        MediaDisplayerClient(pk=1, channel_name=self.channel_name).save()
+        log.info(MediaDisplayerClient.objects.first())
 
         log.info(f"MediaPlayer CONNECT: {self.channel_name}")
         self.accept()
@@ -73,6 +72,6 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
         self.send_json(eventdict["event"])
 
     def disconnect(self, close_code):
-        DisplayClient(pk=1, channel_name="").save()
+        MediaDisplayerClient(pk=1, channel_name="").save()
         # TODO Notify all consumers of the media player disconnect with a signal
         log.info(f"MediaPlayer DISCONNECT: {self.channel_name}")

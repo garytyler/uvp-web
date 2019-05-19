@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from .models import DisplayClient
+from .models import MediaDisplayerClient
 
-admin.site.register(DisplayClient)
+admin.site.register(MediaDisplayerClient)

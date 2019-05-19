@@ -1,0 +1,188 @@
+{% extends 'eventvr/base.html' %}
+
+{% block script %}
+
+<script>
+    $(document).ready(function () {
+
+        function logger(msg) {
+            $('#log').append('<br>' + $('<div/>').text(msg).html());
+            return false
+        }
+
+        //window.dispatchEvent(new Event('orientationchange'));
+
+        var status = {
+            connected: false,
+            active: false,
+            setConnected: function (value) {
+                this.connected = value;
+                $('#status_connected').text(this.connected);
+            },
+            setActive: function (value) {
+                this.active = value;
+                $('#status_active').text(this.active);
+            }
+        }
+
+        var motionDataSenderNative = {
+            start: function () {
+                window.ondeviceorientation = function (e) {
+                    interactor_socket.send(JSON.stringify({
+                        visitorid: visitorid,
+                        euler: {
+                            alpha: e.alpha,
+                            beta: e.beta,
+                            gamma: e.gamma
+                        },
+                    }));
+                }
+            },
+            stop: function () {
+                window.ondeviceorientation = null;
+            }
+        }
+
+        var motionDataSenderGyronorm = {
+            gn: new GyroNorm(),
+            start: function () {
+                this.gn.start(this.handler);
+            },
+            stop: function () {
+                this.gn.stop();
+            },
+            handler: function (data) {
+                $('#deviceorientation_alpha').text(data.do.alpha);
+                $('#deviceorientation_beta').text(data.do.beta);
+                $('#deviceorientation_gamma').text(data.do.gamma);
+                interactor_socket.send(JSON.stringify({
+                    visitorid: visitorid,
+                    euler: {
+                        alpha: data.do.alpha,
+                        beta: data.do.beta,
+                        gamma: data.do.gamma
+                    }
+                }));
+            }
+        }
+        motionDataSenderGyronorm.gn.init({})
+
+        $('#start').click(function (e) {
+            logger('Start');
+
+            //window.location.reload(true); {
+            //motionDataSenderNative.start();
+            motionDataSenderGyronorm.start();
+
+            //status.setActive(true);
+
+            // Switch start button for stop button
+            {% comment %} e.preventDefault(); {% endcomment %}
+            $(this).hide();
+            $("#stop").show();
+        });
+
+        $('#stop').click(function (e) {
+            logger('Stop');
+
+            // motionDataSenderNative.stop();
+            motionDataSenderGyronorm.stop();
+
+            //status.setActive(false);
+
+            // Switch stop button for start button
+            {% comment %} e.preventDefault(); {% endcomment %}
+            $(this).hide();
+            $("#start").show();
+        });
+
+        var visitorid = {{ visitorid_json }};
+        console.log("VISITOR ID: " + visitorid);
+
+        if (window.location.protocol == "https:") {
+            var ws_scheme = "wss://";
+        } else {
+            var ws_scheme = "ws://"
+        };
+
+        {% comment %}
+        var queue_socket = new WebSocket(
+            ws_scheme + window.location.host + '/ws/queue/' + visitorid + '/'
+        );
+        queue_socket.onmessage = function (e) {
+            var data = JSON.parse(e.data);
+            console.log(data)
+            //var visitorid = data['visitorid'];
+        };
+        queue_socket.onclose = function () {
+            console.error('Chat socket closed unexpectedly');
+            // Maybe receive channel_name, then send that channel_name to viewer to remove from queue
+        };
+        {% endcomment %}
+
+        var interactor_socket = new WebSocket(
+            ws_scheme + window.location.host + '/ws/interactor/'
+        );
+        interactor_socket.onmessage = function (e) {
+            var data = JSON.parse(e.data);
+            //console.log(JSON.stringify(data))
+        };
+        interactor_socket.onclose = function () {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+    });
+</script>
+{% endblock script %}
+
+{% block content %}
+<div class="container">
+
+    <h1>eventvr</h1>
+
+    <br>
+
+    <h2>Status</h2>
+    <table class="table" style="width:50%">
+        <tbody>
+            <tr>
+                <th scope="row"><b>Connected</b></td>
+                <td id="status_connected">
+            </tr>
+            <tr>
+                <th scope="row"><b>Active</b></td>
+                <td id="status_active">
+            </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    {% comment %} For entering visitorid with the start button on this page
+
+    <form id="start" method="POST" action="#">
+        <br>
+        <input type="text" class="visitorid" placeholder="What's your name?" />
+        <input type="submit" value="Start">
+    </form>
+
+    {% endcomment %}
+
+    <form id="start" method="POST" action="#">
+        <br>
+        <input type="button" value="Start">
+    </form>
+
+    <form id="stop" method="POST" action="#" style="display:none;">
+        <br>
+        <input type="button" value="Stop">
+    </form>
+
+    <br>
+
+    <h2>Log</h2>
+    <span id="log">
+    </span>
+
+</div>
+{% endblock content %}

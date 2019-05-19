@@ -10,6 +10,7 @@ channels = "*"
 channels-redis = "*"
 daphne = "*"
 whitenoise = "*"
+django-heroku = {git = "https://github.com/garytyler/django-heroku"}
 
 [dev-packages]
 django-debug-toolbar = "*"

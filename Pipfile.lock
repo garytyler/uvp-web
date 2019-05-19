@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "321905578e7c94174c27ff959ce25f28de4d093828f1895b5da224396517ba26"
+            "sha256": "1f0b3db4749ae57b1284a6ac1e056f018d9146c7adf4afd5bc6f17baecc33be6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -96,6 +96,10 @@
             ],
             "index": "pypi",
             "version": "==2.2.1"
+        },
+        "django-heroku": {
+            "git": "https://github.com/garytyler/django-heroku",
+            "ref": "61cfc05fa3d5b73731b491a56df8df1e818800ac"
         },
         "hiredis": {
             "hashes": [
@@ -429,10 +433,10 @@
         },
         "importlib-metadata": {
             "hashes": [
-                "sha256:2f2e54cbf6b06b16351e4c40a6adb0860cab6cfb95a0c0fcb58bb789c4b450f5",
-                "sha256:37bbea81dec44d1ff72d58a1b5c1599a9f3436537f33e9e26f276610064c4830"
+                "sha256:0e375a4c177090292988d1c2f997c7c2467d908c1adbed3e08fb511486c85457",
+                "sha256:440815529340fb7fdd6a83ebf4258cc2860fb3770d37b52875e37c6f509a4cd6"
             ],
-            "version": "==0.12"
+            "version": "==0.13"
         },
         "isort": {
             "extras": [

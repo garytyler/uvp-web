@@ -3,8 +3,6 @@ import os
 if os.getenv("DJANGO_SETTINGS_MODULE").endswith("dev"):
     from eventvr_proj.settings import *
 
-print("* DJANGO DEVELOPMENT ENVIRONMENT *")
-
 
 # DEBUG
 DEBUG = True
@@ -18,6 +16,17 @@ if allowed_hosts:
 INSTALLED_APPS += ["debug_toolbar", "django_extensions"]
 
 MIDDLEWARE += ("debug_toolbar.middleware.DebugToolbarMiddleware",)
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "eventvr_database",
+        "USER": "eventvr_db_admin",
+        "PASSWORD": os.getenv("PGPASSWORD"),
+        "HOST": "localhost",
+        "PORT": "",
+    }
+}
 
 # Channels
 if os.getenv("IN_MEMORY_CHANNEL_LAYER"):

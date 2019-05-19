@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
+import django_heroku
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -26,7 +28,7 @@ SECRET_KEY = "#x_rb6%^kz7sj*-e^qzwd(_1jp^0^wp6!)bzy3qvkwl%5j9foo"
 DEBUG = False
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["eventvr.herokuapp.com"]
 
 
 # Application definition
@@ -44,7 +46,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -130,8 +131,5 @@ CHANNEL_LAYERS = {
     }
 }
 
-# import django_heroku
-# # Django-Heroku
-# IS_CI = os.environ.get("IS_CI", False)
-# if not IS_CI:
-#     django_heroku.settings(locals())
+# Django-Heroku
+django_heroku.settings(locals())

@@ -24,28 +24,23 @@ class QueueConsumer(JsonWebsocketConsumer):
         pass
 
 
-class ViewerConsumer(JsonWebsocketConsumer):
-    groups = ["viewers"]
-
+class ViewOperatorConsumer(JsonWebsocketConsumer):
     def connect(self):
-        # print(self.channel_name)
-        self.accept()
-        log.info("CONNECTED: viewersocket")
+        mediaplayer_client = DisplayClient.objects.first()
+        if mediaplayer_client:
+            self.mediaplayer_channel_name = mediaplayer_client.channel_name
+            self.accept()
+            log.info("CONNECTED: viewersocket")
+        else:
+            log.info("NO MEDIA PLAYER CONNECTION FOUND")
 
     def receive_json(self, event):
-        display_client = DisplayClient.objects.first()
-
-        log.info(display_client.channel_name)
-        channel_layer = get_channel_layer()
-        log.info(channel_layer)
-
-        async_to_sync(channel_layer.send)(
-            display_client.channel_name, {"type": "player.singleview", "event": event}
+        """Forward data from view operator to a single media player consumer"""
+        log.info(event)
+        async_to_sync(self.channel_layer.send)(
+            self.mediaplayer_channel_name,
+            {"type": "mediaplayer.sendview", "event": event},
         )
-
-        # async_to_sync(channel_layer.group_send)(
-        #     "players", {"type": "player.groupview", "event": event}
-        # )
 
     def disconnect(self, close_code):
         log.info("DISCONNECTED: viewersocket")
@@ -54,7 +49,7 @@ class ViewerConsumer(JsonWebsocketConsumer):
 
 class MediaPlayerConsumer(JsonWebsocketConsumer):
 
-    groups = ["players"]
+    # groups = ["players"]
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
     def incr_view(self, view):
@@ -74,10 +69,7 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
         print(event)
         pass
 
-    def player_singleview(self, single_event):
-        self.send_json(single_event["event"])
-
-    def player_view(self, eventdict):
+    def mediaplayer_sendview(self, eventdict):
         self.send_json(eventdict["event"])
 
     def disconnect(self, close_code):

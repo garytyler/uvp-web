@@ -1,11 +1,11 @@
-<!doctype html>
+{% comment %} <!doctype html> {% endcomment %}
 <html lang="en">
 
 <head>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% comment %} <meta http-equiv="X-UA-Compatible" content="ie=edge"> {% endcomment %}
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <title>eventvr Channels</title>
 </head>
@@ -15,13 +15,10 @@
         <br>
         {% block content %}{% endblock content %}
     </div>
-    <script src="//code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="{% static 'eventvr/js/lib/jquery/dist/jquery.js' %}"></script>
     <script type="text/javascript" src="{% static 'eventvr/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"></script>
-
-    {% comment %}
-    <link rel="stylesheet" type="text/css" href="{% static 'eventvr/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}" /> {% endcomment %}
-
+    <script type="text/javascript" sr="{% static 'eventvr/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"></script>
     {% block script %}{% endblock script %}
 </body>
 

@@ -8,8 +8,8 @@ psycopg2-binary = "*"
 django = "*"
 channels = "*"
 channels-redis = "*"
-django-heroku = "*"
 daphne = "*"
+whitenoise = "*"
 
 [dev-packages]
 django-debug-toolbar = "*"

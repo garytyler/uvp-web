@@ -33,21 +33,22 @@ class ViewerConsumer(JsonWebsocketConsumer):
         log.info("CONNECTED: viewersocket")
 
     def receive_json(self, event):
-        log.info(event)
         display_client = DisplayClient.objects.first()
 
         log.info(display_client.channel_name)
-        display_channel_layer = get_channel_layer(display_client.channel_name)
+        channel_layer = get_channel_layer()
+        log.info(channel_layer)
 
-        display_channel_layer.send(display_client.channel_name)
+        async_to_sync(channel_layer.send)(
+            display_client.channel_name, {"type": "player.singleview", "event": event}
+        )
 
-        # log.info(channel_layer)
-        # self.disconnect
         # async_to_sync(channel_layer.group_send)(
-        #     "players", {"type": "player.view", "event": event}
+        #     "players", {"type": "player.groupview", "event": event}
         # )
 
     def disconnect(self, close_code):
+        log.info("DISCONNECTED: viewersocket")
         pass
 
 
@@ -73,8 +74,11 @@ class MediaPlayerConsumer(JsonWebsocketConsumer):
         print(event)
         pass
 
-    def player_view(self, group_event):
-        self.send_json(group_event["event"])
+    def player_singleview(self, single_event):
+        self.send_json(single_event["event"])
+
+    def player_view(self, eventdict):
+        self.send_json(eventdict["event"])
 
     def disconnect(self, close_code):
         DisplayClient(pk=1, channel_name="").save()

@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
-import django_heroku
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -46,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -120,7 +119,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = "/static/"
-
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Channels
 ASGI_APPLICATION = "eventvr_proj.routing.application"
@@ -131,8 +130,8 @@ CHANNEL_LAYERS = {
     }
 }
 
-
-# Django-Heroku
-IS_CI = os.environ.get("IS_CI", False)
-if not IS_CI:
-    django_heroku.settings(locals())
+# import django_heroku
+# # Django-Heroku
+# IS_CI = os.environ.get("IS_CI", False)
+# if not IS_CI:
+#     django_heroku.settings(locals())

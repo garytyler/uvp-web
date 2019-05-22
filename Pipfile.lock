@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1f0b3db4749ae57b1284a6ac1e056f018d9146c7adf4afd5bc6f17baecc33be6"
+            "sha256": "d23b546e1176ecc80b76ad8f6278b34d37b00b69e6758ab0b592880e6a9dd821"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -100,6 +100,14 @@
         "django-heroku": {
             "git": "https://github.com/garytyler/django-heroku",
             "ref": "61cfc05fa3d5b73731b491a56df8df1e818800ac"
+        },
+        "django-redis": {
+            "hashes": [
+                "sha256:af0b393864e91228dd30d8c85b5c44d670b5524cb161b7f9e41acc98b6e5ace7",
+                "sha256:f46115577063d00a890867c6964ba096057f07cb756e78e0503b89cd18e4e083"
+            ],
+            "index": "pypi",
+            "version": "==4.10.0"
         },
         "hiredis": {
             "hashes": [
@@ -224,6 +232,13 @@
                 "sha256:d747dd3d23d77ef44c6a3526e274af6efeb0a6f1afd5a69ba4d5be4098c8e141"
             ],
             "version": "==2019.1"
+        },
+        "redis": {
+            "hashes": [
+                "sha256:6946b5dca72e86103edc8033019cc3814c031232d339d5f4533b02ea85685175",
+                "sha256:8ca418d2ddca1b1a850afa1680a7d2fd1f3322739271de4b704e0d4668449273"
+            ],
+            "version": "==3.2.1"
         },
         "six": {
             "hashes": [
@@ -574,10 +589,10 @@
         },
         "requirementslib": {
             "hashes": [
-                "sha256:a5bcff2861eea9358e90d6a4234f0bf4ad0ba730f86a4ea4680f53365b7b4735",
-                "sha256:ae0c2fce1b33c9c7b171895ab11472bd7be9c45f6214aad97ceaf83511d78d93"
+                "sha256:2c4e80f2280fb762a0bb2420e634057ec6c785f3c0d95fce6cdb63cd5ac50b5a",
+                "sha256:d9f99a46d0816898ab57a403e9f73ef92574755093c9e72e445993e6edc82226"
             ],
-            "version": "==1.5.0"
+            "version": "==1.5.1"
         },
         "six": {
             "hashes": [
@@ -623,10 +638,10 @@
         },
         "vistir": {
             "hashes": [
-                "sha256:00af96b75157b299616f47657ed34368e92e01d039100368c9dcd94897e3c109",
-                "sha256:bbe040ce656f1de9b5f75c953abe49af4d1ba6fdf8f1f4b8db3e63cfd2dad24a"
+                "sha256:588b81ce97fb2b7429ae7b0443a28be8e0c85bb1d0ba7a4296775035c4156760",
+                "sha256:84f4ca78c5b0051ba407f18a97ea52eae6c415efb65c5ea019afeea16528799a"
             ],
-            "version": "==0.4.1"
+            "version": "==0.4.2"
         },
         "wheel": {
             "hashes": [

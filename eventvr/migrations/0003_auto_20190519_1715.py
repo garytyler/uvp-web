@@ -9,6 +9,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameModel(
-            old_name="DisplayClient", new_name="MediaDisplayerClient"
+            old_name="DisplayClient", new_name="MediaDisplayerClientClient"
         )
     ]

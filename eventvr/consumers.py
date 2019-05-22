@@ -1,41 +1,65 @@
 import logging
 import time
+from importlib import import_module
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from channels.layers import get_channel_layer
+from django.conf import settings
+from django.contrib.sessions.models import Session
+from django.http import HttpResponse, HttpResponseRedirect
 
-from .models import MediaDisplayerClient
+from .models import InteractorClient, MediaDisplayerClient
 
-log = logging.getLogger("django.server")
+log = logging.getLogger(__name__)
 
 
 class QueueConsumer(JsonWebsocketConsumer):
-    groups = ["queue"]
-
     def connect(self):
         self.accept()
-        log.info("CONNECTED: queue_socket")
+        self.interactor_client, created = InteractorClient.objects.get_or_create(
+            session_key=self.scope["session"].session_key
+        )
+        self.interactor_client.display_name = self.scope["session"]["display_name"]
+        self.interactor_client.available = True
+        self.interactor_client.save()
+        self.queue_update()
 
-    def receive_json(self, event=None):
+    def queue_update(self):
+        queue_objs = InteractorClient.objects.all()
+        queue_list = [
+            {
+                "display_name": i.display_name,
+                "session_key": i.session_key,
+                "available": i.available,
+            }
+            for i in queue_objs
+        ]
+        self.send_json({"queue": queue_list})
+
+    def receive_json(self, event):
         pass
 
     def disconnect(self, close_code):
-        pass
+        self.interactor_client.available = False
+        self.interactor_client.save()
 
 
 class InteractorConsumer(JsonWebsocketConsumer):
     def connect(self):
-        mediaplayer_client = MediaDisplayerClient.objects.first()
-        if mediaplayer_client:
-            self.mediaplayer_channel_name = mediaplayer_client.channel_name
-            self.accept()
-            log.info("CONNECTED: viewersocket")
-        else:
-            log.info("NO MEDIA PLAYER CONNECTION FOUND")
+        self.mediaplayer_channel_name = None
+        self.accept()
 
     def receive_json(self, event):
         """Forward data from view operator to a single media player consumer"""
+        if not self.mediaplayer_channel_name:
+            mediaplayer_client = MediaDisplayerClient.objects.first()
+            if mediaplayer_client:
+                self.mediaplayer_channel_name = mediaplayer_client.channel_name
+            else:
+                log.info("NO MEDIA PLAYER CONNECTION FOUND")
+                return
+
         log.info(event)
         async_to_sync(self.channel_layer.send)(
             self.mediaplayer_channel_name,
@@ -43,11 +67,10 @@ class InteractorConsumer(JsonWebsocketConsumer):
         )
 
     def disconnect(self, close_code):
-        log.info("DISCONNECTED: viewersocket")
         pass
 
 
-class MediaDisplayerConsumer(JsonWebsocketConsumer):
+class MediaDisplayerClientConsumer(JsonWebsocketConsumer):
 
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 

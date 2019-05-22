@@ -5,32 +5,78 @@ from datetime import datetime
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.http import HttpResponse
+from django.contrib.sessions.models import Session
+from django.http import HttpResponse, HttpResponseRedirect
 from django.middleware.csrf import CsrfViewMiddleware
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, render_to_response
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+from .forms import InteractorSignUpForm
 
-def index(request):
-    return render(request, "eventvr/index.html", {})
+# import the logging library
+# import logging
+
+# Get an instance of a logger
+# log = logging.getLogger("django.server")
+# log.setLevel(logging.DEBUG)
+# print("LOG LEVEL:", log.getEffectiveLevel())
+# logging.basicConfig(filename="example.log", filemode="w", level=logging.DEBUG)
 
 
-def queue(request, visitorid):
-    pass
-    # return CsrfViewMiddleware.process_view(
-    #     callback=request,
-    #     # "eventvr/queue.html",
-    #     callback_args=[],
-    #     callback_kwargs={"visitorid_json": mark_safe(json.dumps(visitorid))},
+def join(request):
+    # log.debug("debug test")
+    # log.info("info test")
+    # log.warning("warning test")
+    # log.error("error test")
+    # log.critical("critical test")
+
+    if request.method == "POST":
+        form_post = InteractorSignUpForm(request.POST)
+        if form_post.is_valid():
+            request.session["display_name"] = form_post.cleaned_data["your_name"]
+            return HttpResponseRedirect("/queue/")
+    else:
+        form_get = InteractorSignUpForm()
+    return render(request, "eventvr/join.html", {"form": form_get})
+
+
+def queue(request):
+    # print(dir(request.session))
+    # print(type(request.session.session_key))
+    return render(
+        request,
+        "eventvr/queue.html",
+        context={
+            "interactor": {
+                "display_name": request.session.get("display_name", None),
+                "session_key": request.session.session_key,
+            },
+            "all_sessions": [s.get_decoded() for s in Session.objects.all()],
+        },
+    )
+    # if not interactor_name:
+    #     interactor_name = request.session.get("interactor_name", None)
+    # request.session["interactor_name"] = interactor_name
+
+    # all_sessions = [s.get_decoded() for s in Session.objects.all()]
+
+    # return render(
+    #     request,
+    #     "eventvr/queue.html",
+    #     context={
+    #         "interactor_name": mark_safe(json.dumps(request.session["interactor_name"])),
+    #         "all_sessions": all_sessions,
+    #     },
     # )
 
 
-def interact(request, visitorid):
+def interact(request):
     return render(
         request,
         "eventvr/interact.html",
-        {"visitorid_json": mark_safe(json.dumps(visitorid))},
+        # context={"interactor_name_json": mark_safe(json.dumps(interactor_name))},
+        # context={"interactor_name": interactor_name},
     )
 
 
@@ -50,18 +96,18 @@ def date_and_time():
     return now.strftime("%A, %d %B, %Y at %X")
 
 
-def check_id(request, visitorid):
+def check_id(request, interactor_name):
     """
     TODO: This is a terrible id checker. Make a good id checker.
     """
     # Filter the id argument to letters only using regular expressions. URL arguments
     # can contain arbitrary text, so we restrict to safe characters only.
-    match_object = re.match("[a-zA-Z]+", visitorid)
+    match_object = re.match("[a-zA-Z]+", interactor_name)
     if match_object:
-        clean_visitorid = match_object.group(0)
+        clean_interactor_name = match_object.group(0)
     else:
-        clean_visitorid = "Friend"
-    return visitorid == clean_visitorid
+        clean_interactor_name = "Friend"
+    return interactor_name == clean_interactor_name
 
 
 User = get_user_model()

@@ -4,5 +4,5 @@ from eventvr import consumers
 websocket_urlpatterns = [
     re_path(r"^ws/queue", consumers.QueueConsumer),
     re_path(r"^ws/interactor", consumers.InteractorConsumer),
-    re_path(r"^mediaplayer", consumers.MediaDisplayerConsumer),
+    re_path(r"^mediaplayer", consumers.MediaDisplayerClientConsumer),
 ]

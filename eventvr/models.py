@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -10,17 +11,27 @@ class LoggedInUser(models.Model):
     )
 
 
-class MediaDisplayerClient(models.Model):
+class MediaPlayer(models.Model):
     channel_name = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.channel_name
 
 
-class InteractorClient(models.Model):
+class Guest(models.Model):
     session_key = models.CharField(max_length=100, unique=True, blank=False)
     display_name = models.CharField(max_length=100, default="Anonymous")
-    available = models.BooleanField(default=False)  # Has open socket
+    available = models.BooleanField(default=False)
+    channel_names = ArrayField(models.CharField(max_length=100), blank=True)
 
     def __str__(self):
-        return f"{self.session_key}/{self.display_name}"
+        return f"{self.session_key}|{self.display_name}"
+
+
+class Feature(models.Model):
+    title = models.CharField(max_length=100)
+    guest_queue = ArrayField(models.CharField(max_length=100), blank=True)
+    guest_history = ArrayField(models.CharField(max_length=100), blank=True)
+
+    def __str__(self):
+        return f"{self.title}"

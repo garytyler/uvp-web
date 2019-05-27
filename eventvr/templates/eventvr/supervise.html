@@ -1,0 +1,21 @@
+{% extends 'eventvr/base.html' %}
+{% load static %}
+
+
+{% block meta %}
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+{% endblock meta %}
+
+
+{% block script %}
+<script type="text/javascript" src="{% static 'eventvr/js/supervise.js' %}"></script>
+{% endblock script %}
+
+
+{% block content %}
+<div id="supervisor_ui">
+    <table id="queue_monitor_table" class="supervisor table">
+        <h3>Queue Monitor</h3>
+    </table>
+</div>
+{% endblock content %}

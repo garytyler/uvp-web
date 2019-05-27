@@ -1,0 +1,18 @@
+{% extends 'eventvr/base.html' %}
+
+
+{% block meta %}
+<meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    name="viewport">
+{% endblock meta %}
+
+
+{% block content %}
+<div class="container">
+    <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
+</div>
+{% endblock content%}

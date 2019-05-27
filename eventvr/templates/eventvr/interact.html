@@ -1,189 +1,59 @@
 {% extends 'eventvr/base.html' %}
+{% load static %}
+
+
+{% block meta %}
+<meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+{% endblock meta %}
+
+
+{% block script %}
+{{ guest|json_script:"guest_json" }}
+<script type="text/javascript" src="{% static 'eventvr/js/interact.js' %}"></script>
+{% endblock script %}
+
+
+{% block debug %}
+<div id="debug" style="display:none;">
+    <table style="float:right;margin-right:5px">
+        <td align="right" style="width:7ch"><b>alpha</b></td>
+        <td id="motiondata_alpha" style="width:7ch"></td>
+        <td align="right" style="width:6ch"><b>beta</b></td>
+        <td id="motiondata_beta" style="width:7ch"></td>
+        <td align="right" style="width:7ch"><b>gamma</b></td>
+        <td id="motiondata_gamma" style="width:7ch"></td>
+    </table>
+</div>
+{% endblock debug %}
 
 
 {% block content %}
-
-    <div class="container">
-
-        <h1>INTERACTOR</h1>
-
-        <h2>Status</h2>
-        <table class="table" style="width:50%">
-            <tbody>
+<div class="container">
+    <div id="guest_display_name"></div>
+    <div id="interact_ui" style="display:none;">
+        <h2>
+            <input type="button" id="start" style="display:block;width:100%;height:200px;" value="Start">
+            <input type="button" id="stop" style="display:none;width:100%;height:200px;" value="Stop">
+        </h2>
+        <h4>
+            <input type="button" id="exit" value="Exit" style="display:block;width:40%;height:60px;margin-left:30%">
+        </h4>
+    </div>
+    <div id="queue_ui" style="display:none;">
+        <br>
+        <br>
+        <h3>Queue</h3>
+        <table class="table">
+            <thead>
                 <tr>
-                    <th scope="row">
-                        <b>Connected</b>
-                    </td>
-                    <td id="status_connected"></tr>
-                    <tr>
-                        <th scope="row">
-                            <b>Active</b>
-                        </td>
-                        <td id="status_active"></tr>
-                    </tbody>
-                </table>
-
-                <br>
-
-                {% comment %}
-
-                    For entering interactor_name with the start button on this page
-                    
-                                                                                                                                                                                                                                                                                                                <form id="start" method="POST" action="#">
-                                                                                                                                                                                                                                                                                                                    <br>
-                                                                                                                                                                                                                                                                                                                    <input type="text" class="interactor_name" placeholder="What's your name?" />
-                                                                                                                                                                                                                                                                                                                    <input type="submit" value="Start">
-                                                                                                                                                                                                                                                                                                                </form>
-
-                {% endcomment %}
-
-                <form action="#" id="start" method="POST">
-                    <br>
-                    <input type="button" value="Start">
-                </form>
-
-                <form action="#" id="stop" method="POST" style="display:none;">
-                    <br>
-                    <input type="button" value="Stop">
-                </form>
-
-                <br>
-
-                <h2>Log</h2>
-                <span id="log"></span>
-
-            </div>
-
-        {% endblock content %}
-
-
-        {% block script %}
-
-            <script>
-                $(document).ready(function() {
-
-                    function logger(msg) {
-                        $("#log").append("<br>" + $("<div/>").text(msg).html());
-                        return false
-                    }
-
-                    // window.dispatchEvent(new Event('orientationchange'));
-
-                    var status = {
-                        connected: false,
-                        active: false,
-                        setConnected: function(value) {
-                            this.connected = value;
-                            $("#status_connected").text(this.connected);
-                        },
-                        setActive: function(value) {
-                            this.active = value;
-                            $("#status_active").text(this.active);
-                        }
-                    }
-
-                    var motionDataSenderNative = {
-                        start: function() {
-                            window.ondeviceorientation = function(e) {
-                                interactor_socket.send(JSON.stringify({
-                                    interactor_name: interactor_name,
-                                    euler: {
-                                        alpha: e.alpha,
-                                        beta: e.beta,
-                                        gamma: e.gamma
-                                    }
-                                }));
-                            }
-                        },
-                        stop: function() {
-                            window.ondeviceorientation = null;
-                        }
-                    }
-
-                    var motionDataSenderGyronorm = {
-                        gn: new GyroNorm(),
-                        start: function() {
-                            this.gn.start(this.handler);
-                        },
-                        stop: function() {
-                            this.gn.stop();
-                        },
-                        handler: function(data) {
-                            $("#deviceorientation_alpha").text(data.do .alpha);
-                                $("#deviceorientation_beta").text(data.do .beta);
-                                    $("#deviceorientation_gamma").text(data.do .gamma);
-                                        interactor_socket.send(JSON.stringify({
-                                                interactor_name: interactor_name,
-                                                euler: {
-                                                    alpha: data.do .alpha,
-                                                        beta : data.do .beta,
-                                                            gamma : data.do .gamma
-
-
-                                                            
-
-
-                                                        }
-                                                    
-
-
-                                                }
-                                            ));
-                                        }
-                                    }
-                                    motionDataSenderGyronorm.gn.init({})$("#start").click(function(e) {
-                                        logger("Start");
-
-                                        // window.location.reload(true); {
-                                        // motionDataSenderNative.start();
-                                        motionDataSenderGyronorm.start();
-
-                                        // status.setActive(true);
-
-                                        // Switch start button for stop button
-                                        {% comment %}e.preventDefault();{% endcomment %}$(this).hide();
-                                        $("#stop").show();
-                                    });
-
-                                    $("#stop").click(function(e) {
-                                        logger("Stop");
-
-                                        // motionDataSenderNative.stop();
-                                        motionDataSenderGyronorm.stop();
-
-                                        // status.setActive(false);
-
-                                        // Switch stop button for start button
-                                        {% comment %}e.preventDefault();{% endcomment %}$(this).hide();
-                                        $("#start").show();
-                                    });
-
-                                    var interactor_name = {{ interactor_name_json }};
-                                    console.log("VISITOR ID: " + interactor_name);
-
-                                    if(window.location.protocol == "https:") {
-                                        var ws_scheme = "wss://";
-                                    } else {
-                                        var ws_scheme = "ws://"
-                                    };{% comment %}var queue_socket = new WebSocket(ws_scheme + window.location.host + "/ws/queue/" + interactor_name + "/");
-                                        queue_socket.onmessage = function(e) {
-                                            var data = JSON.parse(e.data);
-                                            console.log(data)
-                                            // var interactor_name = data['interactor_name'];
-                                        };
-                                        queue_socket.onclose = function() {
-                                            console.error("Chat socket closed unexpectedly");
-                                            // Maybe receive channel_name, then send that channel_name to viewer to remove from queue
-                                        };{% endcomment %}var interactor_socket = new WebSocket(ws_scheme + window.location.host + "/ws/interactor/");
-                                    interactor_socket.onmessage = function(e) {
-                                        var data = JSON.parse(e.data);
-                                        // console.log(JSON.stringify(data))
-                                    };
-                                    interactor_socket.onclose = function() {
-                                        console.error("Chat socket closed unexpectedly");
-                                    };
-
-                                });
-                                </script>
-
-                            {% endblock script %}
+                    <th>Pos.</th>
+                    <th>Name</th>
+                    <th>Session Key</th>
+                </tr>
+            </thead>
+            <tbody id="queue_table_body"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

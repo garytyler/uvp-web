@@ -196,7 +196,7 @@ class MotionConsumer(JsonWebsocketConsumer):
     def receive_json(self, motion_data):
         """Receive motion event data from guest client and forward it to media player consumer
         """
-        print(motion_data)
+        log.info(motion_data)
         if self.mediaplayer_channel_name:
             try:
                 layer_event = {

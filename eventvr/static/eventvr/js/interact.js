@@ -13,6 +13,7 @@ $(document).ready(function () {
         init: function (handler) {
             this.handler = handler;
             this.gn.init({});
+            return this; // Used by factory
         },
         start: function () {
             this.gn.start(function (data) {
@@ -26,7 +27,7 @@ $(document).ready(function () {
 
     var nativeMotionSender = {
         init: function (handler) {
-            return this;
+            return this; // Used by factory
         },
         start: function () {
             window.ondeviceorientation = handler;
@@ -40,7 +41,7 @@ $(document).ready(function () {
         handler = function (data) {
             console.log(data);
             motion_socket.send(JSON.stringify({
-                guest: { display_name: guest.display_name },
+                // guest: { display_name: guest.display_name },
                 euler: {
                     alpha: data.alpha,
                     beta: data.beta,
@@ -60,9 +61,9 @@ $(document).ready(function () {
         }
     }
 
+    // Predefined globals
     var DEBUG = true;
-    var motion_socket = null;
-    var motion_sender = null;
+    motion_socket = null;
 
     var guest_socket = new WebSocket(ws_scheme + window.location.host + "/ws/guest/");
     guest_socket.onopen = function (event) {
@@ -71,7 +72,7 @@ $(document).ready(function () {
     guest_socket.onmessage = function (event) {
         console.log('guest_socket.onmessage', event);
         data = JSON.parse(event.data);
-        motion_sender = getMotionSender();
+
 
         if (data.queue_state[0].session_key === guest.session_key) {
             console.log('Enabling interact mode', data.queue_state[0]);
@@ -104,19 +105,27 @@ $(document).ready(function () {
     function enableInteractMode(queue_state) {
         $("#queue_ui").hide();
 
+
         motion_socket = new WebSocket(ws_scheme + window.location.host + "/ws/motion/");
+
+
+
         motion_socket.onopen = function (event) {
             console.log('motion_socket.onopen', event);
 
+            motion_sender = getMotionSender();
+
             $("#start_button").click(function (e) {
                 $(this).hide();
-                $("#stop").show();
+                $("#stop_button").show();
+
                 motion_sender.start();
             });
 
             $("#stop_button").click(function (e) {
                 $(this).hide();
-                $("#start").show();
+                $("#start_button").show();
+
                 motion_sender.stop();
             });
 
@@ -125,27 +134,24 @@ $(document).ready(function () {
             });
 
             $("#interact_ui").show();
-            // debug_interface.reveal_queue_ui(queue_state);
         };
         motion_socket.onmessage = function (event) {
             console.log('motion_socket.onmessage:', event);
         };
-        motion_socket.onclose = function (event) {
-            console.log('motion_socket.close', event);
+        motion_socket.onerror = function (event) {
+            console.log('motion_socket.onerror', event);
         };
         motion_socket.onclose = function (event) {
             console.log('motion_socket.onclose', event);
             shutdown_client();
         };
-        motion_socket.onerror = function (event) {
-            console.log('motion_socket.onerror', event);
-        };
+
+
     }
 
     function request_force_dequeue() {
         guest_socket.send(JSON.stringify({ "method": "force_dequeue" }));
     }
-
     function shutdown_client() {
         if (motion_sender != null) { motion_sender.stop(); }
         if (motion_socket != null) { motion_socket.close(); }

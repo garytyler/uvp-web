@@ -8,6 +8,7 @@ $(document).ready(function () {
         ws_scheme = "ws://";
     }
 
+    /* DEPRECATED
     var gyronormMotionEventCaller = {
         gn: new GyroNorm(),
         init: function (handler) {
@@ -15,59 +16,52 @@ $(document).ready(function () {
             this.gn.init({});
             return this; // Used by factory
         },
-        start: function () {
+        start: function (handler) {
             this.gn.start(function (data) {
-                this.handler(data.do);
+                handler(data.do);
             });
         },
         stop: function () {
             this.gn.stop();
         },
     };
+    */
 
-    var nativeMotionEventCaller = {
-        init: function () {
-            return this; // Used by factory
-        },
-        start: function () {
-            window.ondeviceorientation = handler;
-        },
-        stop: function () {
-            window.ondeviceorientation = null;
-        }
-    };
+    // var nativeMotionEventCaller = {
+    //     init: function (handler) {
+    //         return this; // Used by factory
+    //     },
+    //     start: function () {
+    //         window.ondeviceorientation = handler;
+    //     },
+    //     stop: function () {
+    //         window.ondeviceorientation = null;
+    //     }
+    // };
 
     function MotionManager() {
-        getEventCaller = function (handler, motion_type) {
-            switch (motion_type) {
-                case "native_euler":
-                    return nativeMotionEventCaller.init();
-                case "gyronorm_euler":
-                    return gyronormMotionEventCaller.init(handler);
-                default:
-                    return nativeMotionEventCaller.init();
-            }
+        // var event_caller = getEventCaller(handler);
+        latest = {
+            alpha: 0,
+            beta: 0,
+            gamma: 0
+        };
+
+        send_latest = function () {
+            motion_socket.send(JSON.stringify(latest));
         };
 
         handler = function (data) {
             console.log(data);
-            motion_socket.send(JSON.stringify({
-                // guest: { display_name: guest.display_name },
-                euler: {
-                    alpha: data.alpha,
-                    beta: data.beta,
-                    gamma: data.gamma
-                }
-            }));
             debug_interface.update_motion_data(data);
         };
-        var event_caller = getEventCaller(handler);
 
         this.start = function () {
-            event_caller.start();
+            window.ondeviceorientation = handler;
         };
+
         this.stop = function () {
-            event_caller.stop();
+            window.ondeviceorientation = null;
         };
 
     }
@@ -160,12 +154,21 @@ $(document).ready(function () {
     }
 
     function request_force_dequeue() {
-        guest_socket.send(JSON.stringify({ "method": "force_dequeue" }));
+        guest_socket.send(JSON.stringify({
+            "method": "force_dequeue"
+        }));
     }
+
     function shutdown_client() {
-        if (motion_sender != null) { motion_sender.stop(); }
-        if (motion_socket != null) { motion_socket.close(); }
-        if (guest_socket != null) { guest_socket.close(); }
+        if (motion_sender != null) {
+            motion_sender.stop();
+        }
+        if (motion_socket != null) {
+            motion_socket.close();
+        }
+        if (guest_socket != null) {
+            guest_socket.close();
+        }
         window.location.href = "/exit/";
     }
 
@@ -186,8 +189,8 @@ $(document).ready(function () {
     }
 
     function DebugInterface(enable) {
-        this.update_motion_data = function (data) { };
-        this.reveal_queue = function (queue_state) { };
+        this.update_motion_data = function (data) {};
+        this.reveal_queue = function (queue_state) {};
         if (enable) {
             // API
             this.update_motion_data = function (data) {

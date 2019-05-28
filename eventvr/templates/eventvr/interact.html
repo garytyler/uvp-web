@@ -33,11 +33,12 @@
     <div id="guest_display_name"></div>
     <div id="interact_ui" style="display:none;">
         <h2>
-            <input type="button" id="start" style="display:block;width:100%;height:200px;" value="Start">
-            <input type="button" id="stop" style="display:none;width:100%;height:200px;" value="Stop">
+            <input type="button" id="start_button" style="display:block;width:100%;height:200px;" value="Start">
+            <input type="button" id="stop_button" style="display:none;width:100%;height:200px;" value="Stop">
         </h2>
         <h4>
-            <input type="button" id="exit" value="Exit" style="display:block;width:40%;height:60px;margin-left:30%">
+            <input type="button" id="exit_interact_button" value="Exit"
+                style="display:block;width:40%;height:60px;margin-left:30%">
         </h4>
     </div>
     <div id="queue_ui" style="display:none;">
@@ -54,6 +55,10 @@
             </thead>
             <tbody id="queue_table_body"></tbody>
         </table>
+        <h4>
+            <input type="button" id="exit_queue_button" value="Leave"
+                style="display:block;width:40%;height:60px;margin-left:30%">
+        </h4>
     </div>
 </div>
 {% endblock content %}

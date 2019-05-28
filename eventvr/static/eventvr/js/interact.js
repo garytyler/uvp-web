@@ -73,39 +73,31 @@ $(document).ready(function () {
         data = JSON.parse(event.data);
         motion_sender = getMotionSender();
 
-        // if (data.queue[0].session_key === guest.session_key) {
-        //     console.log('Enabling interact mode', data.queue[0]);
-        //     enableInteractMode(data.queue);
-        // } else {
-        //     console.log('Enabling queue mode', data.queue);
-        //     enableQueueMode(data.queue);
-        // }
-
-        // switch (data.method) {
-        //     case data.method:
-        //         return nativeMotionSender.init(handler);
-        //     case "gyronorm_euler":
-        //         return gyronormMotionSender.init(handler);
-        //     default:
-        //         return nativeMotionSender.init(handler);
-        // }
-
-        // Temp code
-        // $("#guest_display_name").append("<b>Name: </b>" + guest.display_name);
-        enableQueueMode(data.queue_state);
-
+        if (data.queue_state[0].session_key === guest.session_key) {
+            console.log('Enabling interact mode', data.queue_state[0]);
+            enableInteractMode(data.queue_state);
+        } else {
+            console.log('Enabling queue mode', data.queue_state);
+            enableQueueMode(data.queue_state);
+        }
     };
     guest_socket.onclose = function (event) {
         console.log('guest_socket.onclose', event);
-        clean_exit();
+        //TODO Pass an exit code for messaging
+        shutdown_client();
     };
     guest_socket.onerror = function (event) {
         console.log('guest_socket.onerror', event);
     };
 
     function enableQueueMode(queue_state) {
-        $("#queue_ui").show();
         $("#interact_ui").hide();
+        $("#queue_ui").show();
+
+        $("#exit_queue_button").click(function (e) {
+            request_force_dequeue();
+        });
+
         populateQueueTable(queue_state);
     }
 
@@ -116,23 +108,20 @@ $(document).ready(function () {
         motion_socket.onopen = function (event) {
             console.log('motion_socket.onopen', event);
 
-            $("#start").click(function (e) {
+            $("#start_button").click(function (e) {
                 $(this).hide();
                 $("#stop").show();
                 motion_sender.start();
             });
 
-            $("#stop").click(function (e) {
+            $("#stop_button").click(function (e) {
                 $(this).hide();
                 $("#start").show();
                 motion_sender.stop();
             });
 
-            $("#exit").click(function (e) {
-                motion_sender.stop();
-                guest_socket.close();
-                motion_socket.close();
-                redirect_to_exit();
+            $("#exit_interact_button").click(function (e) {
+                request_force_dequeue();
             });
 
             $("#interact_ui").show();
@@ -146,13 +135,18 @@ $(document).ready(function () {
         };
         motion_socket.onclose = function (event) {
             console.log('motion_socket.onclose', event);
+            shutdown_client();
         };
         motion_socket.onerror = function (event) {
             console.log('motion_socket.onerror', event);
         };
     }
 
-    function clean_exit() {
+    function request_force_dequeue() {
+        guest_socket.send(JSON.stringify({ "method": "force_dequeue" }));
+    }
+
+    function shutdown_client() {
         if (motion_sender != null) { motion_sender.stop(); }
         if (motion_socket != null) { motion_socket.close(); }
         if (guest_socket != null) { guest_socket.close(); }

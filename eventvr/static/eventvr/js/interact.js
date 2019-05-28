@@ -8,7 +8,7 @@ $(document).ready(function () {
         ws_scheme = "ws://";
     }
 
-    var gyronormMotionSender = {
+    var gyronormMotionEventCaller = {
         gn: new GyroNorm(),
         init: function (handler) {
             this.handler = handler;
@@ -25,8 +25,8 @@ $(document).ready(function () {
         },
     };
 
-    var nativeMotionSender = {
-        init: function (handler) {
+    var nativeMotionEventCaller = {
+        init: function () {
             return this; // Used by factory
         },
         start: function () {
@@ -37,7 +37,18 @@ $(document).ready(function () {
         }
     };
 
-    function getMotionSender(motion_type) {
+    function MotionManager() {
+        getEventCaller = function (handler, motion_type) {
+            switch (motion_type) {
+                case "native_euler":
+                    return nativeMotionEventCaller.init();
+                case "gyronorm_euler":
+                    return gyronormMotionEventCaller.init(handler);
+                default:
+                    return nativeMotionEventCaller.init();
+            }
+        };
+
         handler = function (data) {
             console.log(data);
             motion_socket.send(JSON.stringify({
@@ -50,20 +61,22 @@ $(document).ready(function () {
             }));
             debug_interface.update_motion_data(data);
         };
+        var event_caller = getEventCaller(handler);
 
-        switch (motion_type) {
-            case "native_euler":
-                return nativeMotionSender.init(handler);
-            case "gyronorm_euler":
-                return gyronormMotionSender.init(handler);
-            default:
-                return nativeMotionSender.init(handler);
-        }
+        this.start = function () {
+            event_caller.start();
+        };
+        this.stop = function () {
+            event_caller.stop();
+        };
+
     }
+
 
     // Predefined globals
     var DEBUG = true;
     motion_socket = null;
+
 
     var guest_socket = new WebSocket(ws_scheme + window.location.host + "/ws/guest/");
     guest_socket.onopen = function (event) {
@@ -105,15 +118,12 @@ $(document).ready(function () {
     function enableInteractMode(queue_state) {
         $("#queue_ui").hide();
 
-
         motion_socket = new WebSocket(ws_scheme + window.location.host + "/ws/motion/");
-
-
 
         motion_socket.onopen = function (event) {
             console.log('motion_socket.onopen', event);
 
-            motion_sender = getMotionSender();
+            motion_sender = new MotionManager();
 
             $("#start_button").click(function (e) {
                 $(this).hide();

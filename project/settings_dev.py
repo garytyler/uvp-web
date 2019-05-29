@@ -18,6 +18,11 @@ if allowed_hosts:
 INSTALLED_APPS += ["django_extensions"]
 
 
+# Template debugging
+TEMPLATE_DEBUG = True  # Requires current host in INTERNAL_IPS
+INTERNAL_IPS = os.getenv("INTERNAL_IPS")
+
+
 # Channels
 if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
     CHANNEL_LAYERS["default"] = {"BACKEND": "channels.layers.InMemoryChannelLayer"}

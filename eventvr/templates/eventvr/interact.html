@@ -7,14 +7,14 @@
     content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 {% endblock meta %}
 
-
 {% block script %}
 {{ guest|json_script:"guest_json" }}
 <script type="text/javascript" src="{% static 'eventvr/js/interact.js' %}"></script>
 {% endblock script %}
 
 
-{% block debug %}
+{% block support %}
+<!-- <div id="debug" style="display:none;"> -->
 <div id="debug" style="display:none;">
     <table style="float:right;margin-right:5px">
         <td align="right" style="width:7ch"><b>alpha</b></td>
@@ -25,7 +25,7 @@
         <td id="motiondata_gamma" style="width:7ch"></td>
     </table>
 </div>
-{% endblock debug %}
+{% endblock support %}
 
 
 {% block content %}

@@ -127,8 +127,8 @@ class GuestConsumer(JsonWebsocketConsumer):
 
         #TODO Also use for ready confirmations in the future
         """
-        print(f"RECEIVE EVENT {str(event)}")
         if event["method"] == "force_dequeue":
+            # TODO Discard self from queue
             async_to_sync(self.channel_layer.group_send)(
                 self.session.session_key,
                 {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
@@ -196,6 +196,7 @@ class MotionConsumer(JsonWebsocketConsumer):
     def receive_json(self, motion_data):
         """Receive motion event data from guest client and forward it to media player consumer
         """
+        print(motion_data)
         if self.mediaplayer_channel_name:
             try:
                 layer_event = {

@@ -8,61 +8,69 @@ $(document).ready(function () {
         ws_scheme = "ws://";
     }
 
-    var gyronormMotionSender = {
+    /* DEPRECATED
+    var gyronormMotionEventCaller = {
         gn: new GyroNorm(),
         init: function (handler) {
             this.handler = handler;
             this.gn.init({});
+            return this; // Used by factory
         },
-        start: function () {
+        start: function (handler) {
             this.gn.start(function (data) {
-                this.handler(data.do);
+                handler(data.do);
             });
         },
         stop: function () {
             this.gn.stop();
         },
     };
+    */
 
-    var nativeMotionSender = {
-        init: function (handler) {
-            return this;
-        },
-        start: function () {
-            window.ondeviceorientation = handler;
-        },
-        stop: function () {
-            window.ondeviceorientation = null;
-        }
-    };
+    // var nativeMotionEventCaller = {
+    //     init: function (handler) {
+    //         return this; // Used by factory
+    //     },
+    //     start: function () {
+    //         window.ondeviceorientation = handler;
+    //     },
+    //     stop: function () {
+    //         window.ondeviceorientation = null;
+    //     }
+    // };
 
-    function getMotionSender(motion_type) {
+    function MotionManager() {
+        // var event_caller = getEventCaller(handler);
+        latest = {
+            alpha: 0,
+            beta: 0,
+            gamma: 0
+        };
+
+        send_latest = function () {
+            motion_socket.send(JSON.stringify(latest));
+        };
+
         handler = function (data) {
             console.log(data);
-            motion_socket.send(JSON.stringify({
-                guest: { display_name: guest.display_name },
-                euler: {
-                    alpha: data.alpha,
-                    beta: data.beta,
-                    gamma: data.gamma
-                }
-            }));
             debug_interface.update_motion_data(data);
         };
 
-        switch (motion_type) {
-            case "native_euler":
-                return nativeMotionSender.init(handler);
-            case "gyronorm_euler":
-                return gyronormMotionSender.init(handler);
-            default:
-                return nativeMotionSender.init(handler);
-        }
+        this.start = function () {
+            window.ondeviceorientation = handler;
+        };
+
+        this.stop = function () {
+            window.ondeviceorientation = null;
+        };
+
     }
 
+
+    // Predefined globals
     var DEBUG = true;
-    var motion_socket = null;
-    var motion_sender = null;
+    motion_socket = null;
+
 
     var guest_socket = new WebSocket(ws_scheme + window.location.host + "/ws/guest/");
     guest_socket.onopen = function (event) {
@@ -71,7 +79,6 @@ $(document).ready(function () {
     guest_socket.onmessage = function (event) {
         console.log('guest_socket.onmessage', event);
         data = JSON.parse(event.data);
-        motion_sender = getMotionSender();
 
         if (data.queue_state[0].session_key === guest.session_key) {
             console.log('Enabling interact mode', data.queue_state[0]);
@@ -105,18 +112,23 @@ $(document).ready(function () {
         $("#queue_ui").hide();
 
         motion_socket = new WebSocket(ws_scheme + window.location.host + "/ws/motion/");
+
         motion_socket.onopen = function (event) {
             console.log('motion_socket.onopen', event);
 
+            motion_sender = new MotionManager();
+
             $("#start_button").click(function (e) {
                 $(this).hide();
-                $("#stop").show();
+                $("#stop_button").show();
+
                 motion_sender.start();
             });
 
             $("#stop_button").click(function (e) {
                 $(this).hide();
-                $("#start").show();
+                $("#start_button").show();
+
                 motion_sender.stop();
             });
 
@@ -125,31 +137,37 @@ $(document).ready(function () {
             });
 
             $("#interact_ui").show();
-            // debug_interface.reveal_queue_ui(queue_state);
         };
         motion_socket.onmessage = function (event) {
             console.log('motion_socket.onmessage:', event);
         };
-        motion_socket.onclose = function (event) {
-            console.log('motion_socket.close', event);
+        motion_socket.onerror = function (event) {
+            console.log('motion_socket.onerror', event);
         };
         motion_socket.onclose = function (event) {
             console.log('motion_socket.onclose', event);
             shutdown_client();
         };
-        motion_socket.onerror = function (event) {
-            console.log('motion_socket.onerror', event);
-        };
+
+
     }
 
     function request_force_dequeue() {
-        guest_socket.send(JSON.stringify({ "method": "force_dequeue" }));
+        guest_socket.send(JSON.stringify({
+            "method": "force_dequeue"
+        }));
     }
 
     function shutdown_client() {
-        if (motion_sender != null) { motion_sender.stop(); }
-        if (motion_socket != null) { motion_socket.close(); }
-        if (guest_socket != null) { guest_socket.close(); }
+        if (motion_sender != null) {
+            motion_sender.stop();
+        }
+        if (motion_socket != null) {
+            motion_socket.close();
+        }
+        if (guest_socket != null) {
+            guest_socket.close();
+        }
         window.location.href = "/exit/";
     }
 
@@ -170,8 +188,8 @@ $(document).ready(function () {
     }
 
     function DebugInterface(enable) {
-        this.update_motion_data = function (data) { };
-        this.reveal_queue = function (queue_state) { };
+        this.update_motion_data = function (data) {};
+        this.reveal_queue = function (queue_state) {};
         if (enable) {
             // API
             this.update_motion_data = function (data) {

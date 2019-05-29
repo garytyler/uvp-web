@@ -19,6 +19,7 @@ pre-commit = "*"
 isort = {extras = ["pipfile"],version = "*"}
 flake8 = "*"
 django-extensions = "*"
+colorlog = "*"
 
 [requires]
 python_version = "3.7"

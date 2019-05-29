@@ -33,53 +33,95 @@ if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Default is false
 
 
-# Logging
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "simple": {"format": "[{asctime}] {levelname} {message}", "style": "{"},
-        "verbose": {
-            "format": "[{asctime}] {process:d} {thread:d} {levelname} [{module}:{lineno}] {message}",
-            "style": "{",
-        },
-        "dev": {
-            "format": "[{relativeCreated:.3f}] {levelname} {message} [{module}:{lineno}]",
-            "style": "{",
-        },
-        "dev": {
-            "format": "[{relativeCreated:.3f}] {levelname} {message} [{module}:{lineno}]",
-            "style": "{",
-        },
+logging_color_styles = {
+    "default": {
+        "DEBUG": "reset,fg_cyan",
+        "INFO": "reset,fg_green",
+        "WARNING": "reset,fg_yellow",
+        "ERROR": "reset,fg_red",
+        "CRITICAL": "reset,fg_white,bg_red",
     },
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "dev"}},
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": os.getenv("LOG_LEVEL_DJANGO", "INFO"),
-            "propagate": True,
-        },
-        "eventvr": {
-            "handlers": ["console"],
-            "level": os.getenv("LOG_LEVEL_EVENTVR", "INFO"),
-            "propagate": False,
-        },
+    "strong": {
+        "DEBUG": "reset,fg_bold_cyan",
+        "INFO": "reset,fg_bold_green",
+        "WARNING": "reset,fg_bold_yellow",
+        "ERROR": "reset,fg_red",
+        "CRITICAL": "reset,fg_bold_white,bg_red",
+    },
+    "dull": {
+        "DEBUG": "reset,thin_cyan",
+        "INFO": "reset,thin_green",
+        "WARNING": "reset,thin_yellow",
+        "ERROR": "reset,thin_red",
+        "CRITICAL": "reset,fg_bold_white,bg_bold_red",
+    },
+    "dim": {
+        "DEBUG": "reset,fg_bold_black",
+        "INFO": "reset,fg_bold_black",
+        "WARNING": "reset,fg_bold_black",
+        "ERROR": "reset,fg_bold_black",
+        "CRITICAL": "reset,fg_bold_black",
+    },
+    "uncolored": {
+        "DEBUG": "reset",
+        "INFO": "reset",
+        "WARNING": "reset",
+        "ERROR": "reset",
+        "CRITICAL": "reset",
     },
 }
 
 
-# Colored logging
-try:
-    import colorlog, copy
-except ImportError:
-    pass
-else:
-    LOGGING["loggers"]["eventvr"]["handlers"].remove("console")
-    LOGGING["loggers"]["eventvr"]["handlers"].append("colored_console")
-    LOGGING["handlers"]["colored_console"] = copy.copy(LOGGING["handlers"]["console"])
-    LOGGING["handlers"]["colored_console"]["formatter"] = "colored_dev"
-    LOGGING["formatters"]["colored_dev"] = copy.copy(LOGGING["formatters"]["dev"])
-    LOGGING["formatters"]["colored_dev"]["()"] = "colorlog.ColoredFormatter"
-    LOGGING["formatters"]["colored_dev"]["format"] = (
-        "{log_color}" + LOGGING["formatters"]["dev"]["format"]
-    )
+logging_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}]{emphasis_log_color}{levelname:·<8}{reset_log_color}❯{primary_log_color}{message:<100} {dim_log_color}[{filename}:{lineno}({funcName})]"
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "colored_applogs_formatter": {
+            "()": "colorlog.ColoredFormatter",
+            "style": "{",
+            "format": logging_format_string,
+            "log_colors": logging_color_styles["default"],
+            "secondary_log_colors": {
+                "primary": logging_color_styles["default"],
+                "emphasis": logging_color_styles["strong"],
+                "dim": logging_color_styles["dim"],
+                "reset": logging_color_styles["uncolored"],
+            },
+        },
+        "colored_liblogs_formatter": {
+            "()": "colorlog.ColoredFormatter",
+            "style": "{",
+            "format": logging_format_string,
+            "log_colors": logging_color_styles["dull"],
+            "secondary_log_colors": {
+                "primary": logging_color_styles["dull"],
+                "emphasis": logging_color_styles["dull"],
+                "dim": logging_color_styles["dim"],
+                "reset": logging_color_styles["uncolored"],
+            },
+        },
+    },
+    "handlers": {
+        "colored_applogs_console": {
+            "formatter": "colored_applogs_formatter",
+            "class": "logging.StreamHandler",
+        },
+        "colored_liblogs_console": {
+            "formatter": "colored_liblogs_formatter",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["colored_liblogs_console"],
+            "level": os.getenv("LOG_LEVEL_DJANGO", "INFO"),
+        },
+        "eventvr": {
+            "handlers": ["colored_applogs_console"],
+            "level": os.getenv("LOG_LEVEL_EVENTVR", "INFO"),
+        },
+    },
+}

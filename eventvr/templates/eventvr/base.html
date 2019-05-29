@@ -13,12 +13,23 @@
 
 
 <body class="body">
-    {% block debug %}{% endblock debug %}
+    {% block support %}{% endblock support %}
     {% block content %}{% endblock content %}
     <script type="text/javascript" src="{% static 'eventvr/js/lib/jquery/dist/jquery.js' %}"></script>
     <script type="text/javascript" src="{% static 'eventvr/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"></script>
     <script type="text/javascript"
         src="{% static 'eventvr/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"></script>
+
+    {% if debug %}
+    <script>
+        var DEBUG = true;
+    </script>
+    {% else %}
+    <script>
+        var DEBUG = false;
+    </script>
+    {% endif %}
+
     {% block script %}{% endblock script %}
 </body>
 

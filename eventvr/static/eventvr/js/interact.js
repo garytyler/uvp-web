@@ -1,7 +1,9 @@
 $(document).ready(function () {
 
     // Predefined globals
-    var DEBUG = true;
+    if (DEBUG == null) {
+        DEBUG = false;
+    }
     var guest_socket = null;
     var motion_socket = null;
     var motion_sender_intervalometer_id = null;
@@ -14,7 +16,9 @@ $(document).ready(function () {
         ws_scheme = "ws://";
     }
 
-    /* DEPRECATED ?
+
+    /*
+    //TODO Gyronorm is no longer maintained. Look at FULLTILT, a dependency of gyronorm.
 
     var gyronormMotionEventCaller = {
         gn: new GyroNorm(),
@@ -32,7 +36,6 @@ $(document).ready(function () {
             this.gn.stop();
         },
     };
-
     */
 
 
@@ -57,11 +60,7 @@ $(document).ready(function () {
         };
 
         this.get_state = function () {
-            return {
-                alpha: latest.alpha,
-                beta: latest.beta,
-                gamma: latest.gamma
-            };
+            return [latest.alpha, latest.beta, latest.gamma];
         };
 
     }
@@ -71,24 +70,26 @@ $(document).ready(function () {
 
         var motion_collector = new MotionCollector();
 
-        motion_collector.register();
-
         var send_latest = function () {
             var motion_state = motion_collector.get_state();
-            socket.send(JSON.stringify(motion_state));
-
-            console.log('SEND MOTION STATE', motion_state);
-            debug_interface.update_motion_data(motion_state);
+            motion_bytes = new Float64Array(motion_state);
+            socket.send(motion_bytes);
+            debug_interface.update_motion_data_readout(motion_state);
         };
 
         this.start = function (fps) {
             console.log('START SENDING MOTION STATE');
+            if (fps == null) {
+                fps = 30;
+            }
+            motion_collector.register();
             motion_sender_intervalometer_id = setInterval(send_latest, 1000 / fps);
         };
 
         this.stop = function () {
             console.log('STOP SENDING MOTION STATE');
             clearInterval(motion_sender_intervalometer_id);
+            motion_collector.unregister();
         };
 
     }
@@ -163,7 +164,7 @@ $(document).ready(function () {
 
         };
         motion_socket.onmessage = function (event) {
-            // data = JSON.parse(event.data);
+            data = JSON.parse(event.data);
             console.log('motion_socket.onmessage:', data);
 
             // if (data.method == "start_interacting") {
@@ -191,21 +192,24 @@ $(document).ready(function () {
 
 
     function shutdown_client() {
+
         if (motion_sender != null) {
             motion_sender.stop();
         }
+
         if (motion_socket != null) {
             motion_socket.close();
         }
+
         if (guest_socket != null) {
             guest_socket.close();
         }
+
         window.location.href = "/exit/";
     }
 
 
     function populateQueueTable(queue_state) {
-        console.log(queue_state);
         table_body = $("#queue_table_body");
         table_body.empty();
         for (var index in queue_state) {
@@ -217,16 +221,24 @@ $(document).ready(function () {
             row.append("</tr>");
             table_body.append(row);
         }
-
     }
 
 
     function DebugInterface(enable) {
-        this.update_motion_data = function (data) {};
+        this.update_motion_data_readout = function (data) {};
 
         if (enable) {
-            // API
-            this.update_motion_data = function (data) {
+            this.update_motion_data_readout = function (data) {
+
+                console.log(data);
+
+                if (data instanceof Array) {
+                    data = {
+                        alpha: data[0],
+                        beta: data[1],
+                        gamma: data[2]
+                    };
+                }
                 for (var key in (data)) {
                     if (typeof data[key] == 'number') {
                         $("#motiondata_" + key).text(data[key].toFixed(2));
@@ -236,12 +248,9 @@ $(document).ready(function () {
                 }
             };
         }
-
         $("#debug").css('display', 'inline');
         $("#debug").show();
-
     }
     debug_interface = new DebugInterface(DEBUG);
-
 
 });

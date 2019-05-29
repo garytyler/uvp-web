@@ -1,3 +1,5 @@
+import array
+import json
 import logging
 import queue
 import time
@@ -5,7 +7,7 @@ from importlib import import_module
 
 from asgiref.sync import async_to_sync
 from channels.exceptions import ChannelFull
-from channels.generic.websocket import JsonWebsocketConsumer
+from channels.generic.websocket import JsonWebsocketConsumer, WebsocketConsumer
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.sessions.models import Session
@@ -15,7 +17,10 @@ from .models import Feature, MediaPlayer
 
 SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
 
-log = logging.getLogger("django.channels.server")
+# log = logging.getLogger("django.server")
+log = logging.getLogger(__name__)
+# log.info("asdfasdf")
+
 
 """
 Exit codes:
@@ -179,7 +184,7 @@ class GuestConsumer(JsonWebsocketConsumer):
         self.send_json(layer_event["data"])
 
 
-class MotionConsumer(JsonWebsocketConsumer):
+class MotionConsumer(WebsocketConsumer):
     def connect(self):
         self.mediaplayer_channel_name = None
 
@@ -193,31 +198,33 @@ class MotionConsumer(JsonWebsocketConsumer):
         if mediaplayer_client:
             self.mediaplayer_channel_name = mediaplayer_client.channel_name
 
-    def receive_json(self, motion_data):
+    def receive(self, text_data=None, bytes_data=None):
         """Receive motion event data from guest client and forward it to media player consumer
         """
-        log.info(motion_data)
-        if self.mediaplayer_channel_name:
-            try:
-                layer_event = {
-                    "type": "layerevent.forward.to.client",
-                    "data": motion_data,
-                }
-                async_to_sync(self.channel_layer.send)(
-                    self.mediaplayer_channel_name, layer_event
-                )
-            except ChannelFull:
-                log.info("TODO: Handle ChannelFull")
-                raise
-            else:
-                log.info(str(motion_data))
-        else:
-            mediaplayer_client = MediaPlayer.objects.first()
-            if mediaplayer_client:
-                self.mediaplayer_channel_name = mediaplayer_client.channel_name
-                self.finished = True
-            else:
-                log.info("NO MEDIA PLAYER CONNECTED")
+        alpha, beta, gamma = array.array("d", bytes_data)
+        print(alpha, beta, gamma)
+
+        # if self.mediaplayer_channel_name:
+        #     try:
+        #         layer_event = {
+        #             "type": "layerevent.forward.to.client",
+        #             "data": motion_data,
+        #         }
+        #         async_to_sync(self.channel_layer.send)(
+        #             self.mediaplayer_channel_name, layer_event
+        #         )
+        #     except ChannelFull:
+        #         log.info("TODO: Handle ChannelFull")
+        #         raise
+        #     else:
+        #         log.info(str(motion_data))
+        # else:
+        #     mediaplayer_client = MediaPlayer.objects.first()
+        #     if mediaplayer_client:
+        #         self.mediaplayer_channel_name = mediaplayer_client.channel_name
+        #         self.finished = True
+        #     else:
+        #         log.info("NO MEDIA PLAYER CONNECTED")
 
     def disconnect(self, close_code):
         # try:
@@ -242,7 +249,7 @@ def incr_view(view):
     return view
 
 
-class MediaDisplayerConsumer(JsonWebsocketConsumer):
+class MediaDisplayerConsumer(WebsocketConsumer):
 
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
@@ -253,8 +260,9 @@ class MediaDisplayerConsumer(JsonWebsocketConsumer):
         log.info(f"MediaPlayer CONNECT: {self.channel_name}")
         self.accept()
 
-    def receive_json(self, event=None):
-        log.info(event)
+    def receive(self, text_data=None, bytes_data=None):
+        log.info(text_data)
+        log.info(bytes_data)
         pass
 
     def disconnect(self, close_code):

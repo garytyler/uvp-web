@@ -1,15 +1,28 @@
-# eventvr
+# eventvr-web
 
-## Environment Variables
+## Exit Codes
+
+- 4190 - Forced guest dequeue by supervisor
+- 4150 - Forced guest dequeue by guest
+
+## Useful Environment Variables
 
 ### Required
 
-- EVENTVR_DB_USER
-- EVENTVR_DB_PASS
+- PGPASSWORD
+- SECRET_KEY
 
-### Optional
+### Development
 
-- IN_MEMORY_CHANNEL_LAYER
+- PGPASSWORD
+- DJANGO_SETTINGS_MODULE
+- ALLOWED_HOSTS
+- INTERNAL_IPS
+
+### Logging
+
+- LOG_LEVEL_DJANGO
+- LOG_LEVEL_EVENTVR
 
 ## PostgreSQL Setup
 

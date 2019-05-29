@@ -3,32 +3,17 @@ import json
 import logging
 import queue
 import time
-from importlib import import_module
 
 from asgiref.sync import async_to_sync
 from channels.exceptions import ChannelFull
 from channels.generic.websocket import JsonWebsocketConsumer, WebsocketConsumer
 from channels.layers import get_channel_layer
-from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.shortcuts import get_object_or_404, redirect
 
 from .models import Feature, MediaPlayer
 
-SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-
-# log = logging.getLogger("django.server")
 log = logging.getLogger(__name__)
-# log.info("asdfasdf")
-
-
-"""
-Exit codes:
-
-4190 - Force dequeue by supervisor
-4150 - Force dequeue by guest
-
-"""
 
 
 def get_feature():
@@ -201,8 +186,9 @@ class MotionConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         """Receive motion event data from guest client and forward it to media player consumer
         """
-        alpha, beta, gamma = array.array("d", bytes_data)
-        print(alpha, beta, gamma)
+        pass
+        # log.info(f"{0:+f}, {1:+f}, {2:+f}").format(*array.array("d", bytes_data))
+        # log.info(f"{0}").format(array.array("d", bytes_data))
 
         # if self.mediaplayer_channel_name:
         #     try:
@@ -249,7 +235,7 @@ def incr_view(view):
     return view
 
 
-class MediaDisplayerConsumer(WebsocketConsumer):
+class MediaPlayerConsumer(WebsocketConsumer):
 
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
@@ -257,7 +243,7 @@ class MediaDisplayerConsumer(WebsocketConsumer):
         MediaPlayer(pk=1, channel_name=self.channel_name).save()
         log.info(MediaPlayer.objects.first())
 
-        log.info(f"MediaPlayer CONNECT: {self.channel_name}")
+        log.info(f"MEDIAPLAYER CONNECT: {self.channel_name}")
         self.accept()
 
     def receive(self, text_data=None, bytes_data=None):
@@ -267,7 +253,7 @@ class MediaDisplayerConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
         MediaPlayer(pk=1, channel_name="").save()
-        log.info(f"MediaPlayer DISCONNECT: {self.channel_name}")
+        log.info(f"MEDIAPLAYER DISCONNECT: {self.channel_name}")
 
     def layerevent_forward_to_client(self, layer_event):
         """Forward event data that originated from guest client to media player client

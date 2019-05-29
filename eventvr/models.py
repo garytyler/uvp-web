@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 
 
@@ -20,7 +20,7 @@ class MediaPlayer(models.Model):
 
 class Guest(models.Model):
     session_key = models.CharField(max_length=100, unique=True, blank=False)
-    display_name = models.CharField(max_length=100, default="Anonymous")
+    display_name = models.CharField(max_length=100, default="Anonymous Guest")
     available = models.BooleanField(default=False)
     channel_names = ArrayField(models.CharField(max_length=100), blank=True)
 
@@ -29,9 +29,8 @@ class Guest(models.Model):
 
 
 class Feature(models.Model):
-    title = models.CharField(max_length=100)
-    guest_queue = ArrayField(models.CharField(max_length=100), blank=True)
-    guest_history = ArrayField(models.CharField(max_length=100), blank=True)
+    title = models.CharField(max_length=100, default="Unnamed Feature")
+    guest_queue = ArrayField(models.CharField(max_length=100), default=list)
 
     def __str__(self):
         return f"{self.title}"

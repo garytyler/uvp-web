@@ -17,6 +17,14 @@ SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
 
 log = logging.getLogger("django.channels.server")
 
+"""
+Exit codes:
+
+4190 - Force dequeue by supervisor
+4150 - Force dequeue by guest
+
+"""
+
 
 def get_feature():
     return get_object_or_404(Feature, pk=1)
@@ -46,7 +54,7 @@ def broadcast_queue_state(groups):
         async_to_sync(channel_layer.group_send)(
             group_name,
             {
-                "type": "layerrequest.forward.to.client",
+                "type": "layerevent.forward.to.client",
                 "data": {"queue_state": queue_state},
             },
         )
@@ -60,22 +68,34 @@ class SupervisorConsumer(JsonWebsocketConsumer):
         queue_state = get_queue_state()
         self.send_json({"queue_state": queue_state})
 
-    def layerrequest_forward_to_client(self, channel_event):
-        # print(channel_event)
-        self.send_json(channel_event["data"])
+    def layerevent_forward_to_client(self, layer_event):
+        self.send_json(layer_event["data"])
 
     def receive_json(self, event):
         log.info(f"RECEIVED {event}")
 
-        if event["method"] == "remove_guest":
+        method = event["method"]
+        if method == "remove_guest":
             self.remove_guest(event["args"]["session_key"])
 
     def remove_guest(self, session_key):
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            session_key,
-            {"type": "layerrequest.supervisor.dequeue", "data": {"close_code": 4090}},
-        )
+        feature = get_feature()
+        if session_key in feature.guest_queue:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                session_key,
+                {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
+            )
+        # try:
+        #     _session = Session.objects.get(pk=session_key)
+        # except Session.DoesNotExist:
+        #     pass
+        # else:
+        #     for key in ["display_name", "channel_names"]:
+        #         try:
+        #             _session.remove(key)
+        #         except ValueError:
+        #             pass
 
 
 class GuestConsumer(JsonWebsocketConsumer):
@@ -88,28 +108,31 @@ class GuestConsumer(JsonWebsocketConsumer):
         for group_name in ["guests", self.session.session_key]:
             async_to_sync(self.channel_layer.group_add)(group_name, self.channel_name)
 
-        feature = get_feature()
-        if not self.session.session_key in feature.guest_queue:
-            feature.guest_queue.append(self.session.session_key)
-            feature.guest_history.append(self.session.session_key)
-            feature.save()
-
+        # Add this channel name to the guest's session object
         self.session.setdefault("channel_names", []).append(self.channel_name)
         self.session.save()
         self.accept()
         log.info(f"GUEST CONNECT channel_name: {self.channel_name}")
 
-        broadcast_queue_state(["guests", "supervisors"])
+        # Add guest to queue if not already in it
+        feature = get_feature()
+        if not self.session.session_key in feature.guest_queue:
+            feature.guest_queue.append(self.session.session_key)
+            feature.save()
 
-    def layerrequest_forward_to_client(self, channel_event):
-        self.send_json(channel_event["data"])
+        broadcast_queue_state(["guests", "supervisors"])
 
     def receive_json(self, event):
         """Handle dequeue request from guest
 
         #TODO Also use for ready confirmations in the future
         """
-        pass
+        print(f"RECEIVE EVENT {str(event)}")
+        if event["method"] == "force_dequeue":
+            async_to_sync(self.channel_layer.group_send)(
+                self.session.session_key,
+                {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
+            )
 
     def disconnect(self, close_code):
         self.shutdown_channel()
@@ -118,12 +141,11 @@ class GuestConsumer(JsonWebsocketConsumer):
         )
 
     def shutdown_channel(self):
-        """Handle persistence of guest state"""
+        """Handle guest state persistence when only closing a single channel"""
 
         # Remove channel from session object
         if self.channel_name in self.session["channel_names"]:
             self.session["channel_names"].remove(self.channel_name)
-            print(f"removed {self.channel_name} from {self.session['channel_names']}")
             self.session.save()
         else:
             log.error(f"channel_name '{self.channel_name}' not found in session object")
@@ -145,15 +167,16 @@ class GuestConsumer(JsonWebsocketConsumer):
 
         broadcast_queue_state(["guests", "supervisors"])
 
-    def layerrequest_force_dequeue(self, channel_event):
-        close_code = channel_event["data"]["close_code"]
+    def layerevent_force_dequeue(self, layer_event):
+        log.info(f"FORCE DEQUEUE {self.session.session_key}")
+        close_code = layer_event["data"]["close_code"]
         self.session["channel_names"] = []
         self.session.save()
-        self.disconnect(close_code)
+        self.shutdown_channel()
         self.close(close_code)
 
-    def layerrequest_forward_to_client(self, channel_event):
-        self.send_json(channel_event["data"])
+    def layerevent_forward_to_client(self, layer_event):
+        self.send_json(layer_event["data"])
 
 
 class MotionConsumer(JsonWebsocketConsumer):
@@ -175,12 +198,12 @@ class MotionConsumer(JsonWebsocketConsumer):
         """
         if self.mediaplayer_channel_name:
             try:
-                channel_event = {
-                    "type": "layerrequest.forward.to.client",
+                layer_event = {
+                    "type": "layerevent.forward.to.client",
                     "data": motion_data,
                 }
                 async_to_sync(self.channel_layer.send)(
-                    self.mediaplayer_channel_name, channel_event
+                    self.mediaplayer_channel_name, layer_event
                 )
             except ChannelFull:
                 log.info("TODO: Handle ChannelFull")
@@ -235,13 +258,12 @@ class MediaDisplayerConsumer(JsonWebsocketConsumer):
 
     def disconnect(self, close_code):
         MediaPlayer(pk=1, channel_name="").save()
-        # TODO Notify all consumers of the media player disconnect with a signal
         log.info(f"MediaPlayer DISCONNECT: {self.channel_name}")
 
-    def layerrequest_forward_to_client(self, channel_event):
+    def layerevent_forward_to_client(self, layer_event):
         """Forward event data that originated from guest client to media player client
         """
-        self.send_json(channel_event["data"])
+        self.send_json(layer_event["data"])
 
     def send_motion_data(self, motion_data):
         self.send_json(motion_data)

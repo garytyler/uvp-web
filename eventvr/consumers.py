@@ -40,7 +40,7 @@ def broadcast_queue_state(groups):
     queue_state = get_queue_state()
     channel_layer = get_channel_layer()
     for group_name in groups:
-        log.info(f"BROADCAST QUEUE STATE to '{group_name}'")
+        log.debug(f"BROADCAST queue state to '{group_name}'")
         async_to_sync(channel_layer.group_send)(
             group_name,
             {
@@ -102,7 +102,9 @@ class GuestConsumer(JsonWebsocketConsumer):
         self.session.setdefault("channel_names", []).append(self.channel_name)
         self.session.save()
         self.accept()
-        log.info(f"GUEST CONNECT channel_name: {self.channel_name}")
+        log.info(
+            f"GUEST CONNECT [session_key:'({self.session.session_key}'] [channel_name:'{self.channel_name}']"
+        )
 
         # Add guest to queue if not already in it
         feature = get_feature()
@@ -126,9 +128,7 @@ class GuestConsumer(JsonWebsocketConsumer):
 
     def disconnect(self, close_code):
         self.shutdown_channel()
-        log.info(
-            f"GUEST DISCONNECT session_key: {self.session.session_key} channel_name:{self.channel_name}"
-        )
+        log.info(f"GUEST DISCONNECT [channel_name:'{self.channel_name}']")
 
     def shutdown_channel(self):
         """Handle guest state persistence when only closing a single channel"""
@@ -158,7 +158,7 @@ class GuestConsumer(JsonWebsocketConsumer):
         broadcast_queue_state(["guests", "supervisors"])
 
     def layerevent_force_dequeue(self, layer_event):
-        log.info(f"FORCE DEQUEUE {self.session.session_key}")
+        log.info(f"FORCE DEQUEUE session_key:'{self.session.session_key}'")
         close_code = layer_event["data"]["close_code"]
         self.session["channel_names"] = []
         self.session.save()
@@ -170,25 +170,52 @@ class GuestConsumer(JsonWebsocketConsumer):
 
 
 class MotionConsumer(WebsocketConsumer):
+    groups = ["motion"]
+
     def connect(self):
         self.mediaplayer_channel_name = None
 
-        self.session_key = self.scope["session"].session_key
-        self.display_name = self.scope["session"]["display_name"]
+        self.session = self.scope["session"]
+        self.display_name = self.session["display_name"]
         # TODO Verify session key match
-        self.accept()
 
-    def set_mediaplayer_channel_name(self):
-        mediaplayer_client = MediaPlayer.objects.first()
-        if mediaplayer_client:
-            self.mediaplayer_channel_name = mediaplayer_client.channel_name
+        log.info(
+            f"MOTION CONNECT [session_key:'({self.session.session_key}'] [channel_name:'{self.channel_name}']"
+        )
+        self.accept()
+        self.send_mediaplayer_state()
+
+    def layerevent_new_mediaplayer_state(self, content):
+        self.send_mediaplayer_state()
+
+    def send_mediaplayer_state(self):
+        self.mp_channel_name = self.get_mediaplayer_channel_name()
+        if self.mp_channel_name:
+            args = {"fps": 30, "allowed_time": 60, "media_title": "Mock Media Message"}
+            self.send(json.dumps({"method": "permission_to_interact", "args": args}))
+        else:
+            args = {"reason": "Media player not available."}
+            self.send(json.dumps({"method": "permission_denied", "args": args}))
+
+    def get_mediaplayer_channel_name(self):
+        mediaplayer = MediaPlayer.objects.first()
+        if mediaplayer:
+            return mediaplayer.channel_name
 
     def receive(self, text_data=None, bytes_data=None):
         """Receive motion event data from guest client and forward it to media player consumer
         """
-        pass
-        # log.info(f"{0:+f}, {1:+f}, {2:+f}").format(*array.array("d", bytes_data))
-        # log.info(f"{0}").format(array.array("d", bytes_data))
+        bytes_text = array.array("d", bytes_data)
+        log.debug(f"{self.__class__.__name__} received: {bytes_text}")
+
+        # bytes_data.decode()
+        # print(bytes_data.decode("utf-8"))
+        async_to_sync(self.channel_layer.send)(
+            self.mp_channel_name,
+            {"type": "layerevent.new.motion.state", "data": bytes_data},
+        )
+
+        # log.info(f"{0}".format(array.array("d", bytes_data)))
 
         # if self.mediaplayer_channel_name:
         #     try:
@@ -241,10 +268,11 @@ class MediaPlayerConsumer(WebsocketConsumer):
 
     def connect(self):
         MediaPlayer(pk=1, channel_name=self.channel_name).save()
-        log.info(MediaPlayer.objects.first())
-
-        log.info(f"MEDIAPLAYER CONNECT: {self.channel_name}")
+        log.info(f"MEDIAPLAYER CONNECT session_key:'{MediaPlayer.objects.first()}'")
         self.accept()
+        async_to_sync(self.channel_layer.group_send)(
+            "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
+        )
 
     def receive(self, text_data=None, bytes_data=None):
         log.info(text_data)
@@ -254,11 +282,15 @@ class MediaPlayerConsumer(WebsocketConsumer):
     def disconnect(self, close_code):
         MediaPlayer(pk=1, channel_name="").save()
         log.info(f"MEDIAPLAYER DISCONNECT: {self.channel_name}")
+        async_to_sync(self.channel_layer.group_send)(
+            "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
+        )
 
-    def layerevent_forward_to_client(self, layer_event):
+    def layerevent_new_motion_state(self, event):
         """Forward event data that originated from guest client to media player client
         """
-        self.send_json(layer_event["data"])
+        self.send(bytes_data=event["data"])
 
-    def send_motion_data(self, motion_data):
-        self.send_json(motion_data)
+        # self.send(bytes_data=motion_state_bytes)
+
+    # def send_motion_data(self, motion_data):

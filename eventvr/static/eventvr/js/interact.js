@@ -6,6 +6,7 @@ $(document).ready(function () {
     }
     var guest_socket = null;
     var motion_socket = null;
+    var motion_sender = null;
     var motion_sender_intervalometer_id = null;
 
     guest = JSON.parse(document.getElementById("guest_json").textContent);
@@ -70,7 +71,7 @@ $(document).ready(function () {
 
         var motion_collector = new MotionCollector();
 
-        var send_latest = function () {
+        this.send_latest = function () {
             var motion_state = motion_collector.get_state();
             motion_bytes = new Float64Array(motion_state);
             socket.send(motion_bytes);
@@ -83,7 +84,7 @@ $(document).ready(function () {
                 fps = 30;
             }
             motion_collector.register();
-            motion_sender_intervalometer_id = setInterval(send_latest, 1000 / fps);
+            motion_sender_intervalometer_id = setInterval(this.send_latest, 1000 / fps);
         };
 
         this.stop = function () {
@@ -114,7 +115,7 @@ $(document).ready(function () {
     guest_socket.onclose = function (event) {
         console.log('guest_socket.onclose', event);
         //TODO Pass an exit code for messaging
-        shutdown_client();
+        shutdown_and_exit();
     };
     guest_socket.onerror = function (event) {
         console.log('guest_socket.onerror', event);
@@ -139,46 +140,54 @@ $(document).ready(function () {
         motion_socket = new WebSocket(ws_scheme + window.location.host + "/ws/motion/");
         motion_socket.onopen = function (event) {
             console.log('motion_socket.onopen:', event);
-
-            motion_sender = new MotionSender(motion_socket);
-
-            $("#start_button").click(function (e) {
-                $(this).hide();
-                $("#stop_button").show();
-
-                motion_sender.start();
-            });
-
-            $("#stop_button").click(function (e) {
-                $(this).hide();
-                $("#start_button").show();
-
-                motion_sender.stop();
-            });
-
-            $("#exit_interact_button").click(function (e) {
-                request_force_dequeue();
-            });
-
-            $("#interact_ui").show();
-
         };
         motion_socket.onmessage = function (event) {
             data = JSON.parse(event.data);
             console.log('motion_socket.onmessage:', data);
 
-            // if (data.method == "start_interacting") {
-            //     time_limit = data.args.time_limit;
-            //     fps = data.args.fps;
-            // }
+            if (data.method == "permission_to_interact") {
+                fps = data.args.fps;
+                media_title = data.args.media_title;
+                allowed_time = data.args.allowed_time;
+                motion_sender = new MotionSender(motion_socket);
 
+                $("#start_button").click(function (e) {
+                    $(this).hide();
+                    $("#stop_button").show();
+
+                    motion_sender.start();
+                });
+
+                $("#stop_button").click(function (e) {
+                    $(this).hide();
+                    $("#start_button").show();
+
+                    motion_sender.stop();
+                });
+
+                $("#exit_interact_button").click(function (e) {
+                    request_force_dequeue();
+                });
+
+                $("#message_display").hide();
+                $("#interact_ui").show();
+
+                $("#debug_send_current_state").click(function () {
+                    console.log('CLICKED');
+                    motion_sender.send_latest();
+                });
+
+            } else if (data.method == "permission_denied") {
+                $("#interact_ui").hide();
+                $("#message_display").append("<h3>" + data.args.reason + "</h3>");
+            }
         };
         motion_socket.onerror = function (event) {
             console.log('motion_socket.onerror', event);
         };
         motion_socket.onclose = function (event) {
             console.log('motion_socket.onclose', event);
-            shutdown_client();
+            shutdown_and_exit();
         };
 
     }
@@ -191,7 +200,7 @@ $(document).ready(function () {
     }
 
 
-    function shutdown_client() {
+    function shutdown_and_exit() {
 
         if (motion_sender != null) {
             motion_sender.stop();
@@ -248,6 +257,9 @@ $(document).ready(function () {
                 }
             };
         }
+
+
+
         $("#debug").css('display', 'inline');
         $("#debug").show();
     }

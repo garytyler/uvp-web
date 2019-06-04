@@ -24,6 +24,7 @@
         <td align="right" style="width:7ch"><b>gamma</b></td>
         <td id="motiondata_gamma" style="width:7ch"></td>
     </table>
+    <input type="button" id="debug_send_current_state" value="Send current state" style="float:right;">
 </div>
 {% endblock support %}
 
@@ -31,6 +32,9 @@
 {% block content %}
 <div class="container">
     <div id="guest_display_name"></div>
+
+    <div id="message_display"></div>
+
     <div id="interact_ui" style="display:none;">
         <h2>
             <input type="button" id="start_button" style="display:block;width:100%;height:200px;" value="Start">

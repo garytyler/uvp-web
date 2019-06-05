@@ -30,7 +30,7 @@ class Guest(models.Model):
 
 class Feature(models.Model):
     title = models.CharField(max_length=100, default="Unnamed Feature")
-    guest_queue = ArrayField(models.CharField(max_length=100), default=list)
+    guest_queue = ArrayField(models.CharField(max_length=100), default=list, blank=True)
 
     def __str__(self):
         return f"{self.title}"

@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from .models import MediaPlayer
+from .models import Feature
 
-admin.site.register(MediaPlayer)
+admin.site.register(Feature)

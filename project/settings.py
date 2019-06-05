@@ -86,6 +86,7 @@ DATABASES = {
         "PASSWORD": os.getenv("PGPASSWORD"),
         "HOST": "localhost",
         "PORT": "",
+        "CONN_MAX_AGE": 500,
     }
 }
 
@@ -130,6 +131,35 @@ CHANNEL_LAYERS = {
         "CONFIG": {"hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379")]},
     }
 }
+
+
+LOGGING = {
+    "formatters": {
+        "verbose": {
+            "format": (
+                "%(asctime)s [%(process)d] [%(levelname)s] "
+                + "pathname=%(pathname)s lineno=%(lineno)s "
+                + "funcname=%(funcName)s %(message)s"
+            ),
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "simple": {"format": "%(levelname)s %(message)s"},
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "formatter": "verbose",
+            "class": "logging.StreamHandler",
+        }
+    },
+    "loggers": {
+        "eventvr": {
+            "handlers": ["console"],
+            "level": os.environ.get("LOG_LEVEL_EVENTVR", "INFO"),
+        }
+    },
+}
+
 
 # Django-Heroku
 django_heroku.settings(locals())

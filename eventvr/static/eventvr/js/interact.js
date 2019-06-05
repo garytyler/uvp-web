@@ -1,9 +1,10 @@
 $(document).ready(function () {
 
     // Predefined globals
-    if (DEBUG == null) {
-        DEBUG = false;
-    }
+    // if (DEBUG == null) {
+    //     DEBUG = false;
+    // }
+    var DEBUG = true;
     var guest_socket = null;
     var motion_socket = null;
     var motion_sender = null;
@@ -40,6 +41,53 @@ $(document).ready(function () {
     */
 
 
+    // var gyronormMotionEventCaller = {
+    //     gn: new GyroNorm(),
+    //     init: function (handler) {
+    //         this.handler = handler;
+    //         this.gn.init({});
+    //         return this; // Used by factory
+    //     },
+    //     start: function (handler) {
+    //         this.gn.start(function (data) {
+    //             handler(data.do);
+    //         });
+    //     },
+    //     stop: function () {
+    //         this.gn.stop();
+    //     },
+    // };
+
+    // function MotionCollector() {
+    //     var gn = new GyroNorm();
+
+    //     var latest = {
+    //         alpha: 0,
+    //         beta: 0,
+    //         gamma: 0
+    //     };
+
+    //     var handle_motion_event = function (event) {
+    //         latest = event;
+    //     };
+
+    //     this.register = function () {
+
+    //         // window.ondeviceorientation = handle_motion_event;
+    //         gn.start(handle_motion_event);
+    //     };
+
+    //     this.unregister = function () {
+    //         // window.ondeviceorientation = null;
+    //         gn.stop();
+    //     };
+
+    //     this.get_state = function () {
+    //         // console.log(latest.alpha, latest.beta, latest.gamma);
+    //         return [latest.alpha, latest.beta, latest.gamma];
+    //     };
+
+    // }
     function MotionCollector() {
 
         var latest = {
@@ -61,11 +109,11 @@ $(document).ready(function () {
         };
 
         this.get_state = function () {
+            console.log(latest.alpha, latest.beta, latest.gamma);
             return [latest.alpha, latest.beta, latest.gamma];
         };
 
     }
-
 
     function MotionSender(socket) {
 
@@ -79,7 +127,7 @@ $(document).ready(function () {
         };
 
         this.start = function (fps) {
-            console.log('START SENDING MOTION STATE');
+            console.log('START SENDING GYRONORM MOTION STATE');
             if (fps == null) {
                 fps = 30;
             }
@@ -257,8 +305,6 @@ $(document).ready(function () {
                 }
             };
         }
-
-
 
         $("#debug").css('display', 'inline');
         $("#debug").show();

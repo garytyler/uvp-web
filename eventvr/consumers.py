@@ -76,16 +76,6 @@ class SupervisorConsumer(JsonWebsocketConsumer):
                 session_key,
                 {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
             )
-        # try:
-        #     _session = Session.objects.get(pk=session_key)
-        # except Session.DoesNotExist:
-        #     pass
-        # else:
-        #     for key in ["display_name", "channel_names"]:
-        #         try:
-        #             _session.remove(key)
-        #         except ValueError:
-        #             pass
 
 
 class GuestConsumer(JsonWebsocketConsumer):
@@ -138,7 +128,7 @@ class GuestConsumer(JsonWebsocketConsumer):
             self.session["channel_names"].remove(self.channel_name)
             self.session.save()
         else:
-            log.error(f"channel_name '{self.channel_name}' not found in session object")
+            log.info(f"channel_name '{self.channel_name}' not found in session object")
 
         # Dequeue guest if no more open channels
         if not self.session["channel_names"]:
@@ -205,53 +195,26 @@ class MotionConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         """Receive motion event data from guest client and forward it to media player consumer
         """
-        bytes_text = array.array("d", bytes_data)
-        log.debug(f"{self.__class__.__name__} received: {bytes_text}")
-
-        # bytes_data.decode()
-        # print(bytes_data.decode("utf-8"))
+        log.debug(f"{self.__class__.__name__} received: {array.array('d', bytes_data)}")
         async_to_sync(self.channel_layer.send)(
             self.mp_channel_name,
             {"type": "layerevent.new.motion.state", "data": bytes_data},
         )
 
-        # log.info(f"{0}".format(array.array("d", bytes_data)))
-
-        # if self.mediaplayer_channel_name:
-        #     try:
-        #         layer_event = {
-        #             "type": "layerevent.forward.to.client",
-        #             "data": motion_data,
-        #         }
-        #         async_to_sync(self.channel_layer.send)(
-        #             self.mediaplayer_channel_name, layer_event
-        #         )
-        #     except ChannelFull:
-        #         log.info("TODO: Handle ChannelFull")
-        #         raise
-        #     else:
-        #         log.info(str(motion_data))
-        # else:
-        #     mediaplayer_client = MediaPlayer.objects.first()
-        #     if mediaplayer_client:
-        #         self.mediaplayer_channel_name = mediaplayer_client.channel_name
-        #         self.finished = True
-        #     else:
-        #         log.info("NO MEDIA PLAYER CONNECTED")
-
     def disconnect(self, close_code):
-        # try:
-        #     guest_query = Guest.objects.get(session_key=self.session_key)
-        # except Guest.DoesNotExist:
-        #     pass
-        # else:
-        #     guest_query.delete()
-        # finally:
-        #     async_to_sync(self.channel_layer.group_send)(
-        #         "queue",
-        #         {"type": "channel.request.next.guest.", "data": {"queue": queue_state}},
-        #     )
-        pass
+        """Broadcast a request for any open guest channels to dequeue themselves, then
+        remove remaning channel names from associated session object, then broadcast a
+        queue change to initiate another guest interactor
+        """
+        feature = get_feature()
+        if self.session.session_key in feature.guest_queue:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                self.session.session_key,
+                {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
+            )
+
+        broadcast_queue_state(["guests", "supervisors"])
 
 
 def incr_view(view):
@@ -275,9 +238,8 @@ class MediaPlayerConsumer(WebsocketConsumer):
         )
 
     def receive(self, text_data=None, bytes_data=None):
-        log.info(text_data)
-        log.info(bytes_data)
-        pass
+        log.debug(f"{self.__class__.__name__} received text: {text_data}")
+        log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
 
     def disconnect(self, close_code):
         MediaPlayer(pk=1, channel_name="").save()
@@ -290,7 +252,3 @@ class MediaPlayerConsumer(WebsocketConsumer):
         """Forward event data that originated from guest client to media player client
         """
         self.send(bytes_data=event["data"])
-
-        # self.send(bytes_data=motion_state_bytes)
-
-    # def send_motion_data(self, motion_data):

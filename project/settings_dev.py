@@ -72,7 +72,7 @@ logging_color_styles = {
 }
 
 
-logging_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}]{emphasis_log_color}{levelname:·<8}{reset_log_color}❯{primary_log_color}{message}{dim_log_color}[{filename}:{lineno}({funcName})]"
+logging_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}]{emphasis_log_color}{levelname:·<8}{reset_log_color}❯{primary_log_color}{message}{dim_log_color}[{filename}:{lineno}({funcName})]{reset_log_color}"
 
 
 LOGGING = {

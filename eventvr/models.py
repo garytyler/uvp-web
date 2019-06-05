@@ -18,14 +18,14 @@ class MediaPlayer(models.Model):
         return self.channel_name
 
 
-class Guest(models.Model):
-    session_key = models.CharField(max_length=100, unique=True, blank=False)
-    display_name = models.CharField(max_length=100, default="Anonymous Guest")
-    available = models.BooleanField(default=False)
-    channel_names = ArrayField(models.CharField(max_length=100), blank=True)
+# class Guest(models.Model):
+#     session_key = models.CharField(max_length=100, unique=True, blank=False)
+#     display_name = models.CharField(max_length=100, default="Anonymous Guest")
+#     available = models.BooleanField(default=False)
+#     channel_names = ArrayField(models.CharField(max_length=100), blank=True)
 
-    def __str__(self):
-        return f"{self.session_key}|{self.display_name}"
+#     def __str__(self):
+#         return f"{self.session_key}|{self.display_name}"
 
 
 class Feature(models.Model):

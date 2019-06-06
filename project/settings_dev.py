@@ -33,7 +33,15 @@ if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Default is false
 
 
-logging_color_styles = {
+# # Logging
+# # Dev logging format string
+# log_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}]{emphasis_log_color}{levelname:.<8}{reset_log_color}> {primary_log_color}{message}{dim_log_color} [{filename}:{lineno}({funcName})]{reset_log_color}"
+
+# for formatter in LOGGING["formatters"]:
+#     formatter["format"] = log_format_string
+
+
+log_color_styles = {
     "default": {
         "DEBUG": "reset,fg_cyan",
         "INFO": "reset,fg_green",
@@ -72,7 +80,7 @@ logging_color_styles = {
 }
 
 
-logging_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}]{emphasis_log_color}{levelname:·<8}{reset_log_color}❯{primary_log_color}{message}{dim_log_color}[{filename}:{lineno}({funcName})]{reset_log_color}"
+log_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}][{emphasis_log_color}{levelname}{reset_log_color}] {primary_log_color}{message}{dim_log_color} [{filename}:{lineno}({funcName})]{reset_log_color}"
 
 
 LOGGING = {
@@ -82,45 +90,41 @@ LOGGING = {
         "colored_applogs_formatter": {
             "()": "colorlog.ColoredFormatter",
             "style": "{",
-            "format": logging_format_string,
-            "log_colors": logging_color_styles["default"],
+            "format": log_format_string,
+            "log_colors": log_color_styles["default"],
             "secondary_log_colors": {
-                "primary": logging_color_styles["default"],
-                "emphasis": logging_color_styles["strong"],
-                "dim": logging_color_styles["dim"],
-                "reset": logging_color_styles["uncolored"],
+                "primary": log_color_styles["default"],
+                "emphasis": log_color_styles["strong"],
+                "dim": log_color_styles["dim"],
+                "reset": log_color_styles["uncolored"],
             },
         },
         "colored_liblogs_formatter": {
             "()": "colorlog.ColoredFormatter",
             "style": "{",
-            "format": logging_format_string,
-            "log_colors": logging_color_styles["dull"],
+            "format": log_format_string,
+            "log_colors": log_color_styles["dull"],
             "secondary_log_colors": {
-                "primary": logging_color_styles["dull"],
-                "emphasis": logging_color_styles["dull"],
-                "dim": logging_color_styles["dim"],
-                "reset": logging_color_styles["uncolored"],
+                "primary": log_color_styles["dull"],
+                "emphasis": log_color_styles["dull"],
+                "dim": log_color_styles["dim"],
+                "reset": log_color_styles["uncolored"],
             },
         },
     },
     "handlers": {
-        "colored_applogs_console": {
+        "colored_console": {
             "formatter": "colored_applogs_formatter",
             "class": "logging.StreamHandler",
-        },
-        "colored_liblogs_console": {
-            "formatter": "colored_liblogs_formatter",
-            "class": "logging.StreamHandler",
-        },
+        }
     },
     "loggers": {
         "django": {
-            "handlers": ["colored_liblogs_console"],
+            "handlers": ["colored_console"],
             "level": os.getenv("LOG_LEVEL_DJANGO", "INFO"),
         },
         "eventvr": {
-            "handlers": ["colored_applogs_console"],
+            "handlers": ["colored_console"],
             "level": os.getenv("LOG_LEVEL_EVENTVR", "INFO"),
         },
     },

@@ -23,8 +23,9 @@
 
 - LOG_LEVEL_DJANGO
 - LOG_LEVEL_EVENTVR
+- LOG_FORMAT_STRING
 
-## PostgreSQL Setup
+### PostgreSQL Setup
 
 ```psql
 CREATE DATABASE eventvr_database;

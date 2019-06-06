@@ -93,7 +93,7 @@ class GuestConsumer(JsonWebsocketConsumer):
         self.session.save()
         self.accept()
         log.info(
-            f"GUEST CONNECT [session_key:'({self.session.session_key}'] [channel_name:'{self.channel_name}']"
+            f"GUEST CONNECT session_key='({self.session.session_key}', channel_name='{self.channel_name}']"
         )
 
         # Add guest to queue if not already in it
@@ -118,7 +118,7 @@ class GuestConsumer(JsonWebsocketConsumer):
 
     def disconnect(self, close_code):
         self.shutdown_channel()
-        log.info(f"GUEST DISCONNECT [channel_name:'{self.channel_name}']")
+        log.info(f"GUEST DISCONNECT channel_name='{self.channel_name}'")
 
     def shutdown_channel(self):
         """Handle guest state persistence when only closing a single channel"""
@@ -170,7 +170,7 @@ class MotionConsumer(WebsocketConsumer):
         # TODO Verify session key match
 
         log.info(
-            f"MOTION CONNECT [session_key:'({self.session.session_key}'] [channel_name:'{self.channel_name}']"
+            f"MOTION CONNECT session_key='({self.session.session_key}' channel_name='{self.channel_name}'"
         )
         self.accept()
         self.send_mediaplayer_state()
@@ -195,7 +195,9 @@ class MotionConsumer(WebsocketConsumer):
     def receive(self, text_data=None, bytes_data=None):
         """Receive motion event data from guest client and forward it to media player consumer
         """
-        log.debug(f"{self.__class__.__name__} received: {array.array('d', bytes_data)}")
+        log.debug(
+            f"{self.__class__.__name__} received: {'{0:+f}{1:+f}{2:+f}'.format(*array.array('d', bytes_data))}"
+        )
         async_to_sync(self.channel_layer.send)(
             self.mp_channel_name,
             {"type": "layerevent.new.motion.state", "data": bytes_data},

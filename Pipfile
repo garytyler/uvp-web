@@ -10,19 +10,17 @@ channels = "*"
 channels-redis = "*"
 daphne = "*"
 whitenoise = "*"
+colorlog = "*"
 django-heroku = {git = "https://github.com/garytyler/django-heroku"}
-django-redis = "*"
 
 [dev-packages]
-django-debug-toolbar = "*"
 pre-commit = "*"
 isort = {extras = ["pipfile"],version = "*"}
 flake8 = "*"
 django-extensions = "*"
-colorlog = "*"
 
 [requires]
 python_version = "3.7"
 
 [scripts]
-manage="python manage.py" # Pipenv will first load .env
+manage="python manage.py"

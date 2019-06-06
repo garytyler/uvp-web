@@ -135,31 +135,19 @@ CHANNEL_LAYERS = {
 
 LOGGING = {
     "formatters": {
-        "verbose": {
-            "format": (
-                "%(asctime)s [%(process)d] [%(levelname)s] "
-                + "pathname=%(pathname)s lineno=%(lineno)s "
-                + "funcname=%(funcName)s %(message)s"
-            ),
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-        "simple": {"format": "%(levelname)s %(message)s"},
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "formatter": "verbose",
-            "class": "logging.StreamHandler",
+        "basic": {
+            "style": "{",
+            "format": '[{asctime}][{levelname}] "{message}" [{filename}:{lineno}({funcName})]',
         }
     },
+    "handlers": {"console": {"formatter": "basic", "class": "logging.StreamHandler"}},
     "loggers": {
         "eventvr": {
             "handlers": ["console"],
-            "level": os.environ.get("LOG_LEVEL_EVENTVR", "INFO"),
+            "level": os.getenv("LOG_LEVEL_EVENTVR", "INFO"),
         }
     },
 }
-
 
 # Django-Heroku
 django_heroku.settings(locals())

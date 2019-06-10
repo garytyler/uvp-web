@@ -1,7 +1,6 @@
 import array
 import json
 import logging
-import queue
 import time
 
 from asgiref.sync import async_to_sync

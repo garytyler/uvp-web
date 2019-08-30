@@ -4,11 +4,7 @@ import logging
 
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
-from channels.generic.websocket import (
-    AsyncWebsocketConsumer,
-    JsonWebsocketConsumer,
-    WebsocketConsumer,
-)
+from channels.generic.websocket import AsyncWebsocketConsumer, JsonWebsocketConsumer
 from channels.layers import get_channel_layer
 from django.contrib.sessions.models import Session
 from django.shortcuts import get_object_or_404
@@ -38,6 +34,21 @@ def get_queue_state():
     return queue_state
 
 
+def synchronous_broadcast_queue_state(groups):
+    queue_state = get_queue_state()
+    channel_layer = get_channel_layer()
+    for group_name in groups:
+        log.debug(f"BROADCAST queue state to '{group_name}'")
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                "type": "layerevent.forward.to.client",
+                "data": {"queue_state": queue_state},
+            },
+        )
+
+
+@database_sync_to_async
 def broadcast_queue_state(groups):
     queue_state = get_queue_state()
     channel_layer = get_channel_layer()
@@ -104,7 +115,7 @@ class GuestConsumer(JsonWebsocketConsumer):
             feature.guest_queue.append(self.session.session_key)
             feature.save()
 
-        broadcast_queue_state(["guests", "supervisors"])
+        synchronous_broadcast_queue_state(["guests", "supervisors"])
 
     def receive_json(self, event):
         """Handle dequeue request from guest
@@ -147,7 +158,7 @@ class GuestConsumer(JsonWebsocketConsumer):
                 channel_name, self.channel_name
             )
 
-        broadcast_queue_state(["guests", "supervisors"])
+        synchronous_broadcast_queue_state(["guests", "supervisors"])
 
     def layerevent_force_dequeue(self, layer_event):
         log.info(f"FORCE DEQUEUE session_key:'{self.session.session_key}'")
@@ -161,10 +172,17 @@ class GuestConsumer(JsonWebsocketConsumer):
         self.send_json(layer_event["data"])
 
 
-class MotionConsumer(WebsocketConsumer):
+@database_sync_to_async
+def get_mediaplayer_channel_name():
+    mediaplayer = MediaPlayer.objects.first()
+    if mediaplayer:
+        return mediaplayer.channel_name
+
+
+class MotionConsumer(AsyncWebsocketConsumer):
     groups = ["motion"]
 
-    def connect(self):
+    async def connect(self):
         self.mediaplayer_channel_name = None
 
         self.session = self.scope["session"]
@@ -174,38 +192,33 @@ class MotionConsumer(WebsocketConsumer):
         log.info(
             f"MOTION CONNECT session_key='({self.session.session_key}' channel_name='{self.channel_name}'"
         )
-        self.accept()
-        self.send_mediaplayer_state()
+        await self.accept()
+        await self.send_mediaplayer_state()
 
-    def layerevent_new_mediaplayer_state(self, content):
-        self.send_mediaplayer_state()
+    async def layerevent_new_mediaplayer_state(self, content):
+        await self.send_mediaplayer_state()
 
-    def send_mediaplayer_state(self):
-        self.mp_channel_name = self.get_mediaplayer_channel_name()
+    async def send_mediaplayer_state(self):
+        self.mp_channel_name = await get_mediaplayer_channel_name()
         if self.mp_channel_name:
             args = {"fps": 30, "allowed_time": 60, "media_title": "Mock Media Message"}
-            self.send(json.dumps({"method": "permission_to_interact", "args": args}))
+            await self.send(json.dumps({"method": "permission_granted", "args": args}))
         else:
             args = {"reason": "Media player not available."}
-            self.send(json.dumps({"method": "permission_denied", "args": args}))
+            await self.send(json.dumps({"method": "permission_denied", "args": args}))
 
-    def get_mediaplayer_channel_name(self):
-        mediaplayer = MediaPlayer.objects.first()
-        if mediaplayer:
-            return mediaplayer.channel_name
-
-    def receive(self, text_data=None, bytes_data=None):
+    async def receive(self, text_data=None, bytes_data=None):
         """Receive motion event data from guest client and forward it to media player consumer
         """
         log.debug(
             f"{self.__class__.__name__} received: {'{0:+f}{1:+f}{2:+f}'.format(*array.array('d', bytes_data))}"
         )
-        async_to_sync(self.channel_layer.send)(
+        await self.channel_layer.send(
             self.mp_channel_name,
             {"type": "layerevent.new.motion.state", "data": bytes_data},
         )
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         """Broadcast a request for any open guest channels to dequeue themselves, then
         remove remaning channel names from associated session object, then broadcast a
         queue change to initiate another guest interactor
@@ -213,11 +226,10 @@ class MotionConsumer(WebsocketConsumer):
         feature = get_feature()
         if self.session.session_key in feature.guest_queue:
             channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
+            await channel_layer.group_send(
                 self.session.session_key,
                 {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
             )
-
         broadcast_queue_state(["guests", "supervisors"])
 
 

@@ -193,7 +193,7 @@ $(document).ready(function () {
             data = JSON.parse(event.data);
             console.log('motion_socket.onmessage:', data);
 
-            if (data.method == "permission_to_interact") {
+            if (data.method == "permission_granted") {
                 fps = data.args.fps;
                 media_title = data.args.media_title;
                 allowed_time = data.args.allowed_time;
@@ -282,7 +282,7 @@ $(document).ready(function () {
 
 
     function DebugInterface(enable) {
-        this.update_motion_data_readout = function (data) {};
+        this.update_motion_data_readout = function (data) { };
 
         if (enable) {
             this.update_motion_data_readout = function (data) {

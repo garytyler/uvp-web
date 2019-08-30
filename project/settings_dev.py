@@ -19,7 +19,7 @@ TEMPLATE_DEBUG = True if INTERNAL_IPS else False
 
 
 # Channels
-CHANNEL_LAYERS = getattr(locals(), "CHANNEL_LAYERS", {})
+CHANNEL_LAYERS = globals()["CHANNEL_LAYERS"]
 if getenv("IN_MEMORY_CHANNEL_LAYER"):
     CHANNEL_LAYERS["default"] = {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 

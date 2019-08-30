@@ -121,6 +121,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+
 # Channels
 ASGI_APPLICATION = "project.routing.application"
 CHANNEL_LAYERS = {
@@ -131,15 +132,7 @@ CHANNEL_LAYERS = {
 }
 
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        # ...
-        "OPTIONS": {"CONNECTION_POOL_KWARGS": {"max_connections": 100}},
-    }
-}
-
-
+# Logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

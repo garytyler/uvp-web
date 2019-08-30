@@ -5,7 +5,7 @@
 - 4190 - Forced guest dequeue by supervisor
 - 4150 - Forced guest dequeue by guest
 
-## Useful Environment Variables
+## Environment Variables
 
 ### Required
 
@@ -27,7 +27,11 @@
 - LOG_LEVEL_EVENTVR
 - LOG_FORMAT_STRING
 
-### PostgreSQL Setup
+### Channels
+
+- ASGI_THREADS (See [Channels - Database Connections](https://channels.readthedocs.io/en/latest/topics/databases.html#database-connections))
+
+## PostgreSQL Setup
 
 ```psql
 CREATE DATABASE eventvr_database;

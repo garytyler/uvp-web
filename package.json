@@ -2,10 +2,10 @@
     "dependencies": {
         "gyronorm": "^2.0.6",
         "jquery": "^3.4.1",
-        "reconnecting-websocket": "^4.1.10",
+        "reconnecting-websocket": "^4.1.10"
     },
     "engines": {
         "yarn": "1.16.0"
     },
-    "license": "MIT",
+    "license": "MIT"
 }

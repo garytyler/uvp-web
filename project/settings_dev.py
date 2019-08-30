@@ -1,31 +1,26 @@
-import logging
-import os
+from os import getenv
 
-if os.getenv("DJANGO_SETTINGS_MODULE").endswith("dev"):
+if getenv("DJANGO_SETTINGS_MODULE", default="").endswith("dev"):
     from project.settings import *
 
 
-# DEBUG
+# Debug
 DEBUG = True
 
 
-# ALLOWED_HOSTS
-allowed_hosts = os.getenv("ALLOWED_HOSTS")
-if allowed_hosts:
-    ALLOWED_HOSTS += allowed_hosts.split(",")
-
-
-# INSTALLED_APPS
-INSTALLED_APPS += ["django_extensions"]
+# Allowed hosts
+ALLOWED_HOSTS = getenv("ALLOWED_HOSTS", default="").split(",")
 
 
 # Template debugging
-TEMPLATE_DEBUG = True  # Requires current host in INTERNAL_IPS
-INTERNAL_IPS = os.getenv("INTERNAL_IPS")
+# Requires current host in INTERNAL_IPS
+INTERNAL_IPS = getenv("INTERNAL_IPS")
+TEMPLATE_DEBUG = True if INTERNAL_IPS else False
 
 
 # Channels
-if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
+CHANNEL_LAYERS = getattr(locals(), "CHANNEL_LAYERS", {})
+if getenv("IN_MEMORY_CHANNEL_LAYER"):
     CHANNEL_LAYERS["default"] = {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 
 
@@ -33,14 +28,7 @@ if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Default is false
 
 
-# # Logging
-# # Dev logging format string
-# log_format_string = "{log_color}{reset_log_color}[{dim_log_color}{asctime:}{reset_log_color}]{emphasis_log_color}{levelname:.<8}{reset_log_color}> {primary_log_color}{message}{dim_log_color} [{filename}:{lineno}({funcName})]{reset_log_color}"
-
-# for formatter in LOGGING["formatters"]:
-#     formatter["format"] = log_format_string
-
-
+# Logging
 log_color_styles = {
     "default": {
         "DEBUG": "reset,fg_cyan",
@@ -121,11 +109,11 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["colored_console"],
-            "level": os.getenv("LOG_LEVEL_DJANGO", "INFO"),
+            "level": getenv("LOG_LEVEL_DJANGO", "INFO"),
         },
         "eventvr": {
             "handlers": ["colored_console"],
-            "level": os.getenv("LOG_LEVEL_EVENTVR", "INFO"),
+            "level": getenv("LOG_LEVEL_EVENTVR", "INFO"),
         },
     },
 }

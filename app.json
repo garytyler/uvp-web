@@ -4,5 +4,8 @@
     "scripts": {
         "postdeploy": "python manage.py migrate"
     },
-    "addons": ["heroku-postgresql", "heroku-redis"]
+    "addons": [
+        "heroku-postgresql",
+        "heroku-redis"
+    ]
 }

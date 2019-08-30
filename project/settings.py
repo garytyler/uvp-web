@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
-import django_heroku
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -81,9 +79,9 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "eventvr_database",
-        "USER": "eventvr_db_admin",
-        "PASSWORD": os.getenv("PGPASSWORD"),
+        "NAME": os.getenv("PGDBNAME"),
+        "USER": os.getenv("PGDBUSER"),
+        "PASSWORD": os.getenv("PGDBPASS"),
         "HOST": "localhost",
         "PORT": "",
         "CONN_MAX_AGE": 500,
@@ -133,7 +131,18 @@ CHANNEL_LAYERS = {
 }
 
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # ...
+        "OPTIONS": {"CONNECTION_POOL_KWARGS": {"max_connections": 100}},
+    }
+}
+
+
 LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
     "formatters": {
         "basic": {
             "style": "{",
@@ -148,6 +157,3 @@ LOGGING = {
         }
     },
 }
-
-# Django-Heroku
-django_heroku.settings(locals())

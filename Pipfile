@@ -1,26 +1,23 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
-
-[packages]
-psycopg2-binary = "*"
-django = "*"
-channels = "*"
-channels-redis = "*"
-daphne = "*"
-whitenoise = "*"
-colorlog = "*"
-django-heroku = {git = "https://github.com/garytyler/django-heroku"}
 
 [dev-packages]
 pre-commit = "*"
-isort = {extras = ["pipfile"],version = "*"}
+isort = "*"
 flake8 = "*"
-django-extensions = "*"
+mypy = "*"
+pytest = "*"
+django-pytest = "*"
+
+[packages]
+django = "*"
+channels = "*"
+channels-redis = "*"
+psycopg2-binary = "*"
+colorlog = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.7"
-
-[scripts]
-manage="python manage.py"

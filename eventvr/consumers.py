@@ -1,14 +1,17 @@
 import array
 import json
 import logging
-import time
 
 from asgiref.sync import async_to_sync
-from channels.exceptions import ChannelFull
-from channels.generic.websocket import JsonWebsocketConsumer, WebsocketConsumer
+from channels.db import database_sync_to_async
+from channels.generic.websocket import (
+    AsyncWebsocketConsumer,
+    JsonWebsocketConsumer,
+    WebsocketConsumer,
+)
 from channels.layers import get_channel_layer
 from django.contrib.sessions.models import Session
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 
 from .models import Feature, MediaPlayer
 
@@ -97,7 +100,7 @@ class GuestConsumer(JsonWebsocketConsumer):
 
         # Add guest to queue if not already in it
         feature = get_feature()
-        if not self.session.session_key in feature.guest_queue:
+        if self.session.session_key not in feature.guest_queue:
             feature.guest_queue.append(self.session.session_key)
             feature.save()
 
@@ -226,30 +229,35 @@ def incr_view(view):
     return view
 
 
-class MediaPlayerConsumer(WebsocketConsumer):
+@database_sync_to_async
+def set_media_player_connection(channel_name):
+    MediaPlayer(pk=1, channel_name=channel_name).save()
+    log.info(f"MEDIAPLAYER CONNECT session_key:'{MediaPlayer.objects.first()}'")
+
+
+class MediaPlayerConsumer(AsyncWebsocketConsumer):
 
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
-    def connect(self):
-        MediaPlayer(pk=1, channel_name=self.channel_name).save()
-        log.info(f"MEDIAPLAYER CONNECT session_key:'{MediaPlayer.objects.first()}'")
-        self.accept()
-        async_to_sync(self.channel_layer.group_send)(
+    async def connect(self):
+        await set_media_player_connection(channel_name=self.channel_name)
+        await self.accept()
+        await self.channel_layer.group_send(
             "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
         )
 
-    def receive(self, text_data=None, bytes_data=None):
+    async def receive(self, text_data=None, bytes_data=None):
         log.debug(f"{self.__class__.__name__} received text: {text_data}")
         log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
 
-    def disconnect(self, close_code):
-        MediaPlayer(pk=1, channel_name="").save()
+    async def disconnect(self, close_code):
+        await set_media_player_connection(channel_name=self.channel_name)
         log.info(f"MEDIAPLAYER DISCONNECT: {self.channel_name}")
-        async_to_sync(self.channel_layer.group_send)(
+        await self.channel_layer.group_send(
             "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
         )
 
-    def layerevent_new_motion_state(self, event):
+    async def layerevent_new_motion_state(self, event):
         """Forward event data that originated from guest client to media player client
         """
-        self.send(bytes_data=event["data"])
+        await self.send(bytes_data=event["data"])

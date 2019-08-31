@@ -7,14 +7,12 @@ if getenv("DJANGO_SETTINGS_MODULE", default="").endswith("dev"):
 # Debug
 DEBUG = True
 
-
 # Allowed hosts
-ALLOWED_HOSTS = getenv("ALLOWED_HOSTS", default="").split(",")
-
+ALLOWED_HOSTS = globals()["ALLOWED_HOSTS"] + ["127.0.0.1"]
 
 # Template debugging
 # Requires current host in INTERNAL_IPS
-INTERNAL_IPS = getenv("INTERNAL_IPS")
+INTERNAL_IPS = getenv("INTERNAL_IPS", ALLOWED_HOSTS)
 TEMPLATE_DEBUG = True if INTERNAL_IPS else False
 
 
@@ -111,9 +109,9 @@ LOGGING = {
             "handlers": ["colored_console"],
             "level": getenv("LOG_LEVEL_DJANGO", "INFO"),
         },
-        "eventvr": {
+        "live": {
             "handlers": ["colored_console"],
-            "level": getenv("LOG_LEVEL_EVENTVR", "INFO"),
+            "level": getenv("LOG_LEVEL_PROJECT", "INFO"),
         },
     },
 }

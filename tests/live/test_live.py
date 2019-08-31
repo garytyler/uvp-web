@@ -1,6 +1,6 @@
 import pytest
 
-from eventvr.models import Feature
+from live.models import Feature
 
 
 def test_pytest():

@@ -1,6 +1,6 @@
 {
-    "name": "eventvr",
-    "repository": "https://github.com/garytyler/eventvr-web",
+    "name": "SeeVR",
+    "repository": "https://github.com/garytyler/seevr-web",
     "scripts": {
         "postdeploy": "python manage.py migrate"
     },

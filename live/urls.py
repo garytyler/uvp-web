@@ -1,7 +1,8 @@
-from django.urls import path, re_path
-from eventvr import views
+from django.urls import path
 
-app_name = "eventvr"
+from live import views
+
+app_name = "live"
 
 urlpatterns = [
     path("", views.index, name="index"),

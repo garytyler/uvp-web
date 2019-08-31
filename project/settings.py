@@ -27,8 +27,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-
-ALLOWED_HOSTS = ["eventvr.herokuapp.com"]
+# Allowed hosts
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", default="").split(",")
 
 
 # Application definition
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "eventvr.apps.EventVRConfig",
+    "live.apps.LiveConfig",
     "channels",
 ]
 
@@ -60,7 +60,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "eventvr", "templates")],
+        "DIRS": [os.path.join(BASE_DIR, "live", "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -142,9 +142,9 @@ LOGGING = {
     },
     "handlers": {"console": {"formatter": "basic", "class": "logging.StreamHandler"}},
     "loggers": {
-        "eventvr": {
+        "live": {
             "handlers": ["console"],
-            "level": os.getenv("LOG_LEVEL_EVENTVR", "INFO"),
+            "level": os.getenv("LOG_LEVEL_PROJECT", "INFO"),
         }
     },
 }

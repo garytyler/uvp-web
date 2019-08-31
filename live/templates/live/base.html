@@ -8,17 +8,17 @@
     {% block meta %}{% endblock meta %}
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"> -->
-    <link rel="stylesheet" type="text/css" href="{% static 'eventvr/css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'live/css/style.css' %}">
 </head>
 
 
 <body class="body">
     {% block support %}{% endblock support %}
     {% block content %}{% endblock content %}
-    <script type="text/javascript" src="{% static 'eventvr/js/lib/jquery/dist/jquery.js' %}"></script>
-    <script type="text/javascript" src="{% static 'eventvr/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'live/js/lib/jquery/dist/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'live/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"></script>
     <script type="text/javascript"
-        src="{% static 'eventvr/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"></script>
+        src="{% static 'live/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"></script>
 
     {% if debug %}
     <script>

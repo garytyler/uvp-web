@@ -40,13 +40,13 @@ def home(request):
             return redirect("/interact/")
     else:
         form_get = InteractorSignUpForm()
-    return render(request, "eventvr/home.html", {"form": form_get})
+    return render(request, "live/home.html", {"form": form_get})
 
 
 def interact(request):
     return render(
         request,
-        "eventvr/interact.html",
+        "live/interact.html",
         context={
             "guest": {
                 "display_name": request.session.get("display_name", None),
@@ -57,7 +57,7 @@ def interact(request):
 
 
 def supervise(request):
-    return render(request, "eventvr/supervise.html")
+    return render(request, "live/supervise.html")
 
 
 def guest_exit(request):
@@ -109,7 +109,7 @@ def guest_exit(request):
 #     users = User.objects.select_related("logged_in_user")
 #     for user in users:
 #         user.status = "Online" if hasattr(user, "logged_in_user") else "Offline"
-#     return render(request, "eventvr/user_list.html", {"users": users})
+#     return render(request, "live/user_list.html", {"users": users})
 
 
 # def log_in(request):
@@ -119,16 +119,16 @@ def guest_exit(request):
 
 #         if form.is_valid():
 #             login(request, form.get_user())
-#             return redirect(reverse("eventvr:user_list"))
+#             return redirect(reverse("live:user_list"))
 #         else:
 #             print(form.errors)
-#     return render(request, "eventvr/log_in.html", {"form": form})
+#     return render(request, "live/log_in.html", {"form": form})
 
 
 # @login_required(login_url="/log_in/")
 # def log_out(request):
 #     logout(request)
-#     return redirect(reverse("eventvr:log_in"))
+#     return redirect(reverse("live:log_in"))
 
 
 # def sign_up(request):
@@ -137,7 +137,7 @@ def guest_exit(request):
 #         form = UserCreationForm(data=request.POST)
 #         if form.is_valid():
 #             form.save()
-#             return redirect(reverse("eventvr:log_in"))
+#             return redirect(reverse("live:log_in"))
 #         else:
 #             print(form.errors)
-#     return render(request, "eventvr/sign_up.html", {"form": form})
+#     return render(request, "live/sign_up.html", {"form": form})

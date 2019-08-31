@@ -1,4 +1,4 @@
-{% extends 'eventvr/base.html' %}
+{% extends 'live/base.html' %}
 {% load static %}
 
 
@@ -9,7 +9,7 @@
 
 {% block script %}
 {{ guest|json_script:"guest_json" }}
-<script type="text/javascript" src="{% static 'eventvr/js/interact.js' %}"></script>
+<script type="text/javascript" src="{% static 'live/js/interact.js' %}"></script>
 {% endblock script %}
 
 

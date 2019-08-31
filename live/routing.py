@@ -1,5 +1,6 @@
 from django.urls import re_path
-from eventvr import consumers
+
+from live import consumers
 
 websocket_urlpatterns = [
     re_path(r"^ws/guest", consumers.GuestConsumer),

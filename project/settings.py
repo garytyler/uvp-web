@@ -81,7 +81,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 
 DATABASES = {
     "default": dj_database_url.config(
-        conn_max_age=os.getenv("CONN_MAX_AGE", default=600)
+        conn_max_age=int(os.getenv("CONN_MAX_AGE", default=0))
     )
 }
 

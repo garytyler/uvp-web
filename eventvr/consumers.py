@@ -159,7 +159,9 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
 
         # Remove channel from session object
         if self.channel_name in self.session["channel_names"]:
-            await remove_from_session_channel_names(channel_name=self.channel_name)
+            await remove_from_session_channel_names(
+                session=self.session, channel_name=self.channel_name
+            )
         else:
             log.info(f"channel_name '{self.channel_name}' not found in session object")
 

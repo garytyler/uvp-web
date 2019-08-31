@@ -7,19 +7,17 @@
 
 ## Environment Variables
 
-### Required
+### Django settings
 
-- PGPASSWORD
 - SECRET_KEY
-
-### Development
-
-- PGDBNAME
-- PGDBUSER
-- PGDBPASS
 - DJANGO_SETTINGS_MODULE
 - ALLOWED_HOSTS
 - INTERNAL_IPS
+
+### Database
+
+- DATABASE_URL (See [DJ-Database-URL](https://github.com/jacobian/dj-database-url))
+- CONN_MAX_AGE (Database max connection aga)
 
 ### Logging
 

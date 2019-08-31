@@ -15,5 +15,13 @@
         {
             "url": "heroku/python"
         }
-    ]
+    ],
+    "env": {
+        "SECRET_TOKEN": {
+            "generator": "secret"
+        },
+        "ALLOWED_HOSTS": {
+            "value": ".herokuapp.com"
+        }
+    }
 }

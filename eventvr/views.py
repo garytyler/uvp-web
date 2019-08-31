@@ -1,8 +1,6 @@
-import json
-import re
-from datetime import datetime
+import logging
 
-from django.shortcuts import get_object_or_404, redirect, render, render_to_response
+from django.shortcuts import redirect, render
 
 from .forms import InteractorSignUpForm
 from .models import Feature
@@ -12,13 +10,21 @@ from .models import Feature
 # from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 # from django.urls import reverse
 
+log = logging.getLogger(__name__)
+
 
 def index(request):
     """Route guests according to feature and existing session data.
 
     If session is already in queued, reroute to guest interface. If queued, reroute to join.
     """
-    feature = get_object_or_404(Feature, pk=1)
+    try:
+        feature = Feature.objects.get(pk=1)
+    except Feature.DoesNotExist as e:
+        log.error(e)
+        feature = Feature(pk=1)
+        feature.save()
+
     request.session.save()
     if request.session.session_key in feature.guest_queue:
         return redirect("/interact/")

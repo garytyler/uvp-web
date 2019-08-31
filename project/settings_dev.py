@@ -8,7 +8,7 @@ if getenv("DJANGO_SETTINGS_MODULE", default="").endswith("dev"):
 DEBUG = True
 
 # Allowed hosts
-ALLOWED_HOSTS = globals()["ALLOWED_HOSTS"] + ["127.0.0.1"]
+ALLOWED_HOSTS = globals()["ALLOWED_HOSTS"] + ["127.0.0.1", "localhost"]
 
 # Template debugging
 # Requires current host in INTERNAL_IPS

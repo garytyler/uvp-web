@@ -1,9 +1,6 @@
 {
     "name": "SeeVR",
     "repository": "https://github.com/garytyler/seevr-web",
-    "scripts": {
-        "postdeploy": "python manage.py migrate"
-    },
     "addons": [
         "heroku-postgresql",
         "heroku-redis"
@@ -17,11 +14,13 @@
         }
     ],
     "env": {
-        "SECRET_TOKEN": {
-            "generator": "secret"
-        },
         "ALLOWED_HOSTS": {
+            "description": "The host/domain names that this Django site can serve, delimited by commas.",
             "value": ".herokuapp.com"
+        },
+        "SECRET_KEY": {
+            "description": "A secret key for verifying the integrity of signed cookies.",
+            "generator": "secret"
         }
     }
 }

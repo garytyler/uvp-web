@@ -1,5 +1,6 @@
 import logging
 
+from django.db.utils import DatabaseError
 from django.shortcuts import redirect, render
 
 from .forms import InteractorSignUpForm
@@ -20,12 +21,11 @@ def index(request):
     """
     try:
         feature = Feature.objects.get(pk=1)
-    except Feature.DoesNotExist as e:
+    except (DatabaseError, Feature.DoesNotExist) as e:
         log.error(e)
         feature = Feature(pk=1)
         feature.save()
 
-    request.session.save()
     if request.session.session_key in feature.guest_queue:
         return redirect("/interact/")
     else:
@@ -37,6 +37,7 @@ def home(request):
         form_post = InteractorSignUpForm(request.POST)
         if form_post.is_valid():
             request.session["display_name"] = form_post.cleaned_data["your_name"]
+            request.session.save()
             return redirect("/interact/")
     else:
         form_get = InteractorSignUpForm()

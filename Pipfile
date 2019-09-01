@@ -19,6 +19,7 @@ psycopg2-binary = "*"
 colorlog = "*"
 whitenoise = "*"
 dj-database-url = "*"
+django-redis = "*"
 
 [requires]
 python_version = "3.7"

@@ -117,7 +117,7 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         """Initialize guest connections"""
 
         self.session = self.scope["session"]
-
+        print(self.session.session_key)
         # Use session key as group name to handle multiple potential consumers per guest
         for group_name in ["guests", self.session.session_key]:
             await self.channel_layer.group_add(group_name, self.channel_name)
@@ -144,7 +144,6 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         """
         if event["method"] == "force_dequeue":
             # TODO Discard self from queue
-            print("wanna force deque")
             await self.channel_layer.group_send(
                 self.session.session_key,
                 {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},

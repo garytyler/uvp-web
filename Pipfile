@@ -9,7 +9,7 @@ isort = "*"
 flake8 = "*"
 mypy = "*"
 pytest = "*"
-django-pytest = "*"
+pytest-django = "*"
 
 [packages]
 django = "*"

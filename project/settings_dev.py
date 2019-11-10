@@ -1,4 +1,5 @@
 from os import getenv
+from distutils.util import strtobool
 
 if getenv("DJANGO_SETTINGS_MODULE", default="").endswith("dev"):
     from project.settings import *
@@ -22,8 +23,10 @@ if getenv("IN_MEMORY_CHANNEL_LAYER"):
     CHANNEL_LAYERS["default"] = {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 
 
-# Sessions
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Default is false
+# Expire sessions at browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = strtobool(
+    getenv("SESSION_EXPIRE_AT_BROWSER_CLOSE", False)
+)
 
 
 # Logging

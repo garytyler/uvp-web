@@ -19,8 +19,8 @@ def get_feature_synchronously():
     try:
         feature = Feature.objects.get(pk=1)
     except Feature.DoesNotExist as e:
-        log.error(e)
         feature = Feature(pk=1)
+        log.debug("Create new Feature object")
         feature.save()
     return feature
 
@@ -117,7 +117,7 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         """Initialize guest connections"""
 
         self.session = self.scope["session"]
-        print(self.session.session_key)
+
         # Use session key as group name to handle multiple potential consumers per guest
         for group_name in ["guests", self.session.session_key]:
             await self.channel_layer.group_add(group_name, self.channel_name)

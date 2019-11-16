@@ -25,7 +25,7 @@ if getenv("IN_MEMORY_CHANNEL_LAYER"):
 
 # Expire sessions at browser close
 SESSION_EXPIRE_AT_BROWSER_CLOSE = strtobool(
-    getenv("SESSION_EXPIRE_AT_BROWSER_CLOSE", False)
+    getenv("SESSION_EXPIRE_AT_BROWSER_CLOSE", "False")
 )
 
 

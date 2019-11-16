@@ -16,12 +16,9 @@ log = logging.getLogger(__name__)
 
 
 def get_feature_synchronously():
-    try:
-        feature = Feature.objects.get(pk=1)
-    except Feature.DoesNotExist as e:
-        feature = Feature(pk=1)
+    feature, created = Feature.objects.get_or_create(pk=1)
+    if created:
         log.debug("Create new Feature object")
-        feature.save()
     return feature
 
 

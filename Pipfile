@@ -10,6 +10,8 @@ flake8 = "*"
 mypy = "*"
 pytest = "*"
 pytest-django = "*"
+selenium = "*"
+pytest-asyncio = "*"
 
 [packages]
 django = "*"
@@ -20,6 +22,7 @@ colorlog = "*"
 whitenoise = "*"
 dj-database-url = "*"
 django-redis = "*"
+
 
 [requires]
 python_version = "3.7"

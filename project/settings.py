@@ -143,18 +143,5 @@ CHANNEL_LAYERS = {
 # Logging
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "basic": {
-            "style": "{",
-            "format": '[{asctime}][{levelname}] "{message}" [{filename}:{lineno}({funcName})]',
-        }
-    },
-    "handlers": {"console": {"formatter": "basic", "class": "logging.StreamHandler"}},
-    "loggers": {
-        "live": {
-            "handlers": ["console"],
-            "level": os.getenv("LOG_LEVEL_PROJECT", "INFO"),
-        }
-    },
+    "loggers": {"django": {"level": os.getenv("LOG_LEVEL_DJANGO", "INFO")}},
 }

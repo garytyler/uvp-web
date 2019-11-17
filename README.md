@@ -20,8 +20,7 @@
 ### Logging
 
 - LOG_LEVEL_DJANGO
-- LOG_LEVEL_PROJECT
-- LOG_FORMAT_STRING
+- LOG_LEVEL_LIVE
 
 ### Channels
 

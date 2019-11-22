@@ -33,10 +33,10 @@ def save_object(obj):
 
 
 @database_sync_to_async
-def get_queue_state():
+def get_current_guests_state():
     feature = get_feature_synchronously()
-    queue_state = []
-    for session_key in feature.guest_queue:
+    current_guests_state = []
+    for session_key in feature.current_guests:
         try:
             session_obj = Session.objects.get(pk=session_key)
         except Session.DoesNotExist:
@@ -45,16 +45,16 @@ def get_queue_state():
             session_data = session_obj.get_decoded()
             session_data["session_key"] = session_key
             session_data.setdefault("channel_names", [])
-            queue_state.append(session_data)
-    return queue_state
+            current_guests_state.append(session_data)
+    return current_guests_state
 
 
 @database_sync_to_async
-def remove_from_guest_queue(session_key):
+def remove_from_current_guests(session_key):
     log.info(f"REMOVE FROM GUEST QUEUE session_key={session_key}")
     feature = get_feature_synchronously()
     try:
-        feature.guest_queue.remove(session_key)
+        feature.current_guests.remove(session_key)
     except ValueError as e:
         log.info(e)
     else:
@@ -66,8 +66,8 @@ class SupervisorConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         await self.accept()
-        queue_state = await get_queue_state()
-        await self.send_json({"queue_state": queue_state})
+        current_guests_state = await get_current_guests_state()
+        await self.send_json({"current_guests_state": current_guests_state})
 
     async def layerevent_forward_to_client(self, layer_event):
         await self.send_json(layer_event["data"])
@@ -81,7 +81,7 @@ class SupervisorConsumer(AsyncJsonWebsocketConsumer):
 
     async def remove_guest(self, session_key):
         feature = await get_feature()
-        if session_key in feature.guest_queue:
+        if session_key in feature.current_guests:
             channel_layer = get_channel_layer()
             await channel_layer.group_send(
                 session_key,
@@ -92,8 +92,8 @@ class SupervisorConsumer(AsyncJsonWebsocketConsumer):
 @database_sync_to_async
 def add_guest_to_queue(session_key):
     feature = get_feature_synchronously()
-    if session_key not in feature.guest_queue:
-        feature.guest_queue.append(session_key)
+    if session_key not in feature.current_guests:
+        feature.current_guests.append(session_key)
         feature.save()
 
 
@@ -132,7 +132,7 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         # Add guest to queue if not already in it
         await add_guest_to_queue(session_key=self.session.session_key)
 
-        await self.broadcast_queue_state(["guests", "supervisors"])
+        await self.broadcast_current_guests_state(["guests", "supervisors"])
 
     async def receive_json(self, event):
         """Handle dequeue request from guest
@@ -163,12 +163,12 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
 
         # Dequeue guest if no more open channels
         if not self.session["channel_names"]:
-            await remove_from_guest_queue(session_key=self.session.session_key)
+            await remove_from_current_guests(session_key=self.session.session_key)
 
         for channel_name in ["guests", self.session.session_key]:
             await self.channel_layer.group_discard(channel_name, self.channel_name)
 
-        await self.broadcast_queue_state(["guests", "supervisors"])
+        await self.broadcast_current_guests_state(["guests", "supervisors"])
 
     async def layerevent_force_dequeue(self, layer_event):
         log.info(f"FORCE DEQUEUE session_key:'{self.session.session_key}'")
@@ -181,8 +181,8 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
     async def layerevent_forward_to_client(self, layer_event):
         await self.send_json(layer_event["data"])
 
-    async def broadcast_queue_state(self, groups):
-        queue_state = await get_queue_state()
+    async def broadcast_current_guests_state(self, groups):
+        current_guests_state = await get_current_guests_state()
         channel_layer = get_channel_layer()
         for group_name in groups:
             log.debug(f"BROADCAST queue state to '{group_name}'")
@@ -190,7 +190,7 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
                 group_name,
                 {
                     "type": "layerevent.forward.to.client",
-                    "data": {"queue_state": queue_state},
+                    "data": {"current_guests_state": current_guests_state},
                 },
             )
 
@@ -247,16 +247,16 @@ class MotionConsumer(AsyncWebsocketConsumer):
         queue change to initiate another guest interactor
         """
         feature = await get_feature()
-        if self.session.session_key in feature.guest_queue:
+        if self.session.session_key in feature.current_guests:
             channel_layer = get_channel_layer()
             await channel_layer.group_send(
                 self.session.session_key,
                 {"type": "layerevent.force.dequeue", "data": {"close_code": 4190}},
             )
-        await self.broadcast_queue_state(["guests", "supervisors"])
+        await self.broadcast_current_guests_state(["guests", "supervisors"])
 
-    async def broadcast_queue_state(self, groups):
-        queue_state = await get_queue_state()
+    async def broadcast_current_guests_state(self, groups):
+        current_guests_state = await get_current_guests_state()
         channel_layer = get_channel_layer()
         for group_name in groups:
             log.debug(f"BROADCAST queue state to '{group_name}'")
@@ -264,7 +264,7 @@ class MotionConsumer(AsyncWebsocketConsumer):
                 group_name,
                 {
                     "type": "layerevent.forward.to.client",
-                    "data": {"queue_state": queue_state},
+                    "data": {"current_guests_state": current_guests_state},
                 },
             )
 

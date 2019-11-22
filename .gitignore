@@ -110,12 +110,12 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# Spyder seevr settings
+.spyderseevr
+.spyseevr
 
-# Rope project settings
-.ropeproject
+# Rope seevr settings
+.ropeseevr
 
 # mkdocs documentation
 /site
@@ -265,9 +265,9 @@ typings/
 
 # Environments
 
-# Spyder project settings
+# Spyder seevr settings
 
-# Rope project settings
+# Rope seevr settings
 
 # mkdocs documentation
 

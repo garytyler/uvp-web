@@ -152,12 +152,12 @@ $(document).ready(function () {
         console.log('guest_socket.onmessage', event);
         data = JSON.parse(event.data);
 
-        if (data.queue_state[0].session_key === guest.session_key) {
-            console.log('Enabling interact mode', data.queue_state[0]);
-            enableInteractMode(data.queue_state);
+        if (data.current_guests_state[0].session_key === guest.session_key) {
+            console.log('Enabling interact mode', data.current_guests_state[0]);
+            enableInteractMode(data.current_guests_state);
         } else {
-            console.log('Enabling queue mode', data.queue_state);
-            enableQueueMode(data.queue_state);
+            console.log('Enabling waiting mode', data.current_guests_state);
+            enableWaitingMode(data.current_guests_state);
         }
     };
     guest_socket.onclose = function (event) {
@@ -170,20 +170,20 @@ $(document).ready(function () {
     };
 
 
-    function enableQueueMode(queue_state) {
+    function enableWaitingMode(current_guests_state) {
         $("#interact_ui").hide();
-        $("#queue_ui").show();
+        $("#waiting_ui").show();
 
-        $("#exit_queue_button").click(function (e) {
-            request_force_dequeue();
+        $("#exit_waiting_button").click(function (e) {
+            request_force_remove_guest();
         });
 
-        populateQueueTable(queue_state);
+        populateWaitingTable(current_guests_state);
     }
 
 
-    function enableInteractMode(queue_state) {
-        $("#queue_ui").hide();
+    function enableInteractMode(current_guests_state) {
+        $("#waiting_ui").hide();
 
         motion_socket = new WebSocket(ws_scheme + window.location.host + "/ws/motion/");
         motion_socket.onopen = function (event) {
@@ -226,7 +226,7 @@ $(document).ready(function () {
                 });
 
                 $("#exit_interact_button").click(function (e) {
-                    request_force_dequeue();
+                    request_force_remove_guest();
                 });
 
                 $("#message_display").hide();
@@ -253,9 +253,9 @@ $(document).ready(function () {
     }
 
 
-    function request_force_dequeue() {
+    function request_force_remove_guest() {
         guest_socket.send(JSON.stringify({
-            "method": "force_dequeue"
+            "method": "force_remove_guest"
         }));
     }
 
@@ -278,11 +278,11 @@ $(document).ready(function () {
     }
 
 
-    function populateQueueTable(queue_state) {
-        table_body = $("#queue_table_body");
+    function populateWaitingTable(current_guests_state) {
+        table_body = $("#current_guests_table_body");
         table_body.empty();
-        for (var index in queue_state) {
-            var item = queue_state[index];
+        for (var index in current_guests_state) {
+            var item = current_guests_state[index];
             var row = $("<tr/>");
             row.append("<td>" + index + "</td>");
             row.append("<td>" + item.display_name + "</td>");
@@ -294,7 +294,7 @@ $(document).ready(function () {
 
 
     function DebugInterface(enable) {
-        this.update_motion_data_readout = function (data) { };
+        this.update_motion_data_readout = function (data) {};
 
         if (enable) {
             this.update_motion_data_readout = function (data) {

@@ -6,7 +6,6 @@ from django.shortcuts import redirect, render
 from .forms import InteractorSignUpForm
 from .models import Feature
 
-
 log = logging.getLogger(__name__)
 
 
@@ -22,7 +21,7 @@ def index(request):
         feature = Feature(pk=1)
         feature.save()
 
-    if request.session.session_key in feature.guest_queue:
+    if request.session.session_key in feature.current_guests:
         return redirect("/interact/")
     else:
         return redirect("/home/")

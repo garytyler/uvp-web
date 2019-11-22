@@ -3,14 +3,14 @@ from importlib import import_module
 from os import getenv
 
 if getenv("DJANGO_SETTINGS_MODULE", default="").endswith("dev"):
-    from project.settings import *
+    from seevr.settings import *
 
 
 # Debug
 DEBUG = True
 
 # Allowed hosts
-ALLOWED_HOSTS = globals()["ALLOWED_HOSTS"] + ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = globals()["ALLOWED_HOSTS"] + ["127.0.0.1", "localhost", "0.0.0.0"]
 
 # Template debugging
 # Requires current host in INTERNAL_IPS

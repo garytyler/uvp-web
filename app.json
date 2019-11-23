@@ -5,7 +5,8 @@
         "heroku-postgresql",
         "heroku-redis"
     ],
-    "buildpacks": [{
+    "buildpacks": [
+        {
             "url": "heroku/nodejs"
         },
         {
@@ -21,5 +22,6 @@
             "description": "A secret key for verifying the integrity of signed cookies.",
             "generator": "secret"
         }
-    }
+    },
+    "postdeploy": "python manage.py loaddata"
 }

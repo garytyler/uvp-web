@@ -7,12 +7,10 @@ from live.consumers import get_feature
 
 
 @pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
 async def test_guests_added_on_connect_and_removed_on_disconnect(
-    caplog, transactional_db, communicator_factory
+    caplog, communicator_factory
 ):
-    # Make sure current guests is empty
-    assert 0 == len((await get_feature()).current_guests)
-
     # Connect communicators
     clients = [Client() for n in range(3)]
     communicators = []

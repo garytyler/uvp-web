@@ -9,8 +9,6 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
-from live.models import MediaPlayer
-
 
 @pytest.fixture
 def driver(request):
@@ -35,7 +33,6 @@ class TestInteractInterface(ChannelsLiveServerTestCase):
 
     @pytest.mark.django_db(transaction=True)
     def test_guest_connect_when_media_player_not_available(self):
-        MediaPlayer.objects.all().delete()
         self._enter_interact_queue()
         message_display_element = self.driver.find_element_by_id("message_display")
         assert message_display_element.is_displayed()

@@ -88,58 +88,60 @@ $(document).ready(function () {
     //     };
 
     // }
-    function MotionCollector() {
+    class MotionCollector {
+        constructor() {
+            var latest = {
+                alpha: 0,
+                beta: 0,
+                gamma: 0
+            };
 
-        var latest = {
-            alpha: 0,
-            beta: 0,
-            gamma: 0
-        };
+            var handle_motion_event = function (event) {
+                latest = event;
+            };
 
-        var handle_motion_event = function (event) {
-            latest = event;
-        };
+            this.register = function () {
+                window.ondeviceorientation = handle_motion_event;
+            };
 
-        this.register = function () {
-            window.ondeviceorientation = handle_motion_event;
-        };
+            this.unregister = function () {
+                window.ondeviceorientation = null;
+            };
 
-        this.unregister = function () {
-            window.ondeviceorientation = null;
-        };
-
-        this.get_state = function () {
-            console.log(latest.alpha, latest.beta, latest.gamma);
-            return [latest.alpha, latest.beta, latest.gamma];
-        };
+            this.get_state = function () {
+                console.log(latest.alpha, latest.beta, latest.gamma);
+                return [latest.alpha, latest.beta, latest.gamma];
+            };
+        }
 
     }
 
-    function MotionSender(socket) {
+    class MotionSender {
+        constructor(socket) {
+            var motion_collector = new MotionCollector();
 
-        var motion_collector = new MotionCollector();
+            this.send_latest = function () {
+                var motion_state = motion_collector.get_state();
+                motion_bytes = new Float64Array(motion_state);
+                socket.send(motion_bytes);
+                debug_interface.update_motion_data_readout(motion_state);
+            };
 
-        this.send_latest = function () {
-            var motion_state = motion_collector.get_state();
-            motion_bytes = new Float64Array(motion_state);
-            socket.send(motion_bytes);
-            debug_interface.update_motion_data_readout(motion_state);
-        };
+            this.start = function (fps) {
+                console.log('START SENDING GYRONORM MOTION STATE');
+                if (fps == null) {
+                    fps = 30;
+                }
+                motion_collector.register();
+                motion_sender_intervalometer_id = setInterval(this.send_latest, 1000 / fps);
+            };
 
-        this.start = function (fps) {
-            console.log('START SENDING GYRONORM MOTION STATE');
-            if (fps == null) {
-                fps = 30;
-            }
-            motion_collector.register();
-            motion_sender_intervalometer_id = setInterval(this.send_latest, 1000 / fps);
-        };
-
-        this.stop = function () {
-            console.log('STOP SENDING MOTION STATE');
-            clearInterval(motion_sender_intervalometer_id);
-            motion_collector.unregister();
-        };
+            this.stop = function () {
+                console.log('STOP SENDING MOTION STATE');
+                clearInterval(motion_sender_intervalometer_id);
+                motion_collector.unregister();
+            };
+        }
 
     }
 
@@ -161,6 +163,7 @@ $(document).ready(function () {
         }
     };
     guest_socket.onclose = function (event) {
+        console.log('GUEST_ON_CLOSE');
         console.log('guest_socket.onclose', event);
         //TODO Pass an exit code for messaging
         shutdown_and_exit();
@@ -199,7 +202,7 @@ $(document).ready(function () {
                 allowed_time = data.args.allowed_time;
 
                 motion_sender = new MotionSender(motion_socket);
-
+                console.log("PERMISSION GRANTED");
                 $("#start_button").click(function (e) {
                     // feature detect
                     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -226,7 +229,8 @@ $(document).ready(function () {
                 });
 
                 $("#exit_interact_button").click(function (e) {
-                    request_force_remove_guest();
+                    console.log("EXIT_INTERACT_BUTTON");
+                    // request_force_remove_guest();
                 });
 
                 $("#message_display").hide();
@@ -246,6 +250,7 @@ $(document).ready(function () {
             console.log('motion_socket.onerror', event);
         };
         motion_socket.onclose = function (event) {
+            console.log("ONCLOSE");
             console.log('motion_socket.onclose', event);
             shutdown_and_exit();
         };
@@ -254,6 +259,7 @@ $(document).ready(function () {
 
 
     function request_force_remove_guest() {
+        console.log("FORCE_REMOVE_GUEST");
         guest_socket.send(JSON.stringify({
             "method": "force_remove_guest"
         }));
@@ -293,33 +299,35 @@ $(document).ready(function () {
     }
 
 
-    function DebugInterface(enable) {
-        this.update_motion_data_readout = function (data) {};
+    class DebugInterface {
+        constructor(enable) {
+            this.update_motion_data_readout = function (data) { };
 
-        if (enable) {
-            this.update_motion_data_readout = function (data) {
+            if (enable) {
+                this.update_motion_data_readout = function (data) {
 
-                console.log(data);
+                    console.log(data);
 
-                if (data instanceof Array) {
-                    data = {
-                        alpha: data[0],
-                        beta: data[1],
-                        gamma: data[2]
-                    };
-                }
-                for (var key in (data)) {
-                    if (typeof data[key] == 'number') {
-                        $("#motiondata_" + key).text(data[key].toFixed(2));
-                    } else {
-                        $("#motiondata_" + key).text(data[key]);
+                    if (data instanceof Array) {
+                        data = {
+                            alpha: data[0],
+                            beta: data[1],
+                            gamma: data[2]
+                        };
                     }
-                }
-            };
-        }
+                    for (var key in (data)) {
+                        if (typeof data[key] == 'number') {
+                            $("#motiondata_" + key).text(data[key].toFixed(2));
+                        } else {
+                            $("#motiondata_" + key).text(data[key]);
+                        }
+                    }
+                };
+            }
 
-        $("#debug").css('display', 'inline');
-        $("#debug").show();
+            $("#debug").css('display', 'inline');
+            $("#debug").show();
+        }
     }
     debug_interface = new DebugInterface(DEBUG);
 

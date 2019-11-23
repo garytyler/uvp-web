@@ -1,26 +1,9 @@
 import asyncio
 
 import pytest
-from channels.testing import WebsocketCommunicator
 from django.test import Client
 
 from live.consumers import get_feature
-from seevr.routing import application
-
-
-@pytest.fixture
-def communicator_factory():
-    def _create_communicator(client, path):
-        communicator = WebsocketCommunicator(
-            application=application,
-            path=path,
-            headers=[
-                (b"cookie", f"sessionid={client.session.session_key}".encode("ascii"))
-            ],
-        )
-        return communicator
-
-    return _create_communicator
 
 
 @pytest.mark.asyncio

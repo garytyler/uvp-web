@@ -12,6 +12,7 @@ pytest = "*"
 pytest-django = "*"
 selenium = "*"
 pytest-asyncio = "*"
+pytest-xdist = "*"
 
 [packages]
 django = "*"

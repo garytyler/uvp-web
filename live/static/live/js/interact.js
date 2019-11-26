@@ -197,13 +197,25 @@ $(document).ready(function () {
                 fps = data.args.fps;
                 media_title = data.args.media_title;
                 allowed_time = data.args.allowed_time;
+
                 motion_sender = new MotionSender(motion_socket);
 
                 $("#start_button").click(function (e) {
+                    // feature detect
+                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                        DeviceOrientationEvent.requestPermission()
+                            .then(permissionState => {
+                                if (permissionState === 'granted') {
+                                    motion_sender.start();
+                                }
+                            })
+                            .catch(console.error);
+                    } else {
+                        // handle regular non iOS 13+ devices
+                        motion_sender.start();
+                    }
                     $(this).hide();
                     $("#stop_button").show();
-
-                    motion_sender.start();
                 });
 
                 $("#stop_button").click(function (e) {

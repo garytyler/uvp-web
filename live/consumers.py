@@ -283,6 +283,34 @@ def set_media_player_connection(channel_name):
     log.info(f"MEDIAPLAYER CONNECT session_key:'{MediaPlayer.objects.first()}'")
 
 
+class FeatureConsumer(AsyncWebsocketConsumer):
+
+    view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
+
+    async def connect(self):
+        # await set_media_player_connection(channel_name=self.channel_name)
+        await self.accept()
+        # await self.channel_layer.group_send(
+        #     "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
+        # )
+
+    async def receive(self, text_data=None, bytes_data=None):
+        log.debug(f"{self.__class__.__name__} received text: {text_data}")
+        log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
+
+    async def disconnect(self, close_code):
+        await set_media_player_connection(channel_name=self.channel_name)
+        log.info(f"MEDIAPLAYER DISCONNECT: {self.channel_name}")
+        await self.channel_layer.group_send(
+            "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
+        )
+
+    async def layerevent_new_motion_state(self, event):
+        """Forward event data that originated from guest client to media player client
+        """
+        await self.send(bytes_data=event["data"])
+
+
 class MediaPlayerConsumer(AsyncWebsocketConsumer):
 
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}

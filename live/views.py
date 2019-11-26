@@ -1,6 +1,5 @@
 import logging
 
-from django.db.utils import DatabaseError
 from django.shortcuts import redirect, render
 
 from .forms import InteractorSignUpForm
@@ -14,12 +13,15 @@ def index(request):
 
     If session is already in queued, reroute to guest interface. If queued, reroute to join.
     """
-    try:
-        feature = Feature.objects.get(pk=1)
-    except (DatabaseError, Feature.DoesNotExist) as e:
-        log.error(e)
-        feature = Feature(pk=1)
-        feature.save()
+    # request.user.save()
+    # print(len(request.session["session_key"]))
+    # print(len(request.session.session_key))
+    # print(request.user.save())
+
+    feature = Feature.objects.get(pk=1)
+
+    # backends.base.SessionBase
+    # See: https://docs.djangoproject.com/en/2.2/topics/http/sessions/#using-sessions-in-views
 
     if request.session.session_key in feature.current_guests:
         return redirect("/interact/")

@@ -6,8 +6,8 @@ from django.test import Client
 from live.consumers import get_feature
 
 
-@pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
 async def test_guests_added_on_connect_and_removed_on_disconnect(
     caplog, communicator_factory
 ):

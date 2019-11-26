@@ -5,8 +5,7 @@
         "fields": {
             "title": "Untitled Feature",
             "slug": "untitled-feature",
-            "turn_duration": "00:02:00",
-            "queue_id": "a281e551-13ef-4e76-b1a7-6c3ec8c0c1b1"
+            "turn_duration": "00:02:00"
         }
     }
 ]

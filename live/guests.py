@@ -1,7 +1,7 @@
 from django_redis import get_redis_connection
 
 
-class GuestQueue:
+class GuestQueueInterface:
     def __init__(self, queue_id: str):
         self.redis = get_redis_connection("default")
         self.id = queue_id

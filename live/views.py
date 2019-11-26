@@ -18,7 +18,7 @@ def index(request):
     # print(len(request.session.session_key))
     # print(request.user.save())
 
-    feature = Feature.objects.get(pk=1)
+    feature = Feature.objects.get_or_create(pk=1)
 
     # backends.base.SessionBase
     # See: https://docs.djangoproject.com/en/2.2/topics/http/sessions/#using-sessions-in-views

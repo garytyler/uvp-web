@@ -11,16 +11,18 @@ class Feature(models.Model):
     current_guests = ArrayField(
         models.CharField(max_length=100), default=list, blank=True
     )
+    channel_name = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return f"{self.title}"
 
 
-class MediaPlayer(models.Model):
-    channel_name = models.CharField(max_length=200, blank=True)
+# class MediaPlayer(models.Model):
+#     channel_name = models.CharField(max_length=200, blank=True)
+#     feature = models.ForeignKey("Feature", on_delete=models.CASCADE,)
 
-    def __str__(self):
-        return self.channel_name
+#     def __str__(self):
+#         return self.channel_name
 
 
 # class Producer(models.Model):

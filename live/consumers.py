@@ -10,7 +10,7 @@ from channels.generic.websocket import (
 from channels.layers import get_channel_layer
 from django.contrib.sessions.models import Session
 
-from .models import Feature, MediaPlayer
+from .models import Feature
 
 log = logging.getLogger(__name__)
 
@@ -196,17 +196,17 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
 
 
 @database_sync_to_async
-def get_mediaplayer_channel_name():
-    mediaplayer = MediaPlayer.objects.first()
-    if mediaplayer:
-        return mediaplayer.channel_name
+def get_feature_channel_name():
+    feature = Feature.objects.first()
+    if feature:
+        return feature.channel_name
 
 
 class MotionConsumer(AsyncWebsocketConsumer):
     groups = ["motion"]
 
     async def connect(self):
-        self.mediaplayer_channel_name = None
+        self.feature_channel_name = None
 
         self.session = self.scope["session"]
         self.display_name = self.session["display_name"]
@@ -222,7 +222,7 @@ class MotionConsumer(AsyncWebsocketConsumer):
         await self.send_mediaplayer_state()
 
     async def send_mediaplayer_state(self):
-        self.mp_channel_name = await get_mediaplayer_channel_name()
+        self.mp_channel_name = await get_feature_channel_name()
         if self.mp_channel_name:
             args = {"fps": 30, "allowed_time": 60, "media_title": "Mock Media Message"}
             await self.send(json.dumps({"method": "permission_granted", "args": args}))
@@ -277,46 +277,13 @@ def incr_view(view):
     return view
 
 
-@database_sync_to_async
-def set_media_player_connection(channel_name):
-    MediaPlayer(pk=1, channel_name=channel_name).save()
-    log.info(f"MEDIAPLAYER CONNECT session_key:'{MediaPlayer.objects.first()}'")
-
-
-class FeatureConsumer(AsyncWebsocketConsumer):
-
-    view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
-
-    async def connect(self):
-        # await set_media_player_connection(channel_name=self.channel_name)
-        await self.accept()
-        # await self.channel_layer.group_send(
-        #     "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
-        # )
-
-    async def receive(self, text_data=None, bytes_data=None):
-        log.debug(f"{self.__class__.__name__} received text: {text_data}")
-        log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
-
-    async def disconnect(self, close_code):
-        await set_media_player_connection(channel_name=self.channel_name)
-        log.info(f"MEDIAPLAYER DISCONNECT: {self.channel_name}")
-        await self.channel_layer.group_send(
-            "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
-        )
-
-    async def layerevent_new_motion_state(self, event):
-        """Forward event data that originated from guest client to media player client
-        """
-        await self.send(bytes_data=event["data"])
-
-
 class MediaPlayerConsumer(AsyncWebsocketConsumer):
 
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
     async def connect(self):
-        await set_media_player_connection(channel_name=self.channel_name)
+        print(self.scope["session"].session_key)
+        await self.set_feature_channel_name(channel_name=self.channel_name)
         await self.accept()
         await self.channel_layer.group_send(
             "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
@@ -327,8 +294,7 @@ class MediaPlayerConsumer(AsyncWebsocketConsumer):
         log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
 
     async def disconnect(self, close_code):
-        await set_media_player_connection(channel_name=self.channel_name)
-        log.info(f"MEDIAPLAYER DISCONNECT: {self.channel_name}")
+        await self.set_feature_channel_name(channel_name=self.channel_name)
         await self.channel_layer.group_send(
             "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
         )
@@ -337,3 +303,9 @@ class MediaPlayerConsumer(AsyncWebsocketConsumer):
         """Forward event data that originated from guest client to media player client
         """
         await self.send(bytes_data=event["data"])
+
+    @database_sync_to_async
+    def set_feature_channel_name(self, channel_name):
+        feature = Feature(pk=1)
+        feature.channel_name = channel_name
+        feature.save()

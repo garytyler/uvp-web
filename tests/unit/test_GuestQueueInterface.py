@@ -1,4 +1,5 @@
 import pytest
+from django.test import RequestFactory
 
 from live.guests import GuestQueueInterface
 from live.models import Feature
@@ -12,13 +13,13 @@ def feature(db):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_add_guests_to_queue(rf, feature, django_user_model, session_key_factory):
+def test_add_guests_to_queue(feature, django_user_model, session_key_factory):
     users = []
     for n in range(4):
         user = django_user_model.objects.create(
             username=f"testuser+{n}", password=f"testpass+{n}"
         )
-        user.request = rf.get("/index/")
+        user.request = RequestFactory.get("/index/")
         user.request.session = {"session_key": session_key_factory()}
         user.save()
         users.append(user)

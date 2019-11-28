@@ -1,9 +1,13 @@
+import asyncio
 import logging
 import random
+from collections import OrderedDict
 from string import ascii_letters
+from typing import Any, Awaitable, Callable, Optional, Tuple
 
 import pytest
 from channels.testing import WebsocketCommunicator
+from django.test import Client
 from django_redis import get_redis_connection
 
 from seevr.routing import application
@@ -21,10 +25,8 @@ def flush_redis_cache():
 
 
 @pytest.fixture
-def communicator_factory():
-    """Create a communicator for testing a channels consumer"""
-
-    def _create_communicator(client, path):
+def communicator_factory() -> Callable:
+    def _create_communicator(path, client):
         communicator = WebsocketCommunicator(
             application=application,
             path=path,
@@ -38,10 +40,59 @@ def communicator_factory():
 
 
 @pytest.fixture
-def random_string_factory():
+async def client_communicator_factory(
+    communicator_factory,
+) -> Callable[[str, Any, Any], Awaitable[Tuple]]:
+    async def _create_communicator(
+        path: str, client: Client = None, connect: bool = False
+    ) -> Tuple[Client, WebsocketCommunicator]:
+        client = client if client else Client()
+        communicator = communicator_factory(path=path, client=client)
+
+        if connect:
+            connected, subprotocol = await communicator.connect()
+            assert connected is True
+            await asyncio.sleep(0.5)
+
+        return client, communicator
+
+    return _create_communicator
+
+
+@pytest.fixture
+async def connection_factory(
+    client_communicator_factory,
+) -> Callable[[str, Optional[bool]], Awaitable]:
+    async def _create_connection(path, connect=False) -> OrderedDict:
+        client, communicator = await client_communicator_factory(
+            path=path, connect=connect
+        )
+        return OrderedDict([("client", client), ("communicator", communicator)])
+
+    return _create_connection
+
+
+@pytest.fixture
+async def guest_factory(connection_factory) -> Callable[[Optional[bool]], Awaitable]:
+    async def _create_guest(connect=False) -> OrderedDict:
+        return await connection_factory(path="/ws/guest/", connect=connect)
+
+    return _create_guest
+
+
+@pytest.fixture
+async def feature_factory(connection_factory) -> Callable[[Optional[bool]], Awaitable]:
+    async def _create_feature(connect=False) -> OrderedDict:
+        return await connection_factory(path="/ws/mediaplayer/", connect=connect)
+
+    return _create_feature
+
+
+@pytest.fixture
+def random_string_factory() -> Callable:
     """Return a random string"""
 
-    def _create_random_string(minimum=5, maximum=9):
+    def _create_random_string(minimum: int = 5, maximum: int = 9) -> str:
         length = random.randint(minimum, maximum)
         return "".join(random.choices(ascii_letters, k=length))
 
@@ -49,10 +100,10 @@ def random_string_factory():
 
 
 @pytest.fixture
-def session_key_factory():
+def session_key_factory() -> Callable[[], int]:
     """Return a random 32-character integer that imitates a session key"""
 
-    def _create_session_key():
+    def _create_session_key() -> int:
         return int("".join([str(random.choice(range(9))) for n in range(32)]))
 
     return _create_session_key

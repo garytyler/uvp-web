@@ -1,7 +1,7 @@
 import pytest
 from django.test import RequestFactory
 
-from live.guests import GuestQueueInterface
+from live.guests import SessionQueueInterface
 from live.models import Feature
 
 
@@ -23,7 +23,7 @@ def test_add_guests_to_queue(feature, django_user_model, session_key_factory):
         user.request.session = {"session_key": session_key_factory()}
         user.save()
         users.append(user)
-    guest_queue = GuestQueueInterface(feature.slug)
+    guest_queue = SessionQueueInterface(feature.slug)
     for user in users:
         guest_queue.add(user.request.session["session_key"])
     assert guest_queue

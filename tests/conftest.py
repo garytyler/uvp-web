@@ -3,7 +3,7 @@ import logging
 import random
 from collections import OrderedDict
 from string import ascii_letters
-from typing import Any, Awaitable, Callable, Optional, Tuple
+from typing import AsyncGenerator, Awaitable, Callable, Optional, Tuple
 
 import pytest
 from channels.testing import WebsocketCommunicator
@@ -40,23 +40,26 @@ def communicator_factory() -> Callable:
 
 
 @pytest.fixture
-async def client_communicator_factory(
-    communicator_factory,
-) -> Callable[[str, Any, Any], Awaitable[Tuple]]:
+async def client_communicator_factory(communicator_factory) -> AsyncGenerator:
+    communicators = []
+
     async def _create_communicator(
         path: str, client: Client = None, connect: bool = False
     ) -> Tuple[Client, WebsocketCommunicator]:
         client = client if client else Client()
         communicator = communicator_factory(path=path, client=client)
+        communicators.append(communicator)
 
         if connect:
             connected, subprotocol = await communicator.connect()
             assert connected is True
             await asyncio.sleep(0.5)
-
         return client, communicator
 
-    return _create_communicator
+    yield _create_communicator
+
+    for communicator in communicators:
+        communicator.disconnect()
 
 
 @pytest.fixture

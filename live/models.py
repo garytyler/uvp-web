@@ -3,6 +3,8 @@ from datetime import timedelta
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from .sessions import SessionQueueInterface
+
 
 class Feature(models.Model):
     title = models.CharField(max_length=50, default="Untitled Feature")
@@ -12,6 +14,10 @@ class Feature(models.Model):
         models.CharField(max_length=100), default=list, blank=True
     )
     channel_name = models.CharField(max_length=200, blank=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.guest_queue = SessionQueueInterface(f"{self.pk}:{self.slug}")
 
     def __str__(self):
         return f"{self.title}"

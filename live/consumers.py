@@ -10,7 +10,6 @@ from channels.generic.websocket import (
 from channels.layers import get_channel_layer
 from django.contrib.sessions.models import Session
 
-from .guests import SessionQueueInterface
 from .models import Feature
 
 log = logging.getLogger(__name__)
@@ -124,9 +123,8 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         await append_to_session_channel_names(
             session=self.session, channel_name=self.channel_name
         )
-        feature = await get_feature()
-        self.guest_queue = SessionQueueInterface(queue_key=feature.pk)
-        self.guest_queue.add(session_key=self.scope["session"].session_key)
+        self.feature = await get_feature()
+        self.feature.guest_queue.add(session_key=self.scope["session"].session_key)
         await self.accept()
         log.info(
             f"GUEST CONNECT session_key='{self.session.session_key}', channel_name='{self.channel_name}']"
@@ -150,7 +148,7 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
             )
 
     async def disconnect(self, close_code):
-        self.guest_queue.remove(self.scope["session"].session_key)
+        self.feature.guest_queue.remove(self.scope["session"].session_key)
         await self.shutdown_channel()
         log.info(f"GUEST DISCONNECT channel_name='{self.channel_name}'")
 

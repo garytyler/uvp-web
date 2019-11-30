@@ -1,7 +1,6 @@
 import pytest
 
 from live.consumers import get_feature
-from live.guests import SessionQueueInterface
 
 
 @pytest.mark.asyncio
@@ -26,10 +25,10 @@ async def test_add_guests_to_queue_on_connect_database(
 async def test_add_guests_to_queue_on_connect_redis(
     feature_factory, guest_factory, num_guests
 ):
-    assert 0 == len(SessionQueueInterface((await get_feature()).pk).ordered_members())
+    assert 0 == len((await get_feature()).guest_queue.ordered_members())
     guests = [await guest_factory(connect=True) for n in range(num_guests)]
     guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
-    queued_sessions = SessionQueueInterface((await get_feature()).pk).ordered_members()
+    queued_sessions = (await get_feature()).guest_queue.ordered_members()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     assert isinstance(guest_sessions, tuple)
     assert isinstance(queued_sessions, tuple)
@@ -44,11 +43,11 @@ async def test_remove_guests_from_queue_on_guest_consumer_disconnect(
 ):
     guests = [await guest_factory(connect=True) for n in range(num_guests)]
     guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
-    queued_sessions = SessionQueueInterface((await get_feature()).pk).ordered_members()
+    queued_sessions = (await get_feature()).guest_queue.ordered_members()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     for guest in guests:
         await guest["communicator"].disconnect()
-    assert 0 == len(SessionQueueInterface((await get_feature()).pk).ordered_members())
+    assert 0 == len((await get_feature()).guest_queue.ordered_members())
 
 
 # @pytest.mark.asyncio
@@ -77,4 +76,4 @@ async def test_remove_guests_from_queue_on_guest_consumer_disconnect(
 #     await asyncio.sleep(0.5)  # Wait a bit so ORM disconnect calls can complete
 
 #     # Test that current guests is empty
-#     assert [] == (await get_feature()).current_guests
+#     assert [] == (await get_feature()).guest_queue.current_guests

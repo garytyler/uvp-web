@@ -1,7 +1,6 @@
 import pytest
 
 from live.consumers import get_feature_synchronously
-from live.guests import SessionQueueInterface
 
 
 @pytest.mark.django_db(transaction=True)
@@ -15,7 +14,7 @@ def test_add_guests_to_queue(rf, django_user_model, session_key_factory):
         user.request.session = {"session_key": session_key_factory()}
         user.save()
         guest_sessions.append(user.request.session["session_key"])
-    guest_queue = SessionQueueInterface(get_feature_synchronously().pk)
+    guest_queue = get_feature_synchronously().guest_queue
     for guest_session in guest_sessions:
         guest_queue.add(guest_session)
     queued_sessions = guest_queue.ordered_members()

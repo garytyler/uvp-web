@@ -26,11 +26,10 @@ async def test_add_guests_to_queue_on_connect_database(
 async def test_add_guests_to_queue_on_connect_redis(
     feature_factory, guest_factory, num_guests
 ):
-    feature = await get_feature()
-    assert 0 == len(SessionQueueInterface(feature.pk).ordered_members())
+    assert 0 == len(SessionQueueInterface((await get_feature()).pk).ordered_members())
     guests = [await guest_factory(connect=True) for n in range(num_guests)]
     guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
-    queued_sessions = SessionQueueInterface(feature.pk).ordered_members()
+    queued_sessions = SessionQueueInterface((await get_feature()).pk).ordered_members()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     assert isinstance(guest_sessions, tuple)
     assert isinstance(queued_sessions, tuple)

@@ -7,6 +7,7 @@ from typing import AsyncGenerator, Awaitable, Callable, Optional, Tuple
 
 import pytest
 from channels.testing import WebsocketCommunicator
+from django.core.management import call_command
 from django.test import Client
 from django_redis import get_redis_connection
 
@@ -17,6 +18,12 @@ from seevr.routing import application
 def suppress_application_log_capture(caplog):
     caplog.set_level(logging.CRITICAL, logger="")
     caplog.set_level(logging.CRITICAL, logger="live")
+
+
+@pytest.fixture(scope="session")
+def django_db_setup(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        call_command("flush", "--noinput")
 
 
 @pytest.fixture(autouse=True, scope="function")

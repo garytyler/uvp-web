@@ -285,7 +285,6 @@ class MediaPlayerConsumer(AsyncWebsocketConsumer):
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
     async def connect(self):
-        print(self.scope["session"].session_key)
         await self.set_feature_channel_name(channel_name=self.channel_name)
         await self.accept()
         await self.channel_layer.group_send(

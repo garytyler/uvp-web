@@ -72,7 +72,7 @@ async def client_communicator_factory(communicator_factory) -> AsyncGenerator:
     yield _create_communicator
 
     for communicator in communicators:
-        communicator.disconnect()
+        await communicator.disconnect()
 
 
 @pytest.fixture

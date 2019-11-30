@@ -125,8 +125,8 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
             session=self.session, channel_name=self.channel_name
         )
         feature = await get_feature()
-        guest_queue = SessionQueueInterface(queue_key=feature.pk)
-        guest_queue.add(session_key=self.scope["session"].session_key)
+        self.guest_queue = SessionQueueInterface(queue_key=feature.pk)
+        self.guest_queue.add(session_key=self.scope["session"].session_key)
         await self.accept()
         log.info(
             f"GUEST CONNECT session_key='{self.session.session_key}', channel_name='{self.channel_name}']"
@@ -150,6 +150,7 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
             )
 
     async def disconnect(self, close_code):
+        self.guest_queue.remove(self.scope["session"].session_key)
         await self.shutdown_channel()
         log.info(f"GUEST DISCONNECT channel_name='{self.channel_name}'")
 

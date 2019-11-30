@@ -6,7 +6,7 @@ from live.guests import SessionQueueInterface
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
-@pytest.mark.parametrize("num_guests", (range(5)))
+@pytest.mark.parametrize("num_guests", ([2, 5]))
 async def test_add_guests_to_queue_on_connect_database(
     feature_factory, guest_factory, num_guests
 ):
@@ -22,7 +22,7 @@ async def test_add_guests_to_queue_on_connect_database(
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
-@pytest.mark.parametrize("num_guests", (range(5)))
+@pytest.mark.parametrize("num_guests", ([2, 5]))
 async def test_add_guests_to_queue_on_connect_redis(
     feature_factory, guest_factory, num_guests
 ):
@@ -34,6 +34,21 @@ async def test_add_guests_to_queue_on_connect_redis(
     assert isinstance(guest_sessions, tuple)
     assert isinstance(queued_sessions, tuple)
     assert guest_sessions == queued_sessions
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize("num_guests", ([2, 5]))
+async def test_remove_guests_from_queue_on_guest_consumer_disconnect(
+    feature_factory, guest_factory, num_guests
+):
+    guests = [await guest_factory(connect=True) for n in range(num_guests)]
+    guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
+    queued_sessions = SessionQueueInterface((await get_feature()).pk).ordered_members()
+    assert num_guests == len(guest_sessions) == len(queued_sessions)
+    for guest in guests:
+        await guest["communicator"].disconnect()
+    assert 0 == len(SessionQueueInterface((await get_feature()).pk).ordered_members())
 
 
 # @pytest.mark.asyncio

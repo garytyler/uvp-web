@@ -8,7 +8,7 @@ class SessionQueueInterface:
         self.queue_key = str(queue_key)
 
     def __repr__(self):
-        return str(sorted(self.get(), key=lambda i: i[0]))
+        return str(self.ordered_pairs())
 
     def set_timeout(self, secs: int):
         self.timeout = secs

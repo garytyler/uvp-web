@@ -26,8 +26,14 @@ def django_db_setup(django_db_setup, django_db_blocker):
         call_command("flush", "--noinput")
 
 
+@pytest.fixture(autouse=True, scope="session")
+def flush_redis_cache_at_session_start():
+    get_redis_connection("default").flushall()
+
+
 @pytest.fixture(autouse=True, scope="function")
-def flush_redis_cache():
+def flush_redis_cache_at_function_finish():
+    yield
     get_redis_connection("default").flushall()
 
 

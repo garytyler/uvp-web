@@ -1,6 +1,9 @@
 # VS Code
 .vscode/
 
+# Splinter
+.splinter_screens
+
 # PostgreSQL
 *.pgpass
 

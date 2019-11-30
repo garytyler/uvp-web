@@ -14,8 +14,7 @@ class SessionQueueInterface:
         self.timeout = secs
 
     def add(self, session_key: str):
-        member_score_mapping = {session_key: self.length()}
-        return self.redis.zadd(self.queue_key, member_score_mapping, nx=True)
+        return self.redis.zadd(self.queue_key, {session_key: self.length() + 1})
 
     def pop(self):
         return self.redis.bzpopmin(self.timeout)
@@ -28,15 +27,13 @@ class SessionQueueInterface:
 
     def ordered_members(self, start=0, stop=-1, reverse=False):
         unordered = self._unordered_pairs(start, stop)
-        decoded = map(lambda i: i[0].decode(), unordered)
-        ordered = sorted(decoded, key=lambda i: i[0], reverse=reverse)
-        return tuple(ordered)
+        ordered = sorted(unordered, key=lambda i: i[1], reverse=reverse)
+        return tuple(map(lambda i: i[0].decode(), ordered))
 
     def ordered_pairs(self, start=0, stop=-1, reverse=False):
         unordered = self._unordered_pairs(start, stop)
-        decoded = map(lambda i: (i[0].decode(), i[1]), unordered)
-        ordered = sorted(decoded, key=lambda i: i[0], reverse=reverse)
-        return tuple(ordered)
+        ordered = sorted(unordered, key=lambda i: i[1], reverse=reverse)
+        return tuple(map(lambda i: (i[0].decode(), i[1]), ordered))
 
     def _unordered_pairs(self, start=0, stop=-1):
         return self.redis.zrange(self.queue_key, start, stop, withscores=True)

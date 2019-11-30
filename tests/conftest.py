@@ -2,7 +2,7 @@ import asyncio
 import logging
 import random
 from collections import OrderedDict
-from string import ascii_letters
+from string import ascii_letters, ascii_lowercase
 from typing import AsyncGenerator, Awaitable, Callable, Optional, Tuple
 
 import pytest
@@ -103,10 +103,12 @@ def random_string_factory() -> Callable:
 
 
 @pytest.fixture
-def session_key_factory() -> Callable[[], int]:
+def session_key_factory() -> Callable[[], str]:
     """Return a random 32-character integer that imitates a session key"""
 
-    def _create_session_key() -> int:
-        return int("".join([str(random.choice(range(9))) for n in range(32)]))
+    def _create_session_key() -> str:
+        letters = ascii_lowercase
+        numbers = "".join([str(n) for n in range(9)])
+        return "".join([random.choice(numbers + letters) for n in range(32)])
 
     return _create_session_key

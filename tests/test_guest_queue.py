@@ -15,7 +15,9 @@ async def test_add_guests_to_queue_on_connect_database(
     guest_sessions = [guest["client"].session.session_key for guest in guests]
     queued_sessions = (await get_feature()).current_guests
     assert num_guests == len(guest_sessions) == len(queued_sessions)
-    assert tuple(guest_sessions) == tuple(queued_sessions)
+    assert isinstance(guest_sessions, list)
+    assert isinstance(queued_sessions, list)
+    assert guest_sessions == queued_sessions
 
 
 @pytest.mark.asyncio
@@ -27,10 +29,12 @@ async def test_add_guests_to_queue_on_connect_redis(
     feature = await get_feature()
     assert 0 == len(SessionQueueInterface(feature.pk).ordered_members())
     guests = [await guest_factory(connect=True) for n in range(num_guests)]
-    guest_sessions = [guest["client"].session.session_key for guest in guests]
+    guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
     queued_sessions = SessionQueueInterface(feature.pk).ordered_members()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
-    assert tuple(guest_sessions) == tuple(queued_sessions)  # TODO Fix ordering
+    assert isinstance(guest_sessions, tuple)
+    assert isinstance(queued_sessions, tuple)
+    assert guest_sessions == queued_sessions
 
 
 # @pytest.mark.asyncio

@@ -1,5 +1,4 @@
 import pytest
-from django.test import RequestFactory
 
 from live.guests import SessionQueueInterface
 from live.models import Feature
@@ -13,17 +12,20 @@ def feature(db):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_add_guests_to_queue(feature, django_user_model, session_key_factory):
-    users = []
-    for n in range(4):
+def test_add_guests_to_queue(rf, feature, django_user_model, session_key_factory):
+    guest_sessions = []
+    for n in range(1, 5):
         user = django_user_model.objects.create(
             username=f"testuser+{n}", password=f"testpass+{n}"
         )
-        user.request = RequestFactory.get("/index/")
+        user.request = rf.get("/home/")
         user.request.session = {"session_key": session_key_factory()}
         user.save()
-        users.append(user)
+        guest_sessions.append(user.request.session["session_key"])
     guest_queue = SessionQueueInterface(feature.slug)
-    for user in users:
-        guest_queue.add(user.request.session["session_key"])
-    assert guest_queue
+    for guest_session in guest_sessions:
+        guest_queue.add(guest_session)
+    queued_sessions = guest_queue.ordered_pairs()
+    assert len(queued_sessions)
+    assert len(queued_sessions) == len(guest_sessions)
+    assert tuple(queued_sessions) == tuple(guest_sessions)

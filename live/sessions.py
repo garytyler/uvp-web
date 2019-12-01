@@ -17,7 +17,7 @@ class SessionQueueInterface:
         return self.redis.zadd(self.queue_key, {session_key: self.length() + 1})
 
     def pop(self):
-        return self.redis.bzpopmin(self.timeout)
+        return self.redis.bzpopmin(self.queue_key, self.timeout)
 
     def remove(self, session_key):
         return self.redis.zrem(self.queue_key, session_key)

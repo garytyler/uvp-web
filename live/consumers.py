@@ -123,9 +123,11 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         await append_to_session_channel_names(
             session=self.session, channel_name=self.channel_name
         )
+
         self.feature = await get_feature()
         self.feature.guest_queue.add(session_key=self.scope["session"].session_key)
         await self.accept()
+
         log.info(
             f"GUEST CONNECT session_key='{self.session.session_key}', channel_name='{self.channel_name}']"
         )
@@ -284,7 +286,17 @@ class MediaPlayerConsumer(AsyncWebsocketConsumer):
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
     async def connect(self):
-        await self.set_feature_channel_name(channel_name=self.channel_name)
+        feature_slug = self.scope["url_route"]["kwargs"]["feature_slug"]
+        await database_sync_to_async(
+            lambda: Feature.objects.get(slug=feature_slug).title
+        )()
+
+        await database_sync_to_async(
+            lambda: Feature.objects.filter(slug=feature_slug).update(
+                channel_name=self.channel_name
+            )
+        )()
+
         await self.accept()
         await self.channel_layer.group_send(
             "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}

@@ -1,14 +1,16 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from live import views
 
 app_name = "live"
 
 urlpatterns = [
-    path("", views.index, name="index"),
-    # path("index/", views.index, name="index"),
-    path("home/", views.home, name="home"),
-    path("interact/", views.interact, name="interact"),
+    re_path(
+        r"^(?P<feature_slug>(?!ws|guest|supervise)[^/^]+)/$",
+        views.guest_welcome,
+        name="index",
+    ),
+    path("guest/interact/", views.guest_interact, name="guest_interact"),
     path("supervise/", views.supervise, name="supervise"),
-    path("exit/", views.guest_exit, name="guest_exit"),
+    path("guest/exit/", views.guest_exit, name="guest_exit"),
 ]

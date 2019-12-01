@@ -6,5 +6,5 @@ websocket_urlpatterns = [
     re_path(r"^ws/guest", consumers.GuestConsumer),
     re_path(r"^ws/motion", consumers.MotionConsumer),
     re_path(r"^ws/supervisor", consumers.SupervisorConsumer),
-    re_path(r"^ws/mediaplayer", consumers.MediaPlayerConsumer),
+    re_path(r"^ws/presenter/(?P<feature_slug>[^/]+)/$", consumers.MediaPlayerConsumer),
 ]

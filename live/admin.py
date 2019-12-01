@@ -6,4 +6,4 @@ admin.site.register(Feature)
 
 
 class FeatureAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("title",)}
+    prepopulated_fields = {"slug": ("title")}

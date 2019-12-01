@@ -1,9 +1,8 @@
-import asyncio
 import logging
 import random
 from collections import OrderedDict
 from string import ascii_letters, ascii_lowercase
-from typing import AsyncGenerator, Awaitable, Callable, Optional, Tuple
+from typing import AsyncGenerator, Callable
 
 import pytest
 from channels.testing import WebsocketCommunicator
@@ -38,70 +37,61 @@ def flush_redis_cache_at_function_finish():
 
 
 @pytest.fixture
-def communicator_factory() -> Callable:
-    def _create_communicator(path, client):
-        communicator = WebsocketCommunicator(
-            application=application,
-            path=path,
-            headers=[
-                (b"cookie", f"sessionid={client.session.session_key}".encode("ascii"))
-            ],
-        )
-        return communicator
-
-    return _create_communicator
-
-
-@pytest.fixture
-async def client_communicator_factory(communicator_factory) -> AsyncGenerator:
+async def guest_factory() -> AsyncGenerator:
     communicators = []
 
-    async def _create_communicator(
-        path: str, client: Client = None, connect: bool = False
-    ) -> Tuple[Client, WebsocketCommunicator]:
-        client = client if client else Client()
-        communicator = communicator_factory(path=path, client=client)
+    async def _guest_factory() -> OrderedDict:
+        client = Client()
+        communicator = WebsocketCommunicator(
+            application=application,
+            path="/ws/guest/",
+            headers=[
+                (b"cookie", f"sessionid={client.session.session_key}".encode("ascii"),)
+            ],
+        )
         communicators.append(communicator)
+        return OrderedDict([("client", client), ("communicator", communicator)])
 
-        if connect:
-            connected, subprotocol = await communicator.connect()
-            assert connected is True
-            await asyncio.sleep(0.5)
-        return client, communicator
-
-    yield _create_communicator
-
+    yield _guest_factory
     for communicator in communicators:
         await communicator.disconnect()
 
 
 @pytest.fixture
-async def connection_factory(
-    client_communicator_factory,
-) -> Callable[[str, Optional[bool]], Awaitable]:
-    async def _create_connection(path, connect=False) -> OrderedDict:
-        client, communicator = await client_communicator_factory(
-            path=path, connect=connect
+async def presenter_factory() -> AsyncGenerator:
+    communicators = []
+
+    class PresenterCommunicator(WebsocketCommunicator):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        async def receive_from(self, text_data, bytes_data):
+            if bytes_data:
+                await self.receive(bytes_data)
+            else:
+                await self.receive(text_data)
+
+        async def receive_bytes(self, bytes_data):
+            pass
+
+        async def receive_text(self, text_data):
+            pass
+
+    async def _presenter_factory(feature_slug: str) -> OrderedDict:
+        client = Client()
+        communicator = PresenterCommunicator(
+            application=application,
+            path=f"/ws/presenter/{feature_slug}/",
+            headers=[
+                (b"cookie", f"sessionid={client.session.session_key}".encode("ascii"),)
+            ],
         )
+        communicators.append(communicator)
         return OrderedDict([("client", client), ("communicator", communicator)])
 
-    return _create_connection
-
-
-@pytest.fixture
-async def guest_factory(connection_factory) -> Callable[[Optional[bool]], Awaitable]:
-    async def _create_guest(connect=False) -> OrderedDict:
-        return await connection_factory(path="/ws/guest/", connect=connect)
-
-    return _create_guest
-
-
-@pytest.fixture
-async def feature_factory(connection_factory) -> Callable[[Optional[bool]], Awaitable]:
-    async def _create_feature(connect=False) -> OrderedDict:
-        return await connection_factory(path="/ws/mediaplayer/", connect=connect)
-
-    return _create_feature
+    yield _presenter_factory
+    for communicator in communicators:
+        await communicator.disconnect()
 
 
 @pytest.fixture

@@ -8,7 +8,7 @@ from .sessions import SessionQueueInterface
 
 class Feature(models.Model):
     title = models.CharField(max_length=50, default="Untitled Feature")
-    slug = models.SlugField(max_length=50, default="untitled-feature")
+    slug = models.SlugField(max_length=50, db_index=True, default="untitled-feature")
     turn_duration = models.DurationField(default=timedelta(minutes=2))
     current_guests = ArrayField(
         models.CharField(max_length=100), default=list, blank=True

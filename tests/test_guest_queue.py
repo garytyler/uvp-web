@@ -1,17 +1,23 @@
+import asyncio
+
 import pytest
+from channels.db import database_sync_to_async as db_sync_to_async
 
 from live.consumers import get_feature
+from live.models import Feature
 
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("num_guests", ([2, 5]))
-async def test_add_guests_to_queue_on_connect_database(
-    feature_factory, guest_factory, num_guests
-):
+async def test_add_guests_to_queue_on_connect_database(guest_factory, num_guests):
     assert 0 == len((await get_feature()).current_guests)  # queue is empty
-    guests = [await guest_factory(connect=True) for n in range(num_guests)]
+    guests = [await guest_factory() for n in range(num_guests)]
     guest_sessions = [guest["client"].session.session_key for guest in guests]
+    for guest in guests:
+        connected, subprotocol = await guest["communicator"].connect()
+        await asyncio.sleep(0.05)
+        assert connected is True
     queued_sessions = (await get_feature()).current_guests
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     assert isinstance(guest_sessions, list)
@@ -22,12 +28,13 @@ async def test_add_guests_to_queue_on_connect_database(
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("num_guests", ([2, 5]))
-async def test_add_guests_to_queue_on_connect_redis(
-    feature_factory, guest_factory, num_guests
-):
+async def test_add_guests_to_queue_on_connect(guest_factory, num_guests):
     assert 0 == len((await get_feature()).guest_queue.ordered_members())
-    guests = [await guest_factory(connect=True) for n in range(num_guests)]
+    guests = [await guest_factory() for n in range(num_guests)]
     guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
+    for guest in guests:
+        connected, subprotocol = await guest["communicator"].connect()
+        assert connected is True
     queued_sessions = (await get_feature()).guest_queue.ordered_members()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     assert isinstance(guest_sessions, tuple)
@@ -38,16 +45,46 @@ async def test_add_guests_to_queue_on_connect_redis(
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("num_guests", ([2, 5]))
-async def test_remove_guests_from_queue_on_guest_consumer_disconnect(
-    feature_factory, guest_factory, num_guests
-):
-    guests = [await guest_factory(connect=True) for n in range(num_guests)]
+async def test_remove_guests_from_queue_on_disconnect(guest_factory, num_guests):
+    guests = [await guest_factory() for n in range(num_guests)]
     guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
+    for guest in guests:
+        connected, subprotocol = await guest["communicator"].connect()
+        assert connected is True
     queued_sessions = (await get_feature()).guest_queue.ordered_members()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     for guest in guests:
         await guest["communicator"].disconnect()
     assert 0 == len((await get_feature()).guest_queue.ordered_members())
+
+
+@pytest.fixture
+async def feature_factory(transactional_db):
+    @db_sync_to_async
+    async def _create_feature(title):
+        return Feature.objects.create(title=title)
+
+    return _create_feature
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize("title, slug", ([("Big One", "big-one")]))
+async def test_add_feature_on_presenter(presenter_factory, guest_factory, title, slug):
+    feature = await db_sync_to_async(
+        lambda: Feature.objects.create(title=title, slug=slug)
+    )()
+    presenter = await presenter_factory(feature.slug)
+    connected, subprotocol = await presenter["communicator"].connect()
+    assert connected is True
+    await asyncio.sleep(1)
+    assert await db_sync_to_async(lambda: Feature.objects.get(slug=slug).channel_name)()
+
+    # assert feature.channel_name
+    # assert 0 == len(feature.guest_queue.ordered_members())
+
+    # guest = await guest_factory()
+    # assert guest
 
 
 # @pytest.mark.asyncio

@@ -114,7 +114,9 @@ class GuestConsumer(AsyncJsonWebsocketConsumer):
         """Initialize guest connections"""
 
         self.session = self.scope["session"]
-
+        print(self.scope)
+        print(self.scope["session"])
+        print(self.scope["session"].request)
         # Use session key as group name to handle multiple potential consumers per guest
         for group_name in ["guests", self.session.session_key]:
             await self.channel_layer.group_add(group_name, self.channel_name)
@@ -284,29 +286,56 @@ class MediaPlayerConsumer(AsyncWebsocketConsumer):
     view = {"gn_euler": {"alpha": 10, "beta": 20, "gamma": 30}}
 
     async def connect(self):
-        await self.set_feature_channel_name(channel_name=self.channel_name)
+        feature_slug = self.scope["url_route"]["kwargs"]["feature_slug"]
+        await database_sync_to_async(
+            lambda: Feature.objects.get(slug=feature_slug).title
+        )()
+
+        await database_sync_to_async(
+            lambda: Feature.objects.filter(slug=feature_slug).update(
+                channel_name=self.channel_name
+            )
+        )()
+
+        # print(feature_obj.slug)
+        # print(feature_obj.title)
+        # feature_obj.channel_name = self.channel_name
+        # await database_sync_to_async(feature_obj.save)()
+
         await self.accept()
-        await self.channel_layer.group_send(
-            "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
-        )
+
+        # if feature:
+        # feature.guest_queue.add(session_key=self.scope["session"].session_key)
+
+        # await self.set_feature_channel_name(channel_name=self.channel_name)
+        # await self.accept()
+        # await self.channel_layer.group_send(
+        #     "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
+        # )
+
+    @database_sync_to_async
+    def get_feature(self):
+        slug = self.scope["url_route"]["kwargs"]["feature_slug"]
+        f = Feature(slug=slug)
+        # Feature.objects.filter(slug=slug).update(channel_name=self.channel_name)
+        f.refresh_from_db()
+        f.channel_name = self.channel_name
+        f.save()
+        return f
+        # feature.channel_name = self.channel_name
+        # feature.save()
 
     async def receive(self, text_data=None, bytes_data=None):
         log.debug(f"{self.__class__.__name__} received text: {text_data}")
         log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
 
-    async def disconnect(self, close_code):
-        await self.set_feature_channel_name(channel_name=self.channel_name)
-        await self.channel_layer.group_send(
-            "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
-        )
+    # async def disconnect(self, close_code):
+    # await self.set_feature_channel_name(channel_name=self.channel_name)
+    # await self.channel_layer.group_send(
+    #     "motion", {"type": "layerevent.new.mediaplayer.state", "data": {}}
+    # )
 
     async def layerevent_new_motion_state(self, event):
         """Forward event data that originated from guest client to media player client
         """
         await self.send(bytes_data=event["data"])
-
-    @database_sync_to_async
-    def set_feature_channel_name(self, channel_name):
-        feature = Feature(pk=1)
-        feature.channel_name = channel_name
-        feature.save()

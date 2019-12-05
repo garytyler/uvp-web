@@ -64,7 +64,7 @@ async def guest_factory(random_string_factory) -> AsyncGenerator:
 
 
 @pytest.fixture
-async def presenter_factory(rf) -> AsyncGenerator:
+async def presenter_factory() -> AsyncGenerator:
     communicators = []
 
     async def _presenter_factory(feature_slug: str) -> OrderedDict:

@@ -10,8 +10,8 @@ $(document).ready(function () {
     var motion_sender = null;
     var motion_sender_intervalometer_id = null;
 
-    guest = JSON.parse(document.getElementById("guest_json").textContent);
-    $("#guest_display_name").append("<b>Name: </b>" + guest.display_name);
+    guest_data = JSON.parse(document.getElementById("guest_json").textContent);
+    $("#guest_guest_name").append("<b>Name: </b>" + guest_data.guest_name);
 
     var ws_scheme = "wss://";
     if (window.location.protocol == "http:") {
@@ -154,7 +154,7 @@ $(document).ready(function () {
         console.log('guest_socket.onmessage', event);
         data = JSON.parse(event.data);
 
-        if (data.current_guests_state[0].session_key === guest.session_key) {
+        if (data.current_guests_state[0].session_key === guest_data.session_key) {
             console.log('Enabling interact mode', data.current_guests_state[0]);
             enableInteractMode(data.current_guests_state);
         } else {
@@ -291,7 +291,7 @@ $(document).ready(function () {
             var item = current_guests_state[index];
             var row = $("<tr/>");
             row.append("<td>" + index + "</td>");
-            row.append("<td>" + item.display_name + "</td>");
+            row.append("<td>" + item.guest_name + "</td>");
             row.append("<td>" + item.session_key + "</td>");
             row.append("</tr>");
             table_body.append(row);

@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils.functional import cached_property
 from django.utils.text import slugify
 
 from .sessions import SessionQueueInterface
@@ -19,16 +20,16 @@ class Feature(models.Model):
     # class Meta:
     #     unique_together = [['user', 'slug']] # Set when users are added
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.guest_queue = SessionQueueInterface(f"{self.pk}:{self.slug}")
-
     def __str__(self):
         return f"{self.title}"
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title, allow_unicode=True)
         super().save(*args, **kwargs)
+
+    @cached_property
+    def guest_queue(self):
+        return SessionQueueInterface(f"{self.pk}:{self.slug}")
 
 
 # class MediaPlayer(models.Model):

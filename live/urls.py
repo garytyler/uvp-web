@@ -7,10 +7,14 @@ app_name = "live"
 urlpatterns = [
     re_path(
         r"^(?P<feature_slug>(?!ws|guest|supervise)[^/^]+)/$",
-        views.guest_welcome,
-        name="index",
+        views.guest_signup,
+        name="guest_signup",
     ),
-    path("guest/interact/", views.guest_interact, name="guest_interact"),
+    re_path(
+        r"^(?P<feature_slug>(?!ws|guest|supervise)[^/^]+)/interact/$",
+        views.guest_interact,
+        name="guest_interact",
+    ),
     path("supervise/", views.supervise, name="supervise"),
     path("guest/exit/", views.guest_exit, name="guest_exit"),
 ]

@@ -1,5 +1,5 @@
 from django import forms
 
 
-class InteractorSignUpForm(forms.Form):
-    your_name = forms.CharField(label="Your name", max_length=100)
+class GuestSignUpForm(forms.Form):
+    guest_name = forms.CharField(label="Your name", max_length=100)

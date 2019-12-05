@@ -2,37 +2,39 @@ import logging
 
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import InteractorSignUpForm
+from .forms import GuestSignUpForm
 from .models import Feature
 
 log = logging.getLogger(__name__)
 
 
-def guest_welcome(request, feature_slug):
+def guest_signup(request, feature_slug):
     if request.method == "POST":
-        form_post = InteractorSignUpForm(request.POST)
+        form_post = GuestSignUpForm(request.POST)
         if form_post.is_valid():
             request.session["feature_slug"] = feature_slug
-            request.session["display_name"] = form_post.cleaned_data["your_name"]
+            request.session["guest_name"] = form_post.cleaned_data["guest_name"]
             request.session.save()
-            return redirect("/guest/interact/")
+            return redirect(f"/{feature_slug}/interact/")
+        else:
+            return redirect(f"/{feature_slug}/")
     else:
         feature = get_object_or_404(Feature, slug=feature_slug)
-        if request.session.session_key in feature.current_guests:
-            return redirect("/guest/interact/")
+        if request.session.session_key in feature.guest_queue.ordered_members():
+            return redirect(f"/{feature_slug}/interact/")
         else:
-            form_get = InteractorSignUpForm()
-            return render(request, "live/welcome.html", {"form": form_get})
+            form_get = GuestSignUpForm()
+            return render(request, "live/guest_signup.html", {"form": form_get})
 
 
-def guest_interact(request):
+def guest_interact(request, feature_slug):
     return render(
         request,
-        "live/interact.html",
+        "live/guest_interact.html",
         context={
             "guest": {
                 "feature_slug": request.session["feature_slug"],
-                "display_name": request.session["display_name"],
+                "guest_name": request.session["guest_name"],
                 "session_key": request.session.session_key,
             }
         },

@@ -53,7 +53,7 @@ $(document).ready(function () {
 
         row.append(rem_button);
         row.append('<td>' + index + '</td>');
-        row.append('<td>' + queue_item.display_name + '</td>');
+        row.append('<td>' + queue_item.guest_name + '</td>');
         row.append('<td>' + queue_item.session_key + '</td>');
         row.append('<td>' + queue_item.channel_names.join('\n') + '</td>');
 

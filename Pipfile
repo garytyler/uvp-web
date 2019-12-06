@@ -15,7 +15,7 @@ pytest-mock = "*"
 pytest-splinter = "*"
 
 [packages]
-django = "*"
+django = "==2.2.8"
 channels = "*"
 channels-redis = "*"
 psycopg2-binary = "*"

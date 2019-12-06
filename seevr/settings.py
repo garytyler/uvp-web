@@ -129,7 +129,7 @@ CACHES = {
     }
 }
 
-# SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Channels
 ASGI_APPLICATION = "seevr.routing.application"

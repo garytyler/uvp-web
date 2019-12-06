@@ -20,8 +20,8 @@ def test_add_guests_to_queue(rf, django_user_model, session_key_factory):
 
     # guest_queue = get_feature_synchronously().guest_queue
     for guest_session in guest_sessions:
-        feature.guest_queue.add(guest_session)
-    queued_sessions = feature.guest_queue.ordered_members()
+        feature.guest_queue.append(guest_session)
+    queued_sessions = feature.guest_queue.values()
     assert len(queued_sessions)
     assert len(queued_sessions) == len(guest_sessions)
     assert tuple(queued_sessions) == tuple(guest_sessions)

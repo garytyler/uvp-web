@@ -20,7 +20,7 @@ def guest_signup(request, feature_slug):
             return redirect(f"/{feature_slug}/")
     else:
         feature = get_object_or_404(Feature, slug=feature_slug)
-        if request.session.session_key in feature.guest_queue.ordered_members():
+        if request.session.session_key in feature.guest_queue.values():
             return redirect(f"/{feature_slug}/interact/")
         else:
             form_get = GuestSignUpForm()

@@ -16,7 +16,7 @@ class GuestConsumer(AsyncWebsocketConsumer):
             lambda: Feature.objects.get(slug=self.scope["session"]["feature_slug"])
         )()
         assert guest_name and self.feature
-        self.feature.guest_queue.add(session_key=self.scope["session"].session_key)
+        self.feature.guest_queue.append(session_key=self.scope["session"].session_key)
         await self.accept()
 
     async def disconnect(self, close_code):

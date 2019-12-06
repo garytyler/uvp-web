@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 
-from .sessions import SessionQueueInterface
+from .activity import SessionQueueInterface
 
 
 class Feature(models.Model):

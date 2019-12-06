@@ -26,13 +26,13 @@ async def test_add_guests_to_queue_on_connect(
     guest_factory, presenter_factory, num_guests, feature_factory
 ):
     feature = await db_sync_to_async(feature_factory)()
-    assert 0 == len(feature.guest_queue.ordered_members())
+    assert 0 == len(feature.guest_queue.values())
     guests = [await guest_factory(feature_slug=feature.slug) for n in range(num_guests)]
     guest_sessions = tuple(guest["client"].session.session_key for guest in guests)
     for guest in guests:
         connected, subprotocol = await guest["communicator"].connect()
         assert connected is True
-    queued_sessions = feature.guest_queue.ordered_members()
+    queued_sessions = feature.guest_queue.values()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     assert isinstance(guest_sessions, tuple)
     assert isinstance(queued_sessions, tuple)
@@ -51,8 +51,8 @@ async def test_remove_guests_from_queue_on_disconnect(
     for guest in guests:
         connected, subprotocol = await guest["communicator"].connect()
         assert connected is True
-    queued_sessions = feature.guest_queue.ordered_members()
+    queued_sessions = feature.guest_queue.values()
     assert num_guests == len(guest_sessions) == len(queued_sessions)
     for guest in guests:
         await guest["communicator"].disconnect()
-    assert 0 == len(feature.guest_queue.ordered_members())
+    assert 0 == len(feature.guest_queue.values())

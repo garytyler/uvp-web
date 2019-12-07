@@ -17,7 +17,7 @@ class TestGuestDisplayNameSubmission(SeeVrTestCase):
     def test_method(self):
         feature = self.feature_factory()
         guest_name = self.random_string_factory()
-        self.browser.visit(self.live_server_url + f"/{feature.slug}")
+        self.browser.visit(self.live_server_url + f"/{feature.slug}/")
         self.browser.find_by_name("guest_name").first.fill(guest_name)
         self.browser.find_by_value("Submit").first.click()
         assert self.browser.url == self.live_server_url + f"/{feature.slug}/interact/"

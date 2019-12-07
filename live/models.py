@@ -5,7 +5,9 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 
-from .activity import SessionQueueInterface
+from .activity import GuestSessionQueue
+
+# from django.contrib.sessions.models import Session
 
 
 class Feature(models.Model):
@@ -29,7 +31,7 @@ class Feature(models.Model):
 
     @cached_property
     def guest_queue(self):
-        return SessionQueueInterface(f"{self.pk}:{self.slug}")
+        return GuestSessionQueue(f"{self.pk}:{self.slug}")
 
 
 # class MediaPlayer(models.Model):

@@ -32,9 +32,22 @@ async def test_add_guests_to_queue_on_connect(
     for guest in guests:
         connected, subprotocol = await guest["communicator"].connect()
         assert connected is True
-    queued_sessions = feature.guest_queue
-    assert num_guests == len(guest_sessions) == len(queued_sessions)
-    assert tuple(guest_sessions) == tuple(queued_sessions)
+    assert num_guests == len(guest_sessions) == len(feature.guest_queue)
+    assert tuple(guest_sessions) == tuple(feature.guest_queue)
+
+
+@pytest.mark.asyncio
+@pytest.mark.django_db(transaction=True)
+async def test_connected_guest_session_has_guest_name_item(
+    guest_factory, feature_factory, SessionStore
+):
+    feature = await db_sync_to_async(feature_factory)()
+    guest = await guest_factory(feature_slug=feature.slug)
+    assert 0 == len(feature.guest_queue)
+    connected, subprotocol = await guest["communicator"].connect()
+    assert connected is True
+    assert 1 == len(feature.guest_queue)
+    assert SessionStore(feature.guest_queue[0])["guest_name"]
 
 
 @pytest.mark.asyncio

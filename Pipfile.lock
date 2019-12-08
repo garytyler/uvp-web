@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a9dcc97cb4858259bae14b4fea60eac32914ddddf68d36a0306a5cc55fabf1cb"
+            "sha256": "0b0b8dda126f7812e80d35cf649fd136d2cdf9be307e5a1132cbce1cf577dfbe"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -700,11 +700,8 @@
             "version": "==2.5.0"
         },
         "pyflakes": {
-            "hashes": [
-                "sha256:17dbeb2e3f4d772725c777fabc446d5634d1038f234e77343108ce445ea69ce0",
-                "sha256:d976835886f8c5b31d47970ed689944a0262b5f3afa00a5a7b4dc81e5449f8a2"
-            ],
-            "version": "==2.1.1"
+            "git": "https://github.com/pycqa/pyflakes",
+            "ref": "1911c203a13826d2eb03d582d60874b91e36f4fc"
         },
         "pyparsing": {
             "hashes": [
@@ -783,10 +780,10 @@
         },
         "splinter": {
             "hashes": [
-                "sha256:170d21d4f04f8c5c076a34716e36779f07f3533d3b3d8a82523993b21b40bb35",
-                "sha256:c5d40b8ee480d1c1c33f085c3fdfe9fd32b9ce22515f46cfde179966452d020a"
+                "sha256:96bfb1e8a1fbc48f5d507ed8f6a87dca2d7b973093d09a668abb57caff57365d",
+                "sha256:df74fa5a0916e05026d8d8ed997577e18a14d5d45e920a4895e87dc86e813241"
             ],
-            "version": "==0.11.0"
+            "version": "==0.12.0"
         },
         "toml": {
             "hashes": [

@@ -7,6 +7,7 @@ from typing import AsyncGenerator, Callable
 import pytest
 from channels.db import database_sync_to_async as db_sync_to_async
 from channels.testing import WebsocketCommunicator
+from django.contrib.sessions.models import Session
 from django.core.management import call_command
 from django.test import Client
 from django_redis import get_redis_connection
@@ -116,3 +117,8 @@ def feature_factory(random_string_factory):
         return feature
 
     return _feature_factory
+
+
+@pytest.fixture
+def SessionStore():
+    yield Session.get_session_store_class()

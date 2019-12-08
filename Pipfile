@@ -6,13 +6,14 @@ verify_ssl = true
 [dev-packages]
 pre-commit = "*"
 isort = "*"
-flake8 = "*"
 mypy = "*"
 pytest = "*"
 pytest-django = "*"
 pytest-asyncio = "*"
 pytest-mock = "*"
 pytest-splinter = "*"
+flake8 = "*"
+pyflakes = {git = "https://github.com/pycqa/pyflakes",ref = "1911c20"}
 
 [packages]
 django = "==2.2.8"

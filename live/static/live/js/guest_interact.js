@@ -11,7 +11,7 @@ $(document).ready(function () {
     var motion_sender_intervalometer_id = null;
 
     guest_data = JSON.parse(document.getElementById("guest_json").textContent);
-    $("#guest_guest_name").append("<b>Name: </b>" + guest_data.guest_name);
+    $("#guest_name").append("<b>Name: </b>" + guest_data.guest_name);
 
     var ws_scheme = "wss://";
     if (window.location.protocol == "http:") {

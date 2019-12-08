@@ -5,9 +5,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 
-from .activity import GuestSessionQueue
-
-# from django.contrib.sessions.models import Session
+from .caching import CachedListSet
 
 
 class Feature(models.Model):
@@ -30,8 +28,12 @@ class Feature(models.Model):
         super().save(*args, **kwargs)
 
     @cached_property
+    def cache_key_prefix(self):
+        return f"{self.pk}:{self.slug}:"
+
+    @property
     def guest_queue(self):
-        return GuestSessionQueue(f"{self.pk}:{self.slug}")
+        return CachedListSet(self.cache_key_prefix + "guest_queue")
 
 
 # class MediaPlayer(models.Model):

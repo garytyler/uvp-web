@@ -20,6 +20,7 @@ def guest_signup(request, feature_slug):
             return redirect(f"/{feature_slug}/")
     else:
         feature = get_object_or_404(Feature, slug=feature_slug)
+        request.session.save()
         if request.session.session_key in feature.guest_queue:
             return redirect(f"/{feature_slug}/interact/")
         else:

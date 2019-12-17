@@ -40,10 +40,10 @@ def flush_redis_cache_at_function_finish():
 
 
 @pytest.fixture
-async def guest_factory(random_string_factory) -> AsyncGenerator:
+async def fake_guest_factory(random_string_factory) -> AsyncGenerator:
     communicators = []
 
-    async def _guest_factory(feature_slug: str) -> OrderedDict:
+    async def _fake_guest_factory(feature_slug: str) -> OrderedDict:
         guest_name = random_string_factory()
         client = Client()
         await db_sync_to_async(
@@ -59,16 +59,16 @@ async def guest_factory(random_string_factory) -> AsyncGenerator:
         communicators.append(communicator)
         return OrderedDict([("client", client), ("communicator", communicator)])
 
-    yield _guest_factory
+    yield _fake_guest_factory
     for communicator in communicators:
         await communicator.disconnect()
 
 
 @pytest.fixture
-async def presenter_factory() -> AsyncGenerator:
+async def fake_presenter_factory() -> AsyncGenerator:
     communicators = []
 
-    async def _presenter_factory(feature_slug: str) -> OrderedDict:
+    async def _fake_presenter_factory(feature_slug: str) -> OrderedDict:
         client = Client()
         communicator = WebsocketCommunicator(
             application=application,
@@ -80,7 +80,7 @@ async def presenter_factory() -> AsyncGenerator:
         communicators.append(communicator)
         return OrderedDict([("client", client), ("communicator", communicator)])
 
-    yield _presenter_factory
+    yield _fake_presenter_factory
     for communicator in communicators:
         await communicator.disconnect()
 

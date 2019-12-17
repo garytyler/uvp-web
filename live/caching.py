@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.core.cache import caches
 from django_redis import get_redis_connection
 
 
 class CachedList:
-    cache = caches["default"]
+    cache = caches[settings.SESSION_CACHE_ALIAS]
 
     def __init__(self, key):
         self.key = key
@@ -41,7 +42,7 @@ class CachedList:
 class CachedListSet:
     """Facade for a redis ordered set that emulates a mutable ordered set"""
 
-    redis = get_redis_connection("default")
+    redis = get_redis_connection(settings.SESSION_CACHE_ALIAS)
 
     def __init__(self, key):
         self._key = str(key)
@@ -100,3 +101,15 @@ class CachedListSet:
 
     def popleft(self):
         return self.redis.zpopmin(self._key, count=1).decode()
+
+
+class Presentation:
+    @property
+    def guest_queue(self):
+        return CachedListSet(self.cache_key_prefix + "guest_queue")
+
+
+class PresentationManager:
+    @property
+    def guest_queue(self):
+        return CachedListSet(self.cache_key_prefix + "guest_queue")

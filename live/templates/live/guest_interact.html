@@ -8,7 +8,7 @@
 {% endblock meta %}
 
 {% block script %}
-{{ guest|json_script:"guest_json" }}
+{{ context_data|json_script:"context_json" }}
 <script type="text/javascript" src="{% static 'live/js/guest_interact.js' %}"></script>
 {% endblock script %}
 

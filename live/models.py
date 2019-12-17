@@ -34,28 +34,3 @@ class Feature(models.Model):
     @property
     def guest_queue(self):
         return CachedListSet(self.cache_key_prefix + "guest_queue")
-
-
-# class MediaPlayer(models.Model):
-#     channel_name = models.CharField(max_length=200, blank=True)
-#     feature = models.ForeignKey("Feature", on_delete=models.CASCADE,)
-
-#     def __str__(self):
-#         return self.channel_name
-
-
-# class Producer(models.Model):
-#     user = models.OneToOneField(
-#         settings.AUTH_USER_MODEL, related_name="role", on_delete=models.CASCADE
-#     )
-
-
-# class Guest(models.Model):
-#     user = models.OneToOneField(
-#         settings.AUTH_USER_MODEL, related_name="role", on_delete=models.CASCADE
-#     )
-#     feature = models.ForeignKey(Feature, on_delete=models.CASCADE)
-#     channel_names = ArrayField(models.CharField(max_length=100), blank=True)
-
-#     class Meta:
-#         ordering = ["headline"]

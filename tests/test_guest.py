@@ -48,19 +48,9 @@ async def test_feature_connection_sets_feature_channel_name(
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
-async def test_init_message(
-    fake_guest_factory, feature_factory, fake_presenter_factory
-):
+async def test_init_message(single_connected_guest_presenter_feature):
     # Create objects
-    feature = await db_sync_to_async(feature_factory)()
-    guest = await fake_guest_factory(feature_slug=feature.slug)
-    presenter = await fake_presenter_factory(feature_slug=feature.slug)
-
-    # Connect guest & presenter
-    connected, subprotocol = await presenter["communicator"].connect()
-    assert connected
-    connected, subprotocol = await guest["communicator"].connect()
-    assert connected
+    guest, presenter, feature = await single_connected_guest_presenter_feature()
 
     # Get latest feature state after connecting
     feature = await db_sync_to_async(lambda: Feature.objects.get(slug=feature.slug))()

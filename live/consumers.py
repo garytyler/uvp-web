@@ -1,5 +1,6 @@
 import json
 import logging
+from array import array
 
 from channels.db import database_sync_to_async as db_sync_to_async
 from channels.exceptions import StopConsumer
@@ -42,8 +43,6 @@ class GuestConsumer(AsyncWebsocketConsumer):
     cache = caches["default"]
 
     async def connect(self):
-        """Initialize guest connections"""
-
         # Verify
         self.feature = await db_sync_to_async(
             lambda: Feature.objects.get(slug=self.scope["session"]["feature_slug"])
@@ -61,6 +60,38 @@ class GuestConsumer(AsyncWebsocketConsumer):
 
         # Accept
         await self.accept()
+
+    async def receive(self, text_data=None, bytes_data=None):
+        """Receive motion event data from guest client and forward it to media player consumer
+        """
+        if bytes_data:
+            await self.receive_bytes_data(data=bytes_data)
+        else:
+            await self.receive_text_data(data=text_data)
+
+    async def receive_text_data(self, data):
+        """
+        TODO: Dictate which client has permission to send motion data
+
+        When START is pressed, a request should be sent to the client's consumer, then:
+
+        1. If 'feature.guest_channel_name' is set, notify that channel to stop sending
+        motion data.
+
+        2. Set 'feature.guest_channel_name' to the current consumer's channel_name.
+
+        This will not guarentee prevention of receiving double motion states from
+        multiple clients in the same session, but it should be good enough for now.
+        """
+        log.debug(f"{self.__class__.__name__} received text: {data}")
+
+    async def receive_bytes_data(self, data):
+        orientation_text = "{0:+f}{1:+f}{2:+f}".format(*array("d", data))
+        log.debug(f"{self.__class__.__name__} received bytes: {orientation_text}")
+        await self.channel_layer.send(
+            self.feature.channel_name,
+            {"type": "layerevent.new.motion.state", "data": data},
+        )
 
     async def layerevent_forward_to_client(self, layer_event):
         await self.send(layer_event["data"])
@@ -83,3 +114,8 @@ class PresenterConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         log.debug(f"{self.__class__.__name__} received text: {text_data}")
         log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
+
+    async def layerevent_new_motion_state(self, event):
+        """Forward event data that originated from guest client to media player client
+        """
+        await self.send(bytes_data=event["data"])

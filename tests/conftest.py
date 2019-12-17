@@ -86,6 +86,32 @@ async def fake_presenter_factory() -> AsyncGenerator:
 
 
 @pytest.fixture
+async def single_connected_guest_presenter_feature(
+    fake_guest_factory, feature_factory, fake_presenter_factory, transactional_db
+):
+    async def _single_connected_guest_presenter_feature():
+        # Create objects
+        feature = await db_sync_to_async(feature_factory)()
+        guest = await fake_guest_factory(feature_slug=feature.slug)
+        presenter = await fake_presenter_factory(feature_slug=feature.slug)
+
+        # Connect guest & presenter
+        connected, subprotocol = await presenter["communicator"].connect()
+        assert connected
+        connected, subprotocol = await guest["communicator"].connect()
+        assert connected
+
+        # Get latest feature state after connecting
+        feature = await db_sync_to_async(
+            lambda: Feature.objects.get(slug=feature.slug)
+        )()
+
+        return guest, presenter, feature
+
+    yield _single_connected_guest_presenter_feature
+
+
+@pytest.fixture
 def random_string_factory() -> Callable:
     """Return a random string"""
 
@@ -122,3 +148,8 @@ def feature_factory(random_string_factory):
 @pytest.fixture
 def SessionStore():
     yield Session.get_session_store_class()
+
+
+@pytest.fixture
+def random_orientation():
+    return [random.uniform(0, 360) for i in range(3)]

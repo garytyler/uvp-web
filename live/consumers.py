@@ -29,7 +29,7 @@ async def broadcast_feature_state(feature, groups):
                 "data": json.dumps(
                     {
                         "feature": {
-                            "channel_name": feature.presenter_channel,
+                            "presenter_channel": feature.presenter_channel,
                             "title": feature.title,
                         },
                         "guest_queue": guest_queue_dict,

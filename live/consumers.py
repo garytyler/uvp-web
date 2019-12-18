@@ -29,7 +29,7 @@ async def broadcast_feature_state(feature, groups):
                 "data": json.dumps(
                     {
                         "feature": {
-                            "channel_name": feature.channel_name,
+                            "channel_name": feature.presenter_channel,
                             "title": feature.title,
                         },
                         "guest_queue": guest_queue_dict,
@@ -89,7 +89,7 @@ class GuestConsumer(AsyncWebsocketConsumer):
         orientation_text = "{0:+f}{1:+f}{2:+f}".format(*array("d", data))
         log.debug(f"{self.__class__.__name__} received bytes: {orientation_text}")
         await self.channel_layer.send(
-            self.feature.channel_name,
+            self.feature.presenter_channel,
             {"type": "layerevent.new.motion.state", "data": data},
         )
 
@@ -103,12 +103,10 @@ class GuestConsumer(AsyncWebsocketConsumer):
 class PresenterConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         feature_slug = self.scope["url_route"]["kwargs"]["feature_slug"]
-        await db_sync_to_async(lambda: Feature.objects.get(slug=feature_slug).title)()
-        await db_sync_to_async(
-            lambda: Feature.objects.filter(slug=feature_slug).update(
-                channel_name=self.channel_name
-            )
+        self.feature = await db_sync_to_async(
+            lambda: Feature.objects.get(slug=feature_slug)
         )()
+        self.feature.presenter_channel = self.channel_name
         await self.accept()
 
     async def receive(self, text_data=None, bytes_data=None):
@@ -119,3 +117,6 @@ class PresenterConsumer(AsyncWebsocketConsumer):
         """Forward event data that originated from guest client to media player client
         """
         await self.send(bytes_data=event["data"])
+
+    async def disconnect(self, close_code):
+        self.feature.presenter_channel = None

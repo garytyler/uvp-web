@@ -159,9 +159,9 @@ $(document).ready(function () {
     guest_socket.onmessage = function (event) {
         console.log('guest_socket.onmessage', event);
         received_data = JSON.parse(event.data);
-        console.log(received_data.feature.channel_name);
+        console.log(received_data.feature.presenter_channel);
 
-        if (!received_data.feature.channel_name || 0 === received_data.feature.channel_name) {
+        if (!received_data.feature.presenter_channel || 0 === received_data.feature.presenter_channel) {
             var msg = "Feature unavailable."
             $("#message_display").show()
             $("#message_display").append("<h3>" + msg + "</h3>");

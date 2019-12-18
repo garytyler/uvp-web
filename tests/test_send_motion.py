@@ -9,7 +9,7 @@ async def test_transact_orientation_array(
     single_connected_guest_presenter_feature, random_orientation
 ):
     # Create objects
-    guest, presenter, feature = await single_connected_guest_presenter_feature()
+    guest, presenter, feature = single_connected_guest_presenter_feature
     orientation_bytes = struct.pack("!ddd", *random_orientation)
     assert orientation_bytes and orientation_bytes[0] != orientation_bytes[1]
 

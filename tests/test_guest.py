@@ -32,7 +32,7 @@ async def test_feature_connection_sets_feature_channel_name(
 ):
     # Create objects
     feature = await db_sync_to_async(feature_factory)()
-    assert not feature.channel_name
+    assert not feature.presenter_channel
 
     # Connect guests
     presenter = await fake_presenter_factory(feature_slug=feature.slug)
@@ -43,14 +43,14 @@ async def test_feature_connection_sets_feature_channel_name(
     feature = await db_sync_to_async(lambda: Feature.objects.get(slug=feature.slug))()
 
     # Test state
-    assert feature.channel_name
+    assert feature.presenter_channel
 
 
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 async def test_init_message(single_connected_guest_presenter_feature):
     # Create objects
-    guest, presenter, feature = await single_connected_guest_presenter_feature()
+    guest, presenter, feature = single_connected_guest_presenter_feature
 
     # Get latest feature state after connecting
     feature = await db_sync_to_async(lambda: Feature.objects.get(slug=feature.slug))()
@@ -60,6 +60,6 @@ async def test_init_message(single_connected_guest_presenter_feature):
     message_data = json.loads(message_json)
 
     # Test state
-    assert message_data["feature"]["channel_name"] == feature.channel_name
+    assert message_data["feature"]["channel_name"] == feature.presenter_channel
     assert message_data["feature"]["title"] == feature.title
     assert len(message_data["guest_queue"]) == 1

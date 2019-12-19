@@ -149,3 +149,6 @@ LOGGING = {
     "version": 1,
     "loggers": {"django": {"level": os.getenv("LOG_LEVEL_DJANGO", "INFO")}},
 }
+
+GUEST_QUEUE_MEMBER_PING_INTERVAL = 4  # TODO: Implement
+GUEST_QUEUE_MEMBER_TIMEOUT = 6

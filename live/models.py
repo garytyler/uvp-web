@@ -1,11 +1,14 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
-from django.core.cache import cache
+from django.core.cache import caches
 from django.db import models
 from django.utils.text import slugify
 
-from .caching import CachedListSet
+from .caching import CachedExpiringMemberListSet
+
+cache = caches[settings.SESSION_CACHE_ALIAS]
 
 
 class Feature(models.Model):
@@ -27,17 +30,20 @@ class Feature(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def cache_key_prefix(self):
+    def _key_prefix(self):
         return f"{self.pk}:{self.slug}:"
 
     @property
     def guest_queue(self):
-        return CachedListSet(self.cache_key_prefix + "guest_queue")
+        return CachedExpiringMemberListSet(
+            key_prefix=self._key_prefix,
+            member_timeout=settings.GUEST_QUEUE_MEMBER_TIMEOUT,
+        )
 
     @property
     def presenter_channel(self):
-        return cache.get(self.cache_key_prefix + "presenter_channel")
+        return cache.get(self._key_prefix + "presenter_channel")
 
     @presenter_channel.setter
     def presenter_channel(self, value):
-        return cache.set(self.cache_key_prefix + "presenter_channel", value)
+        return cache.set(self._key_prefix + "presenter_channel", value)

@@ -76,9 +76,6 @@ class CachedListSet:
     def __reversed__(self):
         return (i for i in reversed(self._get_values()))
 
-    def __index__(self, value: str):
-        return self.redis.zrank.get(self._key, value)
-
     def __getitem__(self, index):
         values = self._get_values(start=index, stop=index)
         if values:
@@ -86,9 +83,6 @@ class CachedListSet:
 
     def __contains__(self, value):
         return value in self._get_values()
-
-    def set_timeout(self, secs: int):
-        self.timeout = secs
 
     def append(self, value):
         return self.redis.zadd(self._key, {value: self._max_score() + 1})
@@ -103,13 +97,50 @@ class CachedListSet:
         return self.redis.zpopmin(self._key, count=1).decode()
 
 
-class Presentation:
-    @property
-    def guest_queue(self):
-        return CachedListSet(self.cache_key_prefix + "guest_queue")
+class CachedExpiringMemberListSet(CachedListSet):
+    """Same functionality as CachedListSet, but also handles queued guest timeouts
+    """
 
+    cache = caches[settings.SESSION_CACHE_ALIAS]
 
-class PresentationManager:
-    @property
-    def guest_queue(self):
-        return CachedListSet(self.cache_key_prefix + "guest_queue")
+    def __init__(self, key_prefix, member_timeout):
+        super().__init__(key=key_prefix)
+        self.cache_key_prefix = key_prefix + "cache:"
+        self.member_timeout = member_timeout
+
+    def _is_active(self, session_key):
+        if self.cache.get(self.cache_key_prefix + session_key):
+            return True
+        else:
+            self.remove(session_key)
+            return False
+
+    def _get_values(self):
+        return filter(self._is_active, super()._get_values())
+
+    def __len__(self):
+        return len(self._get_values())
+
+    def append(self, session_key):
+        "Append session to queue if not already in it, and update the status expiration"
+        result = super().append(value=session_key)
+        self.cache.add(self.cache_key_prefix + session_key, session_key)
+        self.cache.touch(self.cache_key_prefix + session_key, self.member_timeout)
+        return result
+
+    def remove(self, session_key):
+        result = super().remove(value=session_key)
+        self.cache.delete(self.cache_key_prefix + session_key)
+        return result
+
+    def pop(self):
+        result = self._get_values()[-1]
+        self._session_keys.remove(value=result)
+        self.cache.delete(self.cache_key_prefix + result)
+        return result
+
+    def popleft(self):
+        result = self._get_values()[0]
+        self._session_keys.remove(value=result)
+        self.cache.delete(self.cache_key_prefix + result)
+        return result

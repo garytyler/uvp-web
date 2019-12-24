@@ -150,5 +150,8 @@ LOGGING = {
     "loggers": {"django": {"level": os.getenv("LOG_LEVEL_DJANGO", "INFO")}},
 }
 
-GUEST_QUEUE_MEMBER_PING_INTERVAL = 4  # TODO: Implement
+
+# Live application settings
 GUEST_QUEUE_MEMBER_TIMEOUT = 6
+GUEST_STATUS_PING_TIMEOUT = 1
+GUEST_STATUS_CHECK_INTERVAL = 4  # TODO: Implement

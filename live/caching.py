@@ -119,13 +119,21 @@ class CachedExpiringMemberListSet(CachedListSet):
         return filter(self._is_active, super()._get_values())
 
     def __len__(self):
-        return len(self._get_values())
+        return len([i for i in self._get_values()])
+
+    def reset_member_expiry(self, session_key):
+        """Returns True if the key was successfully touched, False otherwise
+        See: https://docs.djangoproject.com/en/2.2/topics/cache/
+        """
+        return self.cache.touch(
+            self.cache_key_prefix + session_key, self.member_timeout
+        )
 
     def append(self, session_key):
         "Append session to queue if not already in it, and update the status expiration"
         result = super().append(value=session_key)
         self.cache.add(self.cache_key_prefix + session_key, session_key)
-        self.cache.touch(self.cache_key_prefix + session_key, self.member_timeout)
+        self.reset_member_expiry(session_key)
         return result
 
     def remove(self, session_key):

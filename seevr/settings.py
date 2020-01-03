@@ -11,6 +11,7 @@ https://docs.djangoseevr.com/en/1.11/ref/settings/
 """
 
 import os
+from distutils.util import strtobool
 
 import dj_database_url
 
@@ -128,12 +129,12 @@ CACHES = {
         "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            # "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
+            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
         },
     }
 }
 
-# SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Channels
 ASGI_APPLICATION = "seevr.routing.application"
@@ -153,6 +154,8 @@ LOGGING = {
 
 
 # Live application settings
-GUEST_QUEUE_MEMBER_TIMEOUT = 6
-GUEST_STATUS_PING_TIMEOUT = 3
-GUEST_STATUS_CHECK_INTERVAL = 4  # TODO: Implement
+GUEST_STATUS_PING_TIMEOUT = int(os.environ.get("GUEST_STATUS_PING_TIMEOUT", 3))
+GUEST_STATUS_CHECK_INTERVAL = int(os.environ.get("GUEST_STATUS_CHECK_INTERVAL", 4))
+USE_THREAD_BASED_FEATURE_OBSERVERS = strtobool(
+    os.environ.get("USE_THREAD_BASED_FEATURE_OBSERVERS", "False")
+)

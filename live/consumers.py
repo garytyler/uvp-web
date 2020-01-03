@@ -1,21 +1,14 @@
-import asyncio
 import functools
-import json
 import logging
-import threading
-import time
-import uuid
 from array import array
-from importlib import import_module
 
 from channels.db import database_sync_to_async as db_sync_to_async
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import AsyncConsumer, AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
 from django.conf import settings
 
-from .caching import CachedListSet
-from .models import Feature
+from live.app import caching, state
+from live.models import Feature
 
 log = logging.getLogger(__name__)
 
@@ -31,30 +24,6 @@ def channelmethod(func):
         return await func(_self, **event["message"])
 
     return wrapper
-
-
-# async def broadcast_feature_state(feature, groups):
-#     SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-#     guest_queue_dict = []
-#     for session_key in feature.guest_queue:
-#         ss = SessionStore(session_key).load()
-#         guest_queue_dict.append(
-#             {"session_key": session_key, "guest_name": ss["guest_name"]}
-#         )
-#     for group_name in groups:
-#         await get_channel_layer().group_send(
-#             group_name,
-#             {
-#                 "type": "forward.to.client",
-#                 "data": {
-#                     "feature": {
-#                         "presenter_channel": feature.presenter_channel,
-#                         "title": feature.title,
-#                     },
-#                     "guest_queue": guest_queue_dict,
-#                 },
-#             },
-#         )
 
 
 class GuestConsumer(AsyncWebsocketConsumer):
@@ -76,14 +45,14 @@ class GuestConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.feature.slug, self.channel_name)
 
         # Broadcast state
-        await broadcast_queue_data(self.feature)
+        await state.broadcast_feature_state(self.feature)
 
     @channelmethod
     async def update_channel_status(self, collection_key):
         session_key = self.scope["session"].session_key
         channel_name = self.channel_name
         log.debug(f"UPDATE STATUS - {session_key=}, {channel_name=}, {collection_key=}")
-        CachedListSet(collection_key).append(f"{session_key}:{channel_name}")
+        caching.CachedListSet(collection_key).append(f"{session_key}:{channel_name}")
 
     async def reset_queue_member_expiry(self):
         success = self.feature.guest_queue.reset_member_expiry(
@@ -146,7 +115,8 @@ class PresenterConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        await self._run_status_watcher(feature_slug)
+        if settings.USE_THREAD_BASED_FEATURE_OBSERVERS:
+            await state.watch_feature_state_in_thread(feature_slug)
 
     async def receive(self, text_data=None, bytes_data=None):
         log.debug(f"{self.__class__.__name__} received text: {text_data}")
@@ -161,123 +131,12 @@ class PresenterConsumer(AsyncWebsocketConsumer):
         self.feature.presenter_channel = None
         await db_sync_to_async(self.feature.save)()
 
-    async def _run_status_watcher(self, feature_slug):
-        def init_worker(loop):
-            asyncio.set_event_loop(loop)
-            loop.run_forever()
 
-        loop = asyncio.new_event_loop()
-        self.worker = threading.Thread(target=init_worker, args=(loop,), daemon=True)
-        self.worker.start()
-
-        async def coro():
-            while True:
-                await self._refresh_guest_queue_state(feature_slug)
-                await asyncio.sleep(4)
-
-        loop.call_soon_threadsafe(lambda: asyncio.tasks.ensure_future(coro()))
-
-    async def _refresh_guest_queue_state(self, feature_slug):
-        begin = time.time()
-
-        feature = self.feature = await db_sync_to_async(
-            lambda: Feature.objects.get(slug=feature_slug)
-        )()
-        status = await self.get_member_status(feature=feature)
-
-        # Update feature queue status
-        feature.guest_queue.clear()
-        feature.guest_queue.extend(status["sessions"])
-        feature.member_channels.clear()
-        feature.member_channels.extend(status["channels"])
-
-        # Broadcast
-        await broadcast_queue_data(feature=feature)
-
-        # Finish
-        time_spent = time.time() - begin
-        log.info(f"REFRESHED GUEST QUEUE - {time_spent=}, {feature.guest_queue=}")
-
-    async def get_member_status(self, feature) -> dict:
-        """
-        - We use group_send instead of individual channel sends because:
-          - Decoupling the observer pattern.
-          - We can let timeouts handle stuck clients w/ minimal performance loss.
-          - Letting timeouts handle stuck clients will help prevent race conditions
-          that result in missing channels.
-        - We will store channel names only to determiine when to exit listening
-          during state updates.
-        """
-        # Initialize collection store
-        collection_key = f"status-store:{feature.slug}:{uuid.uuid1()}"
-        collection_store = CachedListSet(collection_key)
-
-        # Request session status
-        await self.channel_layer.group_send(
-            feature.slug,
-            {
-                "type": "update_channel_status",
-                "message": {"collection_key": collection_key},
-            },
-        )
-
-        # Wait for status responses
-        num_channels = len(feature.member_channels)
-        timeout = time.time() + settings.GUEST_STATUS_PING_TIMEOUT
-        while time.time() < timeout:
-            await asyncio.sleep(0)
-            if num_channels <= len(collection_store):
-                break
-        await asyncio.sleep(0.1)
-
-        # Parse collected status data
-        alive_sessions = []
-        alive_channels = []
-        for sk, cn in [i.split(":") for i in collection_store]:
-            alive_sessions.append(sk)
-            alive_channels.append(cn)
-
-        # Create status dict with correct session order
-        queued = []
-        added = []
-        for sk in feature.guest_queue:
-            if feature.guest_queue:
-                queued.append(sk)
-            elif sk in alive_sessions:
-                added.append(sk)
-
-        return {"sessions": queued + added, "channels": alive_channels}
-
-
-async def broadcast_queue_data(feature):
-    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-    queue_data = []
-    for session_key in feature.guest_queue:
-        ss = SessionStore(session_key).load()
-        queue_data.append({"guest_name": ss["guest_name"], "session_key": session_key})
-    await get_channel_layer().group_send(
-        feature.slug,
-        {
-            "type": "send_to_client",
-            "message": {
-                "text_data": json.dumps(
-                    {
-                        "feature": {
-                            "presenter_channel": feature.presenter_channel,
-                            "title": feature.title,
-                        },
-                        "guest_queue": queue_data,
-                    }
-                )
-            },
-        },
-    )
-
-
-class StatusReceiverConsumer(AsyncConsumer):
-    groups = ["status-receiver"]
-
+class StateObserverConsumer(AsyncConsumer):
     @channelmethod
-    async def receive_channel_status(self, collection_key, session_key, channel_name):
-        log.debug(f"UPDATE STATUS - {session_key=}, {channel_name=}, {collection_key=}")
-        CachedListSet(collection_key).append(f"{session_key}:{channel_name}")
+    async def run(self, feature_slugs=None):
+        if settings.USE_THREAD_BASED_FEATURE_OBSERVERS:
+            raise RuntimeError(
+                "To run worker, disable 'USE_THREAD_BASED_FEATURE_OBSERVERS'."
+            )
+        await state.refresh_feature_states(feature_slugs)

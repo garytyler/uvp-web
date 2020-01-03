@@ -1,12 +1,13 @@
-# from datetime import timedelta
+from datetime import timedelta
+
+from django.conf import settings
 
 BEAT_SCHEDULE: dict = {
-    # "status-manager": [
-    #     {
-    #         "type": "refresh.guest.queue.state",
-    #         "message": {"feature_slug": "big-one"},
-    #         "schedule": timedelta(seconds=2),  # Every 5 seconds
-    #     }
-    # ],
-    "status-receiver": [],
+    "observer": [
+        {
+            "type": "run",
+            "message": {},
+            "schedule": timedelta(seconds=settings.GUEST_STATUS_CHECK_INTERVAL),
+        }
+    ],
 }

@@ -35,7 +35,7 @@ async def test_add_guests_to_queue_on_connect(
     assert tuple(guest_sessions) == tuple(guest_queue_session_keys)
 
 
-@pytest.mark.xfail  # Queue member timeout is not setup with current queue management
+@pytest.mark.skip  # Queue member timeout is not used with current queue management
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("num_guests", ([2, 5]))
@@ -64,7 +64,7 @@ async def test_queued_guests_expire(
     assert num_guests == len(guest_sessions) == len(list(feature.guest_queue))
 
     # Wait for expiry
-    time.sleep(settings.GUEST_QUEUE_MEMBER_TIMEOUT + 0.5)
+    time.sleep(getattr(settings, "GUEST_QUEUE_MEMBER_TIMEOUT") + 0.5)
 
     # Test that queue is empty
     assert 0 == len(list(feature.guest_queue))

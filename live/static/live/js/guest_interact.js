@@ -164,7 +164,7 @@ $(document).ready(function () {
         if (!received_data.feature.presenter_channel || 0 === received_data.feature.presenter_channel) {
             var msg = "Feature unavailable."
             $("#message_display").show()
-            $("#message_display").append("<h3>" + msg + "</h3>");
+            $("#message_display").text(msg);
         } else if (received_data.guest_queue[0].session_key === context_data.session_key) {
             console.log('Enabling interact mode', received_data.guest_queue[0]);
             enableInteractMode(received_data.feature, received_data.guest_queue);
@@ -251,7 +251,7 @@ $(document).ready(function () {
     function shutdown_and_exit() {
 
         if (guest_socket != null) {
-            guest_sender.stop();
+            // guest_sender.stop();
             guest_socket.close();
         }
 

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "live.apps.LiveConfig",
     "channels",
+    "beatserver",
 ]
 
 MIDDLEWARE = [
@@ -132,7 +133,7 @@ CACHES = {
     }
 }
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+# SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Channels
 ASGI_APPLICATION = "seevr.routing.application"
@@ -153,5 +154,5 @@ LOGGING = {
 
 # Live application settings
 GUEST_QUEUE_MEMBER_TIMEOUT = 6
-GUEST_STATUS_PING_TIMEOUT = 1
+GUEST_STATUS_PING_TIMEOUT = 3
 GUEST_STATUS_CHECK_INTERVAL = 4  # TODO: Implement

@@ -3,49 +3,16 @@ from django.core.cache import caches
 from django_redis import get_redis_connection
 
 
-class CachedList:
-    cache = caches[settings.SESSION_CACHE_ALIAS]
-
-    def __init__(self, key):
-        self.key = key
-        if not self.cache.get(self.key):
-            self.cache.set(self.key, [])
-
-    def __str__(self) -> str:
-        class_name = self.__class__.__name__
-        _list = self.cache.get(self.key)
-        return str(f"<{class_name} at '{self.key}': {_list}")
-
-    def __repr__(self) -> str:
-        return str(self.cache.get(self.key))
-
-    def __len__(self):
-        return len(self.cache.get(self.key))
-
-    def __getitem__(self, n: int):
-        return self.cache.get(self.key)[n]
-
-    def __iter__(self):
-        return iter(self.cache.get(self.key))
-
-    def append(self, x):
-        _list = self.cache.get(self.key)
-        _list.append(x)
-        self.cache.set(self.key, _list)
-
-    def remove(self, x):
-        _list = self.cache.get(self.key)
-        _list.remove(x)
-        self.cache.set(self.key, _list)
-
-
 class CachedListSet:
     """Facade for a redis ordered set that emulates a mutable ordered set"""
 
     redis = get_redis_connection(settings.SESSION_CACHE_ALIAS)
 
-    def __init__(self, key):
+    def __init__(self, key, value=None):
         self._key = str(key)
+        if value:
+            self.clear()
+            self.extend(values=value)
 
     def __repr__(self):
         return str(self._get_values())
@@ -84,8 +51,20 @@ class CachedListSet:
     def __contains__(self, value):
         return value in self._get_values()
 
-    def append(self, value):
+    def clear(self):
+        values = self._get_values()
+        if values:
+            return self.redis.zrem(self._key, *self._get_values())
+
+    def append(self, value: str):
         return self.redis.zadd(self._key, {value: self._max_score() + 1})
+
+    def extend(self, values):
+        if values:
+            max_score = self._max_score()
+            return self.redis.zadd(
+                self._key, {v: max_score + n + 1 for n, v in enumerate(values)}
+            )
 
     def remove(self, value):
         return self.redis.zrem(self._key, value)

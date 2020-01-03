@@ -6,7 +6,7 @@ from django.core.cache import caches
 from django.db import models
 from django.utils.text import slugify
 
-from .caching import CachedExpiringMemberListSet
+from .caching import CachedListSet
 
 cache = caches[settings.SESSION_CACHE_ALIAS]
 
@@ -35,10 +35,11 @@ class Feature(models.Model):
 
     @property
     def guest_queue(self):
-        return CachedExpiringMemberListSet(
-            key_prefix=self._key_prefix,
-            member_timeout=settings.GUEST_QUEUE_MEMBER_TIMEOUT,
-        )
+        return CachedListSet(key=self._key_prefix + "guest_queue")
+
+    @property
+    def member_channels(self):
+        return CachedListSet(self._key_prefix + "member_channels")
 
     @property
     def presenter_channel(self):

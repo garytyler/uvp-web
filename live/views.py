@@ -14,7 +14,7 @@ def guest_signup(request, feature_slug):
         if form_post.is_valid():
             request.session["feature_slug"] = feature_slug
             request.session["guest_name"] = form_post.cleaned_data["guest_name"]
-            request.session.save()
+            # request.session.save()
             return redirect(f"/{feature_slug}/interact/")
         else:
             return redirect(f"/{feature_slug}/")

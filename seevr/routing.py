@@ -10,7 +10,7 @@ application = ProtocolTypeRouter(
         "websocket": AuthMiddlewareStack(URLRouter(live.routing.websocket_urlpatterns)),
         "channel": ChannelNameRouter(
             {
-                "status-manager": consumers.StatusManagerConsumer,
+                # "status-manager": consumers.StatusManagerConsumer,
                 "status-receiver": consumers.StatusReceiverConsumer,
             }
         ),

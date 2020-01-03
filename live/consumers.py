@@ -75,12 +75,19 @@ class GuestConsumer(AsyncWebsocketConsumer):
 
         # Refresh queue state
         await self.channel_layer.send(
-            "status-manager",
+            self.feature.presenter_channel,
             {
                 "type": "refresh_guest_queue_state",
                 "message": {"feature_slug": self.feature.slug},
             },
         )
+        # await self.channel_layer.send(
+        #     "status-manager",
+        #     {
+        #         "type": "refresh_guest_queue_state",
+        #         "message": {"feature_slug": self.feature.slug},
+        #     },
+        # )
 
     @channelmethod
     async def update_channel_status(self, collection_key):
@@ -142,7 +149,6 @@ class GuestConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=text_data, bytes_data=bytes_data, close=close)
 
     async def disconnect(self, close_code):
-        pass
         session_key = self.scope["session"].session_key
         self.feature.member_channels.remove(self.channel_name)
         self.feature.guest_queue.remove(session_key)
@@ -157,6 +163,8 @@ class PresenterConsumer(AsyncWebsocketConsumer):
         self.feature.presenter_channel = self.channel_name
         await self.accept()
 
+        # await self.refresh_guest_queue_state(feature_slug)
+
     async def receive(self, text_data=None, bytes_data=None):
         log.debug(f"{self.__class__.__name__} received text: {text_data}")
         log.debug(f"{self.__class__.__name__} received bytes: {bytes_data}")
@@ -169,15 +177,19 @@ class PresenterConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         self.feature.presenter_channel = None
 
-
-class StatusManagerConsumer(AsyncConsumer):
-    async def refresh_guest_queue_state(self, event):
+    # class StatusManagerConsumer(AsyncConsumer):
+    @channelmethod
+    async def refresh_guest_queue_state(self, feature_slug):
         begin = time.time()
 
-        feature = await db_sync_to_async(
-            lambda: Feature.objects.get(slug=event["message"]["feature_slug"])
-        )()
+        # feature = await db_sync_to_async(
+        #     lambda: Feature.objects.get(slug=feature_slug)
+        # )()
 
+        feature = self.feature = await db_sync_to_async(
+            lambda: Feature.objects.get(slug=feature_slug)
+        )()
+        print(feature.member_channels)
         status_data = await self.get_group_status(
             group_name=feature.slug, num_channels=len(feature.member_channels)
         )
@@ -193,6 +205,7 @@ class StatusManagerConsumer(AsyncConsumer):
             _channels.extend(status_data[sk])
         feature.member_channels.extend(_channels)
 
+        print("status_data", status_data)
         await self.broadcast_queue_data(feature.slug, status_data)
 
         # Finish
@@ -211,13 +224,32 @@ class StatusManagerConsumer(AsyncConsumer):
                     "channel_names": channel_names,
                 }
             )
+        print(queue_data)
         await self.channel_layer.group_send(
             group_name,
             {
                 "type": "send_to_client",
-                "message": {"text_data": json.dumps(queue_data)},
+                "message": {
+                    "text_data": json.dumps(
+                        {
+                            "feature": {
+                                "presenter_channel": self.feature.presenter_channel,
+                                "title": self.feature.title,
+                            },
+                            "guest_queue": queue_data,
+                        }
+                    )
+                },
             },
         )
+
+        # await self.channel_layer.group_send(
+        #     group_name,
+        #     {
+        #         "type": "send_to_client",
+        #         "message": {"text_data": json.dumps(queue_data)},
+        #     },
+        # )
 
     async def get_group_status(self, group_name, num_channels) -> dict:
         """
@@ -249,7 +281,8 @@ class StatusManagerConsumer(AsyncConsumer):
             await asyncio.sleep(0)
             if num_channels <= len(collection_store):
                 break
-        await asyncio.sleep(0.001)  # Chance to catch missing channels
+        # await asyncio.sleep(0.001)  # Chance to catch missing channels
+        await asyncio.sleep(2)  # Chance to catch missing channels
 
         # Parse collected status data
         status: dict = {}

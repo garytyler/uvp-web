@@ -36,7 +36,6 @@ def guest_interact(request, feature_slug):
             "context_data": {
                 "feature_slug": request.session["feature_slug"],
                 "guest_name": request.session["guest_name"],
-                "session_key": request.session["session_key"],
             }
         },
     )

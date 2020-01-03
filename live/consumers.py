@@ -4,6 +4,7 @@ import json
 import logging
 import threading
 import time
+import uuid
 from array import array
 from importlib import import_module
 
@@ -32,28 +33,28 @@ def channelmethod(func):
     return wrapper
 
 
-async def broadcast_feature_state(feature, groups):
-    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-    guest_queue_dict = []
-    for session_key in feature.guest_queue:
-        ss = SessionStore(session_key).load()
-        guest_queue_dict.append(
-            {"session_key": session_key, "guest_name": ss["guest_name"]}
-        )
-    for group_name in groups:
-        await get_channel_layer().group_send(
-            group_name,
-            {
-                "type": "forward.to.client",
-                "data": {
-                    "feature": {
-                        "presenter_channel": feature.presenter_channel,
-                        "title": feature.title,
-                    },
-                    "guest_queue": guest_queue_dict,
-                },
-            },
-        )
+# async def broadcast_feature_state(feature, groups):
+#     SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
+#     guest_queue_dict = []
+#     for session_key in feature.guest_queue:
+#         ss = SessionStore(session_key).load()
+#         guest_queue_dict.append(
+#             {"session_key": session_key, "guest_name": ss["guest_name"]}
+#         )
+#     for group_name in groups:
+#         await get_channel_layer().group_send(
+#             group_name,
+#             {
+#                 "type": "forward.to.client",
+#                 "data": {
+#                     "feature": {
+#                         "presenter_channel": feature.presenter_channel,
+#                         "title": feature.title,
+#                     },
+#                     "guest_queue": guest_queue_dict,
+#                 },
+#             },
+#         )
 
 
 class GuestConsumer(AsyncWebsocketConsumer):
@@ -74,37 +75,11 @@ class GuestConsumer(AsyncWebsocketConsumer):
         self.feature.member_channels.append(self.channel_name)
         await self.channel_layer.group_add(self.feature.slug, self.channel_name)
 
-        # Refresh queue state
-        await self.channel_layer.send(
-            self.feature.presenter_channel,
-            {
-                "type": "refresh_guest_queue_state",
-                "message": {"feature_slug": self.feature.slug},
-            },
-        )
-        # await self.channel_layer.send(
-        #     "status-manager",
-        #     {
-        #         "type": "refresh_guest_queue_state",
-        #         "message": {"feature_slug": self.feature.slug},
-        #     },
-        # )
+        # Broadcast state
+        await broadcast_queue_data(self.feature)
 
     @channelmethod
     async def update_channel_status(self, collection_key):
-        # await self.channel_layer.send(
-        #     # "status-receiver",
-        #     self.feature.presenter_channel,
-        #     {
-        #         "type": "receive_channel_status",
-        #         "message": {
-        #             "collection_key": collection_key,
-        #             "session_key": self.scope["session"].session_key,
-        #             "channel_name": self.channel_name,
-        #         },
-        #     },
-        # )
-        collection_key = collection_key
         session_key = self.scope["session"].session_key
         channel_name = self.channel_name
         log.debug(f"UPDATE STATUS - {session_key=}, {channel_name=}, {collection_key=}")
@@ -184,11 +159,7 @@ class PresenterConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         self.feature.presenter_channel = None
-
-    @channelmethod
-    async def refresh_guest_queue_state(self, feature_slug):
-        # await self._refresh_guest_queue_state(feature_slug)
-        pass
+        await db_sync_to_async(self.feature.save)()
 
     async def _run_status_watcher(self, feature_slug):
         def init_worker(loop):
@@ -196,9 +167,8 @@ class PresenterConsumer(AsyncWebsocketConsumer):
             loop.run_forever()
 
         loop = asyncio.new_event_loop()
-        worker = threading.Thread(target=init_worker, args=(loop,))
-        worker.setDaemon(True)
-        worker.start()
+        self.worker = threading.Thread(target=init_worker, args=(loop,), daemon=True)
+        self.worker.start()
 
         async def coro():
             while True:
@@ -213,30 +183,22 @@ class PresenterConsumer(AsyncWebsocketConsumer):
         feature = self.feature = await db_sync_to_async(
             lambda: Feature.objects.get(slug=feature_slug)
         )()
-        print(feature.member_channels)
-        status_data = await self.get_group_status(
-            group_name=feature.slug, num_channels=len(feature.member_channels)
-        )
+        status = await self.get_member_status(feature=feature)
 
-        # Update session keys
+        # Update feature queue status
         feature.guest_queue.clear()
-        feature.guest_queue.extend(status_data.keys())
-
-        # Update session channels
+        feature.guest_queue.extend(status["sessions"])
         feature.member_channels.clear()
-        _channels = []
-        for sk in status_data.keys():
-            _channels.extend(status_data[sk])
-        feature.member_channels.extend(_channels)
+        feature.member_channels.extend(status["channels"])
 
-        print("status_data", status_data)
-        await self.broadcast_queue_data(feature.slug, status_data)
+        # Broadcast
+        await broadcast_queue_data(feature=feature)
 
         # Finish
         time_spent = time.time() - begin
-        log.info(f"REFRESHED GUEST QUEUE - {time_spent=}, {status_data=}")
+        log.info(f"REFRESHED GUEST QUEUE - {time_spent=}, {feature.guest_queue=}")
 
-    async def get_group_status(self, group_name, num_channels) -> dict:
+    async def get_member_status(self, feature) -> dict:
         """
         - We use group_send instead of individual channel sends because:
           - Decoupling the observer pattern.
@@ -247,13 +209,12 @@ class PresenterConsumer(AsyncWebsocketConsumer):
           during state updates.
         """
         # Initialize collection store
-        collection_key = f"status-store:{group_name}"
+        collection_key = f"status-store:{feature.slug}:{uuid.uuid1()}"
         collection_store = CachedListSet(collection_key)
-        collection_store.clear()
 
         # Request session status
         await self.channel_layer.group_send(
-            group_name,
+            feature.slug,
             {
                 "type": "update_channel_status",
                 "message": {"collection_key": collection_key},
@@ -261,51 +222,56 @@ class PresenterConsumer(AsyncWebsocketConsumer):
         )
 
         # Wait for status responses
+        num_channels = len(feature.member_channels)
         timeout = time.time() + settings.GUEST_STATUS_PING_TIMEOUT
         while time.time() < timeout:
             await asyncio.sleep(0)
             if num_channels <= len(collection_store):
                 break
+        await asyncio.sleep(0.1)
 
         # Parse collected status data
-        status: dict = {}
+        alive_sessions = []
+        alive_channels = []
         for sk, cn in [i.split(":") for i in collection_store]:
-            status.setdefault(sk, []).append(cn)
+            alive_sessions.append(sk)
+            alive_channels.append(cn)
 
-        collection_store.clear()
+        # Create status dict with correct session order
+        queued = []
+        added = []
+        for sk in feature.guest_queue:
+            if feature.guest_queue:
+                queued.append(sk)
+            elif sk in alive_sessions:
+                added.append(sk)
 
-        return status
+        return {"sessions": queued + added, "channels": alive_channels}
 
-    async def broadcast_queue_data(self, group_name, status_data):
-        SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-        queue_data = []
-        for session_key, channel_names in status_data.items():
-            ss = SessionStore(session_key).load()
-            queue_data.append(
-                {
-                    "guest_name": ss["guest_name"],
-                    "session_key": session_key,
-                    "channel_names": channel_names,
-                }
-            )
-        print(queue_data)
-        await self.channel_layer.group_send(
-            group_name,
-            {
-                "type": "send_to_client",
-                "message": {
-                    "text_data": json.dumps(
-                        {
-                            "feature": {
-                                "presenter_channel": self.feature.presenter_channel,
-                                "title": self.feature.title,
-                            },
-                            "guest_queue": queue_data,
-                        }
-                    )
-                },
+
+async def broadcast_queue_data(feature):
+    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
+    queue_data = []
+    for session_key in feature.guest_queue:
+        ss = SessionStore(session_key).load()
+        queue_data.append({"guest_name": ss["guest_name"], "session_key": session_key})
+    await get_channel_layer().group_send(
+        feature.slug,
+        {
+            "type": "send_to_client",
+            "message": {
+                "text_data": json.dumps(
+                    {
+                        "feature": {
+                            "presenter_channel": feature.presenter_channel,
+                            "title": feature.title,
+                        },
+                        "guest_queue": queue_data,
+                    }
+                )
             },
-        )
+        },
+    )
 
 
 class StatusReceiverConsumer(AsyncConsumer):

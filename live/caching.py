@@ -57,13 +57,13 @@ class CachedListSet:
             return self.redis.zrem(self._key, *self._get_values())
 
     def append(self, value: str):
-        return self.redis.zadd(self._key, {value: self._max_score() + 1})
+        return self.redis.zadd(self._key, {value: self._max_score() + 1}, nx=True)
 
     def extend(self, values):
         if values:
             max_score = self._max_score()
             return self.redis.zadd(
-                self._key, {v: max_score + n + 1 for n, v in enumerate(values)}
+                self._key, {v: max_score + n + 1 for n, v in enumerate(values)}, nx=True
             )
 
     def remove(self, value):

@@ -1,7 +1,7 @@
 import logging
 import random
 from collections import OrderedDict
-from string import ascii_letters, ascii_lowercase
+from string import ascii_lowercase
 from typing import AsyncGenerator, Callable
 
 import pytest
@@ -40,11 +40,11 @@ def flush_redis_cache_at_function_finish():
 
 
 @pytest.fixture
-async def fake_guest_factory(random_string_factory) -> AsyncGenerator:
+async def fake_guest_factory(guest_name_factory) -> AsyncGenerator:
     communicators = []
 
     async def _fake_guest_factory(feature_slug: str) -> OrderedDict:
-        guest_name = random_string_factory()
+        guest_name = guest_name_factory()
         client = Client()
         await db_sync_to_async(
             lambda: client.post(f"/{feature_slug}/", {"guest_name": guest_name})
@@ -86,54 +86,161 @@ async def fake_presenter_factory() -> AsyncGenerator:
 
 
 @pytest.fixture
-async def single_connected_guest_presenter_feature(
+async def connected_presenter_feature_factory(
     fake_guest_factory, feature_factory, fake_presenter_factory, transactional_db
 ):
-    # Create objects
-    feature = await db_sync_to_async(feature_factory)()
-    guest = await fake_guest_factory(feature_slug=feature.slug)
-    presenter = await fake_presenter_factory(feature_slug=feature.slug)
+    async def _connected_presenter_feature_factory():
+        # Create objects
+        feature = await db_sync_to_async(feature_factory)()
+        presenter = await fake_presenter_factory(feature_slug=feature.slug)
 
-    # Connect guest & presenter
-    connected, subprotocol = await presenter["communicator"].connect()
-    assert connected
-    connected, subprotocol = await guest["communicator"].connect()
-    assert connected
+        # Connect guest & presenter
+        connected, subprotocol = await presenter["communicator"].connect()
+        assert connected
 
-    # Get latest feature state after connecting
-    feature = await db_sync_to_async(lambda: Feature.objects.get(slug=feature.slug))()
+        # Get latest feature state after connecting
+        feature = await db_sync_to_async(
+            lambda: Feature.objects.get(slug=feature.slug)
+        )()
 
-    yield guest, presenter, feature
+        return presenter, feature
+
+    return _connected_presenter_feature_factory
+
+
+@pytest.fixture
+async def connected_presenter_feature_objs(connected_presenter_feature_factory,):
+    return await connected_presenter_feature_factory()
+
+
+@pytest.fixture
+async def connected_guest_presenter_feature_factory(
+    fake_guest_factory, feature_factory, fake_presenter_factory, transactional_db
+):
+    async def _connected_guest_presenter_feature_factory():
+        # Create objects
+        feature = await db_sync_to_async(feature_factory)()
+        guest = await fake_guest_factory(feature_slug=feature.slug)
+        presenter = await fake_presenter_factory(feature_slug=feature.slug)
+
+        # Connect guest & presenter
+        connected, subprotocol = await presenter["communicator"].connect()
+        assert connected
+        connected, subprotocol = await guest["communicator"].connect()
+        assert connected
+
+        # Get latest feature state after connecting
+        feature = await db_sync_to_async(
+            lambda: Feature.objects.get(slug=feature.slug)
+        )()
+
+        return guest, presenter, feature
+
+    return _connected_guest_presenter_feature_factory
+
+
+@pytest.fixture
+async def connected_guest_presenter_feature_objs(
+    connected_guest_presenter_feature_factory,
+):
+    return await connected_guest_presenter_feature_factory()
 
 
 @pytest.fixture
 def random_string_factory() -> Callable:
-    """Return a random string"""
+    """Create a new random string. Will not return the same string twice. All letters
+    are lowercase."""
+    _used: list = []
 
-    def _create_random_string(minimum: int = 5, maximum: int = 9) -> str:
-        length = random.randint(minimum, maximum)
-        return "".join(random.choices(ascii_letters, k=length))
+    def _random_string_factory(
+        letters: bool = True,
+        numbers: bool = True,
+        num_words_min: int = 1,
+        num_words_max: int = 1,
+        word_length_min: int = 3,
+        word_length_max: int = 9,
+    ) -> str:
 
-    return _create_random_string
+        word_length_min = word_length_min or 1
+        word_length_max = word_length_max or 1
+        num_words_min = num_words_min or 1
+        num_words_max = num_words_max or 1
+
+        options: list = list()
+        if letters:
+            options += ascii_lowercase
+        if numbers:
+            options += "".join([str(n) for n in range(9)])
+
+        while True:
+            words = []
+            for n in range(random.randint(num_words_min, num_words_max)):
+                word_length = random.randint(word_length_min, word_length_max)
+                words.append("".join(random.choices(options, k=word_length)))
+            result = " ".join(words)
+            if result not in _used:
+                _used.append(result)
+                return result
+
+    return _random_string_factory
 
 
 @pytest.fixture
-def session_key_factory() -> Callable[[], str]:
-    """Return a random 32-character integer that imitates a session key"""
+def guest_name_factory(random_string_factory) -> Callable:
+    """Create a new random guest name"""
+
+    def _guest_name_factory() -> str:
+        return random_string_factory(
+            letters=True,
+            numbers=False,
+            num_words_min=1,
+            num_words_max=3,
+            word_length_min=3,
+            word_length_max=9,
+        ).title()
+
+    return _guest_name_factory
+
+
+@pytest.fixture
+def feature_title_factory(random_string_factory) -> Callable:
+    """Create a new random guest name"""
+
+    def _feature_title_factory() -> str:
+        return random_string_factory(
+            letters=True,
+            numbers=False,
+            num_words_min=2,
+            num_words_max=3,
+            word_length_min=2,
+            word_length_max=9,
+        ).title()
+
+    return _feature_title_factory
+
+
+@pytest.fixture
+def session_key_factory(random_string_factory) -> Callable[[], str]:
+    """Create a new random 32-character integer that imitates a session key"""
 
     def _create_session_key() -> str:
-        letters = ascii_lowercase
-        numbers = "".join([str(n) for n in range(9)])
-        return "".join([random.choice(numbers + letters) for n in range(32)])
+        while True:
+            return random_string_factory(
+                letters=True,
+                numbers=True,
+                num_words_min=1,
+                num_words_max=1,
+                word_length_min=32,
+                word_length_max=32,
+            )
 
     return _create_session_key
 
 
 @pytest.fixture
-def feature_factory(random_string_factory):
+def feature_factory(feature_title_factory):
     def _feature_factory(title=None):
-        title = title if not None else random_string_factory(10, 20).capitalize()
-        feature_title = random_string_factory(11, 14).upper()
+        feature_title = title or feature_title_factory()
         feature = Feature.objects.create(title=feature_title)
         return feature
 

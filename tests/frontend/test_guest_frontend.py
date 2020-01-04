@@ -1,23 +1,32 @@
 import pytest
-from channels.testing import ChannelsLiveServerTestCase
 
 
-class SeeVrTestCase(ChannelsLiveServerTestCase):
-    @pytest.fixture(autouse=True)
-    def set_fixtures_to_attributes(
-        self, browser, feature_factory, random_string_factory
-    ):
-        self.browser = browser
-        self.feature_factory = feature_factory
-        self.random_string_factory = random_string_factory
+@pytest.mark.django_db(transaction=True)
+def test_guest_sign_in(
+    channels_test_case,
+    connected_presenter_feature_objs,
+    guest_name_factory,
+    browser,
+    sign_in,
+):
+    presenter, feature = connected_presenter_feature_objs
+    guest_name = guest_name_factory()
+    sign_in(browser=browser, guest_name=guest_name, feature=feature)
+    expected_url = channels_test_case.live_server_url + f"/{feature.slug}/interact/"
+    assert browser.url == expected_url
 
 
-class TestGuestDisplayNameSubmission(SeeVrTestCase):
-    @pytest.mark.django_db(transaction=True)
-    def test_method(self):
-        feature = self.feature_factory()
-        guest_name = self.random_string_factory()
-        self.browser.visit(self.live_server_url + f"/{feature.slug}/")
-        self.browser.find_by_name("guest_name").first.fill(guest_name)
-        self.browser.find_by_value("Submit").first.click()
-        assert self.browser.url == self.live_server_url + f"/{feature.slug}/interact/"
+@pytest.mark.django_db(transaction=True)
+def test_first_guest_sign_in_loads_interact_buttons(
+    channels_test_case,
+    connected_presenter_feature_objs,
+    guest_name_factory,
+    browser,
+    sign_in,
+):
+    presenter, feature = connected_presenter_feature_objs
+    guest_name = guest_name_factory()
+    sign_in(browser=browser, guest_name=guest_name, feature=feature)
+    assert browser.is_element_present_by_value("Start", wait_time=2)
+    assert browser.is_element_present_by_value("Stop", wait_time=2)
+    # TODO: Test for visibility

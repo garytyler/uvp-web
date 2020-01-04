@@ -26,10 +26,10 @@ async def test_presenter_connect_sets_feature_presenter_channel(
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 async def test_presenter_disconnect_unsets_feature_presenter_channel(
-    single_connected_guest_presenter_feature,
+    connected_guest_presenter_feature_factory,
 ):
     # Create objects
-    guest, presenter, feature = single_connected_guest_presenter_feature
+    guest, presenter, feature = await connected_guest_presenter_feature_factory()
 
     # Test feature has presenter_channel set
     feature = await db_sync_to_async(lambda: Feature.objects.get(slug=feature.slug))()

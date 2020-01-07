@@ -45,8 +45,6 @@ async def watch_feature_state_in_thread(feature_slug):
 
 
 async def refresh_feature_states(feature_slugs=None):
-    begin = time.time()
-
     if feature_slugs:
         features = []
         for feature_slug in feature_slugs:
@@ -58,6 +56,8 @@ async def refresh_feature_states(feature_slugs=None):
 
     presenting_features = [f for f in features if f.presenter_channel]
     for feature in presenting_features:
+        begin = time.time()
+
         # Get
         status = await get_guest_queue_member_status(feature=feature)
 
@@ -70,9 +70,10 @@ async def refresh_feature_states(feature_slugs=None):
         # Broadcast
         await broadcast_feature_state(feature=feature)
 
-    # Finish
-    time_spent = time.time() - begin
-    log.info(f"REFRESHED GUEST QUEUE - {time_spent=}, {feature.guest_queue=}")
+        # Finish
+        time_spent = time.time() - begin
+        log_values = f"{feature.slug=}, {time_spent=}, {feature.guest_queue=}"
+        log.info("REFRESHED GUEST QUEUE - " + log_values)
 
 
 async def get_guest_queue_member_status(feature) -> dict:
@@ -89,14 +90,14 @@ async def get_guest_queue_member_status(feature) -> dict:
     collection_key = f"status-store:{feature.slug}:{uuid.uuid1()}"
     collection_store = caching.CachedListSet(collection_key)
 
-    # Request session status
-    await get_channel_layer().group_send(
-        feature.slug,
-        {
-            "type": "update_channel_status",
-            "message": {"collection_key": collection_key},
-        },
-    )
+    for session_key in feature.guest_queue:
+        await get_channel_layer().group_send(
+            session_key,
+            {
+                "type": "update_channel_status",
+                "message": {"collection_key": collection_key},
+            },
+        )
 
     # Wait for status responses
     num_channels = len(feature.member_channels)
@@ -116,36 +117,62 @@ async def get_guest_queue_member_status(feature) -> dict:
 
     # Create status dict with correct session order
     queued = []
-    added = []
     for sk in feature.guest_queue:
-        if feature.guest_queue:
+        if sk in alive_sessions:
             queued.append(sk)
-        elif sk in alive_sessions:
-            added.append(sk)
+            alive_sessions.remove(sk)
+    added = alive_sessions
 
-    return {"sessions": queued + added, "channels": alive_channels}
+    status = {"sessions": queued + added, "channels": set(alive_channels)}
+
+    return status
+
+
+async def get_session_stores(session_keys):
+    if isinstance(session_keys, str):
+        session_keys = [session_keys]
+    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
+    return [SessionStore(sk).load() for sk in session_keys]
 
 
 async def broadcast_feature_state(feature):
-    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
-    queue_data = []
-    for session_key in feature.guest_queue:
-        ss = SessionStore(session_key).load()
-        queue_data.append({"guest_name": ss["guest_name"], "session_key": session_key})
-    await get_channel_layer().group_send(
-        feature.slug,
-        {
-            "type": "send_to_client",
-            "message": {
-                "text_data": json.dumps(
-                    {
-                        "feature": {
-                            "presenter_channel": feature.presenter_channel,
-                            "title": feature.title,
-                        },
-                        "guest_queue": queue_data,
-                    }
-                )
+    guest_datas = []
+    for ss in await get_session_stores(feature.guest_queue):
+        guest_datas.append(
+            {"guest_name": ss["guest_name"], "session_key": ss["session_key"]}
+        )
+    for guest_data in guest_datas:
+        await get_channel_layer().group_send(
+            guest_data["session_key"],
+            {
+                "type": "send_to_client",
+                "message": {
+                    "text_data": json.dumps(
+                        {
+                            "feature": {
+                                "presenter_channel": feature.presenter_channel,
+                                "title": feature.title,
+                            },
+                            "guest_queue": guest_datas,
+                        }
+                    )
+                },
             },
-        },
-    )
+        )
+    # await get_channel_layer().group_send(
+    #     feature.slug,
+    #     {
+    #         "type": "send_to_client",
+    #         "message": {
+    #             "text_data": json.dumps(
+    #                 {
+    #                     "feature": {
+    #                         "presenter_channel": feature.presenter_channel,
+    #                         "title": feature.title,
+    #                     },
+    #                     "guest_queue": queue_data,
+    #                 }
+    #             )
+    #         },
+    #     },
+    # )

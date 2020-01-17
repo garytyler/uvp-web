@@ -17,7 +17,7 @@ pyflakes = {git = "https://github.com/pycqa/pyflakes",ref = "1911c20"}
 tox = "*"
 
 [packages]
-django = "==2.2.8"
+django = ">=2.2.9"
 channels = "*"
 channels-redis = "*"
 psycopg2-binary = "*"

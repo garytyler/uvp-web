@@ -70,6 +70,7 @@ async def test_queued_guests_expire(
     assert 0 == len(list(feature.guest_queue))
 
 
+@pytest.mark.skip  # Removal is currently only handled by the observer
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("num_guests", ([2, 5]))

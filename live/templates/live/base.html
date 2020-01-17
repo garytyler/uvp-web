@@ -1,37 +1,57 @@
 {% load static %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Meta block -->
     {% block meta %}{% endblock meta %}
-    <link rel="stylesheet" type="text/css" href="{% static 'live/js/lib/bootstrap/dist/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'live/css/style.css' %}">
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'live/img/favicon.ico' %}"/>
-</head>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'live/css/style.css' %}"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="{% static 'live/img/favicon.ico' %}"
+    />
+  </head>
 
-
-<body class="body">
+  <body class="body">
+    <!-- Support block -->
     {% block support %}{% endblock support %}
+    <!-- Content block -->
     {% block content %}{% endblock content %}
-    <script type="text/javascript" src="{% static 'live/js/lib/jquery/dist/jquery.js' %}"></script>
-    <script type="text/javascript" src="{% static 'live/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"></script>
-    <script type="text/javascript"
-        src="{% static 'live/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"></script>
+    <script
+      type="text/javascript"
+      src="{% static 'live/js/lib/jquery/dist/jquery.js' %}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{% static 'live/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{% static 'live/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"
+    ></script>
 
     {% if debug %}
     <script>
-        var DEBUG = true;
+      var DEBUG = true;
     </script>
     {% else %}
     <script>
-        var DEBUG = false;
+      var DEBUG = false;
     </script>
     {% endif %}
 
+    <!-- Script block -->
     {% block script %}{% endblock script %}
-</body>
-
-
+  </body>
 </html>

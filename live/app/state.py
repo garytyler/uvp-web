@@ -128,19 +128,24 @@ async def get_guest_queue_member_status(feature) -> dict:
     return status
 
 
-async def get_session_stores(session_keys):
-    if isinstance(session_keys, str):
-        session_keys = [session_keys]
-    SessionStore = import_module(settings.SESSION_ENGINE).SessionStore
+async def get_session_store(session_key: str):
+    SessionStore = getattr(import_module(settings.SESSION_ENGINE), "SessionStore")
+    return SessionStore(session_key).load()
+
+
+async def get_session_stores(session_keys: list):
+    SessionStore = getattr(import_module(settings.SESSION_ENGINE), "SessionStore")
     return [SessionStore(sk).load() for sk in session_keys]
 
 
 async def broadcast_feature_state(feature):
     guest_datas = []
-    for ss in await get_session_stores(feature.guest_queue):
+    for session_key in feature.guest_queue:
+        session_store = await get_session_store(session_key)
         guest_datas.append(
-            {"guest_name": ss["guest_name"], "session_key": ss["session_key"]}
+            {"guest_name": session_store["guest_name"], "session_key": session_key}
         )
+
     for guest_data in guest_datas:
         await get_channel_layer().group_send(
             guest_data["session_key"],

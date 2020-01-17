@@ -1,29 +1,31 @@
 {% extends 'live/base.html' %}
 
-
+<!-- Start meta block -->
 {% block meta %}
-<meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
-    name="viewport">
+<meta
+  content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+  name="viewport"
+/>
+<!-- End meta block -->
 {% endblock meta %}
 
-
+<!-- Start content block -->
 {% block content %}
 <div class="container">
+  <!-- TODO
 
-    <!-- TODO
-
-    if(is mobile){
-        warn
-    } else {
-        desktop
-    }
+        if(is mobile){
+            warn
+        } else {
+            desktop
+        }
 
     -->
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit">
-    </form>
+  <form method="post">
+    {% csrf_token %} {{ form }}
+    <input type="submit" value="Submit" />
+  </form>
 </div>
+<!-- End content block -->
 {% endblock content%}

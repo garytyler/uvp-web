@@ -1,74 +1,116 @@
 {% extends 'live/base.html' %}
+
+<!-- Load static files -->
 {% load static %}
 
-
+<!-- Start meta block -->
 {% block meta %}
-<meta name="viewport"
-    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta
+  name="viewport"
+  content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+/>
+<!-- End meta block -->
 {% endblock meta %}
 
+<!-- Start script block -->
 {% block script %}
+
+<!-- Inject context data -->
 {{ context_data|json_script:"context_json" }}
-<script type="text/javascript" src="{% static 'live/js/guest_interact.js' %}"></script>
+<script
+  type="text/javascript"
+  src="{% static 'live/js/guest_interact.js' %}"
+></script>
+<!-- End meta block -->
 {% endblock script %}
 
-
+<!-- Start support block -->
 {% block support %}
 <!-- <div id="debug" style="display:none;"> -->
 <div id="debug" style="display:none;">
-    <table style="float:right;margin-right:5px">
-        <td align="right" style="width:7ch"><b>alpha</b></td>
-        <td id="motiondata_alpha" style="width:7ch"></td>
-        <td align="right" style="width:6ch"><b>beta</b></td>
-        <td id="motiondata_beta" style="width:7ch"></td>
-        <td align="right" style="width:7ch"><b>gamma</b></td>
-        <td id="motiondata_gamma" style="width:7ch"></td>
-    </table>
-    <input type="button" id="debug_send_current_state" value="Send current state" style="float:right;">
+  <table style="float:right;margin-right:5px">
+    <td align="right" style="width:7ch"><b>alpha</b></td>
+    <td id="motiondata_alpha" style="width:7ch"></td>
+    <td align="right" style="width:6ch"><b>beta</b></td>
+    <td id="motiondata_beta" style="width:7ch"></td>
+    <td align="right" style="width:7ch"><b>gamma</b></td>
+    <td id="motiondata_gamma" style="width:7ch"></td>
+  </table>
+  <input
+    type="button"
+    id="debug_send_current_state"
+    value="Send current state"
+    style="float:right;"
+  />
 </div>
+<!-- End support block -->
 {% endblock support %}
 
-
+<!-- Start content block -->
 {% block content %}
 <div class="container">
-    <div id="guest_name"></div>
+  <div id="guest_name"></div>
 
-    <div id="message_display"></div>
+  <div id="message_display"></div>
 
-    <div id="permission_ui" style="display:none;">
-        <h2>
-            <input type="button" id="grant_permissions_button" style="display:block;width:100%;height:200px;" value="Ready">
-        </h2>
-    </div>
+  <div id="permission_ui" style="display:none;">
+    <h2>
+      <input
+        type="button"
+        id="grant_permissions_button"
+        style="display:block;width:100%;height:200px;"
+        value="Ready"
+      />
+    </h2>
+  </div>
 
-    <div id="interact_ui" style="display:none;">
-        <h2>
-            <input type="button" id="start_interact_button" style="display:block;width:100%;height:200px;" value="Start">
-            <input type="button" id="stop_interact_button" style="display:none;width:100%;height:200px;" value="Stop">
-        </h2>
-        <h4>
-            <input type="button" id="exit_interact_button" value="Exit"
-                style="display:block;width:40%;height:60px;margin-left:30%">
-        </h4>
-    </div>
-    <div id="waiting_ui" style="display:none;">
-        <br>
-        <br>
-        <h3>Queue</h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Pos.</th>
-                    <th>Name</th>
-                    <th>Session Key</th>
-                </tr>
-            </thead>
-            <tbody id="guest_queue_table_body"></tbody>
-        </table>
-        <h4>
-            <input type="button" id="exit_waiting_button" value="Leave"
-                style="display:block;width:40%;height:60px;margin-left:30%">
-        </h4>
-    </div>
+  <div id="interact_ui" style="display:none;">
+    <h2>
+      <input
+        type="button"
+        id="start_interact_button"
+        style="display:block;width:100%;height:200px;"
+        value="Start"
+      />
+      <input
+        type="button"
+        id="stop_interact_button"
+        style="display:none;width:100%;height:200px;"
+        value="Stop"
+      />
+    </h2>
+    <h4>
+      <input
+        type="button"
+        id="exit_interact_button"
+        value="Exit"
+        style="display:block;width:40%;height:60px;margin-left:30%"
+      />
+    </h4>
+  </div>
+  <div id="waiting_ui" style="display:none;">
+    <br />
+    <br />
+    <h3>Queue</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Pos.</th>
+          <th>Name</th>
+          <th>Session Key</th>
+        </tr>
+      </thead>
+      <tbody id="guest_queue_table_body"></tbody>
+    </table>
+    <h4>
+      <input
+        type="button"
+        id="exit_waiting_button"
+        value="Leave"
+        style="display:block;width:40%;height:60px;margin-left:30%"
+      />
+    </h4>
+  </div>
 </div>
+<!-- End content block -->
 {% endblock content %}

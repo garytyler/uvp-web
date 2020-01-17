@@ -25,7 +25,8 @@ dj-database-url = "*"
 django-redis = "*"
 pytest-cov = "*"
 cached-property = "*"
-beatserver = {editable = true,git = "https://github.com/garytyler/beatserver",ref="4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"}
+beatserver = {editable = true,git = "https://github.com/garytyler/beatserver",ref = "4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"}
+django-rest-framework = "*"
 
 [requires]
 python_version = "3.8"

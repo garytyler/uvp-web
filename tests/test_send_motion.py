@@ -1,4 +1,3 @@
-import asyncio
 import struct
 
 import pytest
@@ -16,7 +15,6 @@ async def test_transact_orientation_array(
 
     # Send and receive
     await guest["communicator"].send_to(bytes_data=orientation_bytes)
-    await asyncio.sleep(1)
     received_bytes = await presenter["communicator"].receive_from()
 
     # Test results

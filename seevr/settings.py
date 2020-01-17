@@ -14,148 +14,173 @@ import os
 from distutils.util import strtobool
 
 import dj_database_url
-
-# Build paths inside the seevr like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from configurations import Configuration, values
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoseevr.com/en/1.11/howto/deployment/checklist/
+class Common(Configuration):
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+    # Build paths inside the seevr like this: os.path.join(BASE_DIR, ...)
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+    # Quick-start development settings - unsuitable for production
+    # See https://docs.djangoseevr.com/en/1.11/howto/deployment/checklist/
 
-# Allowed hosts
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", default="").split(",")
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = values.SecretValue()
 
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = values.BooleanValue(False)
 
-# Application definition
+    # Allowed hosts
+    ALLOWED_HOSTS = values.ListValue([])
 
-INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "live.apps.LiveConfig",
-    "channels",
-    "beatserver",
-]
+    # Application definition
+    INSTALLED_APPS = [
+        "django.contrib.admin",
+        "django.contrib.auth",
+        "django.contrib.contenttypes",
+        "django.contrib.sessions",
+        "django.contrib.messages",
+        "django.contrib.staticfiles",
+        "seevr.live",
+        "channels",
+        "beatserver",
+    ]
 
-MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
+    MIDDLEWARE = [
+        "whitenoise.middleware.WhiteNoiseMiddleware",
+        "django.middleware.security.SecurityMiddleware",
+        "django.contrib.sessions.middleware.SessionMiddleware",
+        "django.middleware.common.CommonMiddleware",
+        "django.middleware.csrf.CsrfViewMiddleware",
+        "django.contrib.auth.middleware.AuthenticationMiddleware",
+        "django.contrib.messages.middleware.MessageMiddleware",
+        "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    ]
 
-ROOT_URLCONF = "seevr.urls"
+    ROOT_URLCONF = "seevr.urls"
 
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "live", "templates")],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ]
-        },
+    TEMPLATES = [
+        {
+            "BACKEND": "django.template.backends.django.DjangoTemplates",
+            "DIRS": [os.path.join(BASE_DIR, "seevr", "templates")],
+            "APP_DIRS": True,
+            "OPTIONS": {
+                "context_processors": [
+                    "django.template.context_processors.debug",
+                    "django.template.context_processors.request",
+                    "django.contrib.auth.context_processors.auth",
+                    "django.contrib.messages.context_processors.messages",
+                ]
+            },
+        }
+    ]
+
+    WSGI_APPLICATION = "seevr.wsgi.application"
+
+    # Database
+    # https://docs.djangoseevr.com/en/1.11/ref/settings/#databases
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=int(os.getenv("CONN_MAX_AGE", default=0))
+        )
     }
-]
 
-WSGI_APPLICATION = "seevr.wsgi.application"
+    # Password validation
+    # https://docs.djangoseevr.com/en/1.11/ref/settings/#auth-password-validators
 
+    AUTH_PASSWORD_VALIDATORS = [
+        {
+            "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        },
+        {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+        {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+        {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    ]
 
-# Database
-# https://docs.djangoseevr.com/en/1.11/ref/settings/#databases
+    # Internationalization
+    # https://docs.djangoseevr.com/en/1.11/topics/i18n/
 
-DATABASES = {
-    "default": dj_database_url.config(
-        conn_max_age=int(os.getenv("CONN_MAX_AGE", default=0))
+    LANGUAGE_CODE = "en-us"
+
+    TIME_ZONE = "UTC"
+
+    USE_I18N = True
+
+    USE_L10N = True
+
+    USE_TZ = True
+
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoseevr.com/en/1.11/howto/static-files/
+
+    STATIC_URL = "/static/"
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+    # Caching
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
+            },
+        }
+    }
+
+    SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+    # # Channels
+    ASGI_APPLICATION = "seevr.routing.application"
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379/0")]
+            },
+        }
+    }
+
+    # Logging
+    LOGGING = {
+        "version": 1,
+        "loggers": {"django": {"level": os.getenv("LOG_LEVEL_DJANGO", "INFO")}},
+    }
+
+    # Live application settings
+    GUEST_STATUS_PING_TIMEOUT = int(os.environ.get("GUEST_STATUS_PING_TIMEOUT", 3))
+    GUEST_STATUS_CHECK_INTERVAL = int(os.environ.get("GUEST_STATUS_CHECK_INTERVAL", 4))
+    USE_THREAD_BASED_FEATURE_OBSERVERS = strtobool(
+        os.environ.get("USE_THREAD_BASED_FEATURE_OBSERVERS", "False")
     )
-}
 
 
-# Password validation
-# https://docs.djangoseevr.com/en/1.11/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-]
+class Production(Common):
+    pass
 
 
-# Internationalization
-# https://docs.djangoseevr.com/en/1.11/topics/i18n/
+class Development(Common):
+    """
+    The in-development settings and the default configuration.
+    """
 
-LANGUAGE_CODE = "en-us"
+    DEBUG = True
 
-TIME_ZONE = "UTC"
+    ALLOWED_HOSTS: list = []
 
-USE_I18N = True
+    INTERNAL_IPS = ["127.0.0.1"]
 
-USE_L10N = True
+    # Template debugging
+    # Requires current host in INTERNAL_IPS
+    TEMPLATE_DEBUG = True
 
-USE_TZ = True
+    # Channels
+    CHANNEL_LAYERS = Common.CHANNEL_LAYERS
+    if os.getenv("IN_MEMORY_CHANNEL_LAYER"):
+        CHANNEL_LAYERS["default"] = {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoseevr.com/en/1.11/howto/static-files/
-
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-
-# Caching
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "SERIALIZER": "django_redis.serializers.json.JSONSerializer",
-        },
-    }
-}
-
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-
-# Channels
-ASGI_APPLICATION = "seevr.routing.application"
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379/0")]},
-    }
-}
-
-
-# Logging
-LOGGING = {
-    "version": 1,
-    "loggers": {"django": {"level": os.getenv("LOG_LEVEL_DJANGO", "INFO")}},
-}
-
-
-# Live application settings
-GUEST_STATUS_PING_TIMEOUT = int(os.environ.get("GUEST_STATUS_PING_TIMEOUT", 3))
-GUEST_STATUS_CHECK_INTERVAL = int(os.environ.get("GUEST_STATUS_CHECK_INTERVAL", 4))
-USE_THREAD_BASED_FEATURE_OBSERVERS = strtobool(
-    os.environ.get("USE_THREAD_BASED_FEATURE_OBSERVERS", "False")
-)
+    # Expire sessions at browser close
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = strtobool(
+        os.getenv("SESSION_EXPIRE_AT_BROWSER_CLOSE", "False")
+    )

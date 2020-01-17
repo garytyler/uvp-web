@@ -14,6 +14,7 @@ pytest-mock = "*"
 pytest-splinter = "*"
 flake8 = "*"
 pyflakes = {git = "https://github.com/pycqa/pyflakes",ref = "1911c20"}
+tox = "*"
 
 [packages]
 django = "==2.2.8"
@@ -23,10 +24,9 @@ psycopg2-binary = "*"
 whitenoise = "*"
 dj-database-url = "*"
 django-redis = "*"
-pytest-cov = "*"
-cached-property = "*"
 beatserver = {editable = true,git = "https://github.com/garytyler/beatserver",ref = "4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"}
 django-rest-framework = "*"
+django-configurations = "*"
 
 [requires]
 python_version = "3.8"

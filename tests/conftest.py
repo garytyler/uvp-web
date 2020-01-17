@@ -1,18 +1,19 @@
 import logging
 import random
 from collections import OrderedDict
+from importlib import import_module
 from string import ascii_lowercase
 from typing import AsyncGenerator, Callable
 
 import pytest
 from channels.db import database_sync_to_async as db_sync_to_async
 from channels.testing import WebsocketCommunicator
-from django.contrib.sessions.models import Session
+from django.conf import settings
 from django.core.management import call_command
 from django.test import Client
 from django_redis import get_redis_connection
 
-from live.models import Feature
+from seevr.live.models import Feature
 from seevr.routing import application
 
 
@@ -249,7 +250,7 @@ def feature_factory(feature_title_factory):
 
 @pytest.fixture
 def SessionStore():
-    yield Session.get_session_store_class()
+    yield getattr(import_module(settings.SESSION_ENGINE), "SessionStore")
 
 
 @pytest.fixture

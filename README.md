@@ -27,6 +27,12 @@
 - ASGI_THREADS (See [Channels - Database Connections](https://channels.readthedocs.io/en/latest/topics/databases.html#database-connections))
 - IN_MEMORY_CHANNEL_LAYER (For development only)
 
+# Configuration
+
+- DJANGO_SECRET_KEY
+- DJANGO_DEBUG
+- DJANGO_TEMPLATE_DEBUG
+
 ## Exit Codes
 
 - 4190 - Forced guest dequeue by supervisor

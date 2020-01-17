@@ -1,6 +1,6 @@
 import pytest
 
-from live.models import Feature
+from seevr.live.models import Feature
 
 
 @pytest.mark.parametrize("title, expected_slug", ([("Big Day", "big-day")]))

@@ -1,12 +1,11 @@
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.core.cache import caches
 from django.db import models
 from django.utils.text import slugify
 
-from live.app import caching
+from seevr.live.app import caching
 
 cache = caches[settings.SESSION_CACHE_ALIAS]
 
@@ -15,9 +14,9 @@ class Feature(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(default="", max_length=100, editable=False)
     turn_duration = models.DurationField(default=timedelta(minutes=2))
-    current_guests = ArrayField(
-        models.CharField(max_length=100), default=list, blank=True
-    )
+    # current_guests = ArrayField(
+    #     models.CharField(max_length=100), default=list, blank=True
+    # )
 
     # class Meta:
     #     unique_together = [['user', 'slug']] # Set when users are added

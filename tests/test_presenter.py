@@ -1,7 +1,7 @@
 import pytest
 from channels.db import database_sync_to_async as db_sync_to_async
 
-from live.models import Feature
+from seevr.live.models import Feature
 
 
 @pytest.mark.asyncio

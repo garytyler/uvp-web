@@ -10,8 +10,8 @@ from channels.db import database_sync_to_async as db_sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 
-from live.app import caching
-from live.models import Feature
+from seevr.live.app import caching
+from seevr.live.models import Feature
 
 log = logging.getLogger(__name__)
 

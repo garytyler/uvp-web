@@ -14,7 +14,7 @@
         }
     ],
     "env": {
-        "ALLOWED_HOSTS": {
+        "DJANGO_ALLOWED_HOSTS": {
             "description": "The host/domain names that this Django site can serve, delimited by commas. For a basic Heroku deployment, use the full app url: APPNAME.herokuapp.com",
             "value": ".herokuapp.com"
         },

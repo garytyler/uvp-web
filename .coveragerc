@@ -1,4 +1,3 @@
 [run]
 include =
     seevr/*
-    live/*

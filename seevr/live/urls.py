@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from live import views
+from seevr.live import views
 
 app_name = "live"
 

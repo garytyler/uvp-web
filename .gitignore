@@ -1,4 +1,5 @@
-live/migrations
+migrations
+!migrations/0001_initial.py
 
 # VS Code
 .vscode/

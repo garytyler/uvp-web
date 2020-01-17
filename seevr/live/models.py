@@ -14,12 +14,6 @@ class Feature(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(default="", max_length=100, editable=False)
     turn_duration = models.DurationField(default=timedelta(minutes=2))
-    # current_guests = ArrayField(
-    #     models.CharField(max_length=100), default=list, blank=True
-    # )
-
-    # class Meta:
-    #     unique_together = [['user', 'slug']] # Set when users are added
 
     def __str__(self):
         return f"{self.title}"

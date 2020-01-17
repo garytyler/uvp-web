@@ -42,9 +42,10 @@ class Common(Configuration):
         "django.contrib.sessions",
         "django.contrib.messages",
         "django.contrib.staticfiles",
-        "seevr.live",
         "channels",
         "beatserver",
+        "seevr.accounts",
+        "seevr.live",
     ]
 
     MIDDLEWARE = [
@@ -78,13 +79,17 @@ class Common(Configuration):
 
     WSGI_APPLICATION = "seevr.wsgi.application"
 
-    # Database
-    # https://docs.djangoseevr.com/en/1.11/ref/settings/#databases
-    DATABASES = {
-        "default": dj_database_url.config(
-            conn_max_age=int(os.getenv("CONN_MAX_AGE", default=0))
-        )
-    }
+    # # Database
+    # # https://docs.djangoseevr.com/en/1.11/ref/settings/#databases
+    # DATABASES = {
+    #     "default": dj_database_url.config(
+    #         conn_max_age=int(os.getenv("CONN_MAX_AGE", default=0))
+    #     )
+    # }
+    # Temporary!
+    DATABASES = values.DatabaseURLValue(
+        "sqlite:///{}".format(os.path.join(BASE_DIR, "db.sqlite3"))
+    )
 
     # Password validation
     # https://docs.djangoseevr.com/en/1.11/ref/settings/#auth-password-validators
@@ -154,6 +159,8 @@ class Common(Configuration):
     USE_THREAD_BASED_FEATURE_OBSERVERS = strtobool(
         os.environ.get("USE_THREAD_BASED_FEATURE_OBSERVERS", "False")
     )
+
+    AUTH_USER_MODEL = "accounts.User"
 
 
 class Production(Common):

@@ -29,27 +29,10 @@
     <!-- Content block -->
     {% block content %}{% endblock content %}
     <script
-      type="text/javascript"
-      src="{% static 'live/js/lib/jquery/dist/jquery.js' %}"
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+      crossorigin="anonymous"
     ></script>
-    <script
-      type="text/javascript"
-      src="{% static 'live/js/lib/gyronorm/dist/gyronorm.complete.min.js' %}"
-    ></script>
-    <script
-      type="text/javascript"
-      src="{% static 'live/js/lib/reconnecting-websocket/dist/reconnecting-websocket-iife.js' %}"
-    ></script>
-
-    {% if debug %}
-    <script>
-      var DEBUG = true;
-    </script>
-    {% else %}
-    <script>
-      var DEBUG = false;
-    </script>
-    {% endif %}
 
     <!-- Script block -->
     {% block script %}{% endblock script %}

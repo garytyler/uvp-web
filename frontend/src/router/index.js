@@ -5,8 +5,23 @@ import GuestApp from "@/views/GuestApp.vue";
 // import Error404ResourceNotFound from "@/views/Error404ResourceNotFound.vue";
 // import Error404PageNotFound from "@/views/Error404PageNotFound.vue";
 import Error404NotFound from "@/views/Error404NotFound.vue";
+import store from "@/store";
 
 Vue.use(VueRouter);
+
+var loadFeatureBeforeRouterEnter = function(to, from, next) {
+  sessionStorage.setItem("key1", "value1");
+  console.log(sessionStorage.getItem("key1"));
+  store
+    .dispatch("guest_app/loadFeature", to.params.feature_slug)
+    .then(function() {
+      next();
+    })
+    .catch(error => {
+      let message = `Feature not found: ${error.config.url}`;
+      next(`/not-found/?message=${message}`);
+    });
+};
 
 const routes = [
   {
@@ -15,12 +30,11 @@ const routes = [
     component: UserApp,
     props: true
   },
-
   {
     path: "/feature/:feature_slug",
-    name: "guest",
+    name: "guest-app",
     component: GuestApp,
-    props: route => ({ feature_slug: route.query.feature_slug })
+    beforeEnter: loadFeatureBeforeRouterEnter
   },
   {
     path: "/not-found",

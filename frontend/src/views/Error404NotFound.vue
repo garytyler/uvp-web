@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  name: "not-found",
+  name: "error-404-not-found",
   props: {
     message: {
       type: String,

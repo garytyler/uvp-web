@@ -6,49 +6,17 @@
 </template>
 
 <script>
-import axios from "axios";
-// import { apiService } from "@/common/api.service.js";
+import { mapState, mapActions } from "vuex";
 import GuestNameEditor from "@/components/GuestNameEditor.vue";
-// import Error404ResourceNotFound from "@/views/Error404ResourceNotFound.vue";
+
 export default {
   name: "GuestApp",
-  props: {
-    feature_slug: {
-      type: String,
-      required: true
-    }
-  },
   components: { GuestNameEditor },
-  data() {
-    return {
-      feature: null
-    };
-  },
-  methods: {
-    openModal() {
-      this.showModal = true;
-    },
-    onModalCloseButtonClicked() {
-      this.showModal = false;
-    }
-    //   async fetchFeatureData() {
-    //     this.feature = await apiService(`/api/features/${this.slug}/`);
-    //   }
-  },
-  async beforeRouteEnter(to, from, next) {
-    await axios
-      .get(`/api/features/${to.params.feature_slug}/`)
-      .then(function() {
-        next();
-      })
-      .catch(error => {
-        let message = `Feature not found: ${error.config.url}`;
-        next(`/not-found/?message=${message}`);
-      });
-  }
+  computed: mapState({
+    feature: state => state.guest_app.feature
+  }),
+  methods: mapActions("guest_app", ["loadFeature"])
 };
-
-// };
 </script>
 
 <style></style>

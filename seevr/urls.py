@@ -14,6 +14,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 
-urlpatterns = [path("", include("seevr.live.urls")), path("admin/", admin.site.urls)]
+from seevr.views import IndexTemplateView
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/", include("seevr.live.api.urls")),
+    # path("", include("seevr.live.urls")),
+    re_path(r"^.*$", IndexTemplateView.as_view(), name="entry-point"),
+]

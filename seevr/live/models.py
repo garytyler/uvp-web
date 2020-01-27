@@ -11,6 +11,8 @@ cache = caches[settings.SESSION_CACHE_ALIAS]
 
 
 class Feature(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=100)
     slug = models.SlugField(default="", max_length=100, editable=False)
     turn_duration = models.DurationField(default=timedelta(minutes=2))
@@ -41,3 +43,14 @@ class Feature(models.Model):
     @presenter_channel.setter
     def presenter_channel(self, value):
         return cache.set(self._key_prefix + "presenter_channel", value)
+
+
+class Guest(models.Model):
+    name = models.CharField(max_length=100)
+    session_key = models.CharField(max_length=100, primary_key=True)
+    feature = models.ForeignKey(
+        Feature, on_delete=models.CASCADE, related_name="features"
+    )
+
+    def __str__(self):
+        return self.name

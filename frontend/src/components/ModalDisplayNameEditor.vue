@@ -2,14 +2,6 @@
   <div>
     <b-button v-b-modal.modal-prevent-closing>Edit Name</b-button>
 
-    <div class="mt-3">
-      Submitted Names:
-      <div v-if="submittedNames.length === 0">--</div>
-      <ul v-else class="mb-0 pl-3">
-        <li v-for="name in submittedNames" v-bind:key="name">{{ name }}</li>
-      </ul>
-    </div>
-
     <b-modal
       id="modal-prevent-closing"
       size="sm"
@@ -81,12 +73,11 @@
 
 <script>
 export default {
-  name: "GuestNameEditor",
+  name: "ModalDisplayNameEditor",
   data() {
     return {
       name: "",
-      nameState: null,
-      submittedNames: []
+      nameState: null
     };
   },
   methods: {
@@ -110,12 +101,14 @@ export default {
       if (!this.checkFormValidity()) {
         return;
       }
-      // Push the name to submitted names
-      this.submittedNames.push(this.name);
-      // Hide the modal manually
-      this.$nextTick(() => {
-        this.$bvModal.hide("modal-prevent-closing");
-      });
+      this.$store
+        .dispatch("interact/updateDisplayName", this.name)
+        .then(() => {
+          this.$bvModal.hide("modal-prevent-closing");
+        })
+        .catch(error => {
+          console.log(error);
+        });
     }
   }
 };

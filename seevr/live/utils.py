@@ -11,7 +11,7 @@ def get_session(session_key: str):
 
 
 async def async_get_session(session_key: str):
-    return db_sync_to_async(get_session)(session_key=session_key)
+    return await db_sync_to_async(get_session)(session_key=session_key)
 
 
 def get_sessions(session_keys: list):
@@ -19,4 +19,4 @@ def get_sessions(session_keys: list):
 
 
 async def async_get_sessions(session_keys: list):
-    return db_sync_to_async(get_sessions)(session_keys=session_keys)
+    return await db_sync_to_async(get_sessions)(session_keys=session_keys)

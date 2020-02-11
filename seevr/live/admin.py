@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from .models import Feature
+from .models import Feature, Guest
+
+# class FeatureAdmin(admin.ModelAdmin):
+#     pass
+#     # prepopulated_fields = {"slug": ("title",)}
 
 
-class FeatureAdmin(admin.ModelAdmin):
-    pass
-    # prepopulated_fields = {"slug": ("title",)}
-
-
-admin.site.register(Feature, FeatureAdmin)
+admin.site.register(Feature)
+admin.site.register(Guest)

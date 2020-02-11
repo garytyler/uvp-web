@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from django.conf import settings
@@ -5,12 +6,13 @@ from django.core.cache import caches
 from django.db import models
 from django.utils.text import slugify
 
-from seevr.live.app import caching
+from seevr.live import caching
 
 cache = caches[settings.SESSION_CACHE_ALIAS]
 
 
 class Feature(models.Model):
+    object_id = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=100)
@@ -26,7 +28,7 @@ class Feature(models.Model):
 
     @property
     def _key_prefix(self):
-        return f"{self.pk}:{self.slug}:"
+        return f"{self.object_id}:{self.slug}:"
 
     @property
     def guest_queue(self):
@@ -46,10 +48,13 @@ class Feature(models.Model):
 
 
 class Guest(models.Model):
-    name = models.CharField(max_length=100)
+    object_id = models.UUIDField(default=uuid.uuid4, editable=False)
     session_key = models.CharField(max_length=100, primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=100)
     feature = models.ForeignKey(
-        Feature, on_delete=models.CASCADE, related_name="features"
+        Feature, on_delete=models.CASCADE, related_name="guests"
     )
 
     def __str__(self):

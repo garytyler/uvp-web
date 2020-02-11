@@ -8,7 +8,7 @@ from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncConsumer, AsyncWebsocketConsumer
 from django.conf import settings
 
-from seevr.live.app import caching, state
+from seevr.live import caching, state
 from seevr.live.models import Feature
 
 log = logging.getLogger(__name__)

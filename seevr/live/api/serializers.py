@@ -1,24 +1,7 @@
 from rest_framework import serializers
 
 from seevr.live.models import Feature, Guest
-
-
-class GuestSerializer(serializers.ModelSerializer):
-    name = serializers.CharField()
-    session_key = serializers.SerializerMethodField(read_only=True)
-    feature = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = Guest
-        exclude: list = []
-
-    def get_feature(self, instance):
-        return instance.feature.slug
-
-    def get_session_key(self, instance):
-        request = self.context.get("request")
-        print(request.session.session_key)
-        return request.session.session_key
+from seevr.live.utils import get_sessions
 
 
 class FeatureSerializer(serializers.ModelSerializer):
@@ -26,6 +9,7 @@ class FeatureSerializer(serializers.ModelSerializer):
     title = serializers.CharField()
     slug = serializers.SlugField(read_only=True)
     turn_duration = serializers.DurationField(read_only=True)
+    guest_queue = serializers.SerializerMethodField()
 
     class Meta:
         model = Feature
@@ -33,3 +17,25 @@ class FeatureSerializer(serializers.ModelSerializer):
 
     def get_created_at(self, instance):
         return instance.created_at.strftime("%B %d, %Y")
+
+    def get_guest_queue(self, instance):
+        return get_sessions(list(instance.guest_queue))
+
+
+class GuestSerializer(serializers.HyperlinkedModelSerializer):
+    created_at = serializers.SerializerMethodField()
+    name = serializers.CharField()
+    session_key = serializers.SerializerMethodField(read_only=True)
+    feature = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Feature.objects.all()
+    )
+
+    class Meta:
+        model = Guest
+        exclude: list = []
+
+    def get_created_at(self, instance):
+        return instance.created_at.strftime("%B %d, %Y")
+
+    def get_session_key(self, instance):
+        return instance.session_key

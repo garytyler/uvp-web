@@ -4,14 +4,14 @@ import logging
 import threading
 import time
 import uuid
-from importlib import import_module
 
 from channels.db import database_sync_to_async as db_sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 
-from seevr.live.app import caching
+from seevr.live import caching
 from seevr.live.models import Feature
+from seevr.live.utils import async_get_session
 
 log = logging.getLogger(__name__)
 
@@ -55,9 +55,9 @@ async def refresh_feature_states(feature_slugs=None):
         features = await db_sync_to_async(lambda: Feature.objects.all())()
 
     presenting_features = [f for f in features if f.presenter_channel]
+    log.info(f"REFRESH PRESENTATIONS STARTING - {presenting_features=}")
+    start_refresh_time = time.time()
     for feature in presenting_features:
-        begin = time.time()
-
         # Get
         status = await get_guest_queue_member_status(feature=feature)
 
@@ -71,9 +71,10 @@ async def refresh_feature_states(feature_slugs=None):
         await broadcast_feature_state(feature=feature)
 
         # Finish
-        time_spent = time.time() - begin
-        log_values = f"{feature.slug=}, {time_spent=}, {feature.guest_queue=}"
+        log_values = f"{feature.slug=},  {feature.guest_queue=}"
         log.info("REFRESHED GUEST QUEUE - " + log_values)
+    time_spent = time.time() - start_refresh_time
+    log.info(f"REFRESH PRESENTATIONS FINISHED - {time_spent=}")
 
 
 async def get_guest_queue_member_status(feature) -> dict:
@@ -128,22 +129,12 @@ async def get_guest_queue_member_status(feature) -> dict:
     return status
 
 
-async def get_session_store(session_key: str):
-    SessionStore = getattr(import_module(settings.SESSION_ENGINE), "SessionStore")
-    return SessionStore(session_key).load()
-
-
-async def get_session_stores(session_keys: list):
-    SessionStore = getattr(import_module(settings.SESSION_ENGINE), "SessionStore")
-    return [SessionStore(sk).load() for sk in session_keys]
-
-
 async def broadcast_feature_state(feature):
     guest_datas = []
     for session_key in feature.guest_queue:
-        session_store = await get_session_store(session_key)
+        session = await async_get_session(session_key)
         guest_datas.append(
-            {"guest_name": session_store["guest_name"], "session_key": session_key}
+            {"guest_name": session["guest_name"], "session_key": session_key}
         )
 
     for guest_data in guest_datas:

@@ -4,6 +4,9 @@
     <h2>Display Name: {{ displayName }}</h2>
 
     <ModalDisplayNameEditor />
+
+    <br />
+    <b-button variant="success" @click="connectWebsocket()">Connect</b-button>
   </div>
 </template>
 
@@ -12,13 +15,20 @@ import { mapGetters } from "vuex";
 import ModalDisplayNameEditor from "@/components/ModalDisplayNameEditor.vue";
 
 export default {
-  name: "Interact",
+  name: "InteractorApp",
   components: { ModalDisplayNameEditor },
   computed: {
-    ...mapGetters("interact", {
-      feature: "getFeature",
-      displayName: "getDisplayName"
+    ...mapGetters("interactor", {
+      feature: "feature",
+      displayName: "displayName"
     })
+  },
+  methods: {
+    connectWebsocket() {
+      this.$connect(`ws://localhost:8000/ws/interactor/${this.feature.slug}/`, {
+        format: "json"
+      });
+    }
   }
 };
 </script>

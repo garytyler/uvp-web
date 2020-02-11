@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>[User App]</h2>
+    <h2>[AccountApp]</h2>
   </div>
 </template>
 

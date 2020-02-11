@@ -32,7 +32,9 @@ class GuestConsumer(AsyncWebsocketConsumer):
 
         # Verify
         self.feature = await db_sync_to_async(
-            lambda: Feature.objects.get(slug=self.scope["session"]["feature_slug"])
+            lambda: Feature.objects.get(
+                slug=self.scope["url_route"]["kwargs"]["feature_slug"]
+            )
         )()
         if not self.feature and self.scope["session"]["guest_name"]:
             raise DenyConnection()

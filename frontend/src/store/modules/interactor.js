@@ -6,8 +6,8 @@ const state = {
 };
 
 const getters = {
-  getFeature: state => state.feature,
-  getDisplayName: state => state.displayName
+  feature: state => state.feature,
+  displayName: state => state.displayName
 };
 
 const mutations = {

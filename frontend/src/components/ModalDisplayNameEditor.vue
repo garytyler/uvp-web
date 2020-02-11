@@ -102,7 +102,7 @@ export default {
         return;
       }
       this.$store
-        .dispatch("interact/updateDisplayName", this.name)
+        .dispatch("interactor/updateDisplayName", this.name)
         .then(() => {
           this.$bvModal.hide("modal-prevent-closing");
         })

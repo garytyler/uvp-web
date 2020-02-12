@@ -13,11 +13,45 @@ const store = new Vuex.Store({
     interactor
   },
   strict: debug,
-  plugins: debug ? [createLogger()] : []
+  plugins: debug ? [createLogger()] : [],
+  // Provide low-level state management and logging for websocket activity.
+  // https://github.com/nathantsoi/vue-native-websocket#vuex-store-integration
+  state: {
+    socket: {
+      isConnected: false,
+      message: "",
+      reconnectError: false
+    }
+  },
+  mutations: {
+    SOCKET_ONOPEN(state, event) {
+      Vue.prototype.$socket = event.currentTarget;
+      state.socket.isConnected = true;
+    },
+    SOCKET_ONCLOSE(state, event) {
+      console.info(state, event);
+      state.socket.isConnected = false;
+    },
+    SOCKET_ONERROR(state, event) {
+      console.error(state, event);
+    },
+    SOCKET_ONMESSAGE(state, message) {
+      state.socket.message = message;
+    },
+    SOCKET_RECONNECT(state, count) {
+      console.info(state, count);
+    },
+    SOCKET_RECONNECT_ERROR(state) {
+      state.socket.reconnectError = true;
+    }
+  }
 });
 
-Vue.use(VueNativeSock, "ws://localhost:9090", {
+// VueNativeSock requires url string first arg.
+// Actual url is passed to $connect call in code.
+Vue.use(VueNativeSock, "ws://example.com", {
   connectManually: true,
+  store: store,
   format: "json"
 });
 

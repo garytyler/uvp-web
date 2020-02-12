@@ -25,9 +25,7 @@ export default {
   },
   methods: {
     connectWebsocket() {
-      this.$connect(`ws://localhost:8000/ws/interactor/${this.feature.slug}/`, {
-        format: "json"
-      });
+      this.$connect(`ws://localhost:8000/ws/interactor/${this.feature.slug}/`);
     }
   }
 };

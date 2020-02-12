@@ -15,12 +15,12 @@ class FeatureViewSet(viewsets.ModelViewSet):
 
 class GuestAPIView(APIView):
     def get(self, request, format=None):
-        guest_data = request.session.get("guest_data")
-        if not guest_data:
+        guest_name = request.session.get("name")
+        if not guest_name:
             raise Http404
-        return Response(guest_data)
+        return Response({"name": guest_name})
 
-    def put(self, request, format=None):
+    def post(self, request, format=None):
         guest_name = request.data.get("name")
         if not guest_name:
             return Response("Name is required.", status=status.HTTP_400_BAD_REQUEST,)

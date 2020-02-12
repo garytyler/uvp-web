@@ -3,29 +3,30 @@
     <h4>Feature: {{ feature }}</h4>
     <h2>Display Name: {{ displayName }}</h2>
 
-    <ModalDisplayNameEditor />
-
-    <br />
-    <b-button variant="success" @click="connectWebsocket()">Connect</b-button>
+    <ModalDisplayNameEditor v-on:display-name-is-set="connectWebsocket" />
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapState } from "vuex";
 import ModalDisplayNameEditor from "@/components/ModalDisplayNameEditor.vue";
 
 export default {
   name: "InteractorApp",
   components: { ModalDisplayNameEditor },
   computed: {
-    ...mapGetters("interactor", {
+    ...mapState("interactor", {
       feature: "feature",
       displayName: "displayName"
     })
   },
   methods: {
     connectWebsocket() {
-      this.$connect(`ws://localhost:8000/ws/interactor/${this.feature.slug}/`);
+      if (!this.$store.state.socket.isConnected) {
+        this.$connect(
+          `ws://localhost:8000/ws/interactor/${this.feature.slug}/`
+        );
+      }
     }
   }
 };

@@ -15,7 +15,6 @@ const mutations = {
     state.feature = feature;
   },
   SET_DISPLAY_NAME(state, displayName) {
-    console.log("SET_DISPLAY_NAME CALLED: " + displayName);
     state.displayName = displayName;
   }
 };
@@ -35,10 +34,25 @@ const actions = {
         });
     });
   },
+  loadDisplayName({ commit }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`/api/guest/`)
+        .then(response => {
+          let displayName = response.data.name;
+          commit("SET_DISPLAY_NAME", displayName);
+          resolve(displayName);
+        })
+        .catch(error => {
+          console.log(error);
+          reject(error);
+        });
+    });
+  },
   setDisplayName({ commit }, displayName) {
     return new Promise((resolve, reject) => {
       axios
-        .put(`/api/guest/`, { name: displayName })
+        .post(`/api/guest/`, { name: displayName })
         .then(response => {
           commit("SET_DISPLAY_NAME", response.data.name);
           resolve(response);

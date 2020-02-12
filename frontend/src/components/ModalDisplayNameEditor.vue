@@ -1,9 +1,8 @@
 <template>
   <div>
-    <b-button v-b-modal.modal-prevent-closing>Edit Name</b-button>
-
+    <b-button v-b-modal.modal-display-name-editor>Edit Name</b-button>
     <b-modal
-      id="modal-prevent-closing"
+      id="modal-display-name-editor"
       size="sm"
       ref="modal"
       title="What's your name?"
@@ -21,12 +20,12 @@
       footer-border-variant="light"
       header-border-variant="light"
     >
-      <!-- Guest name form -->
       <template slot="modal-header">
         <b-card-title class="mx-auto my-0 text-center">
           What's your name?
         </b-card-title>
       </template>
+
       <form ref="form" @submit.stop.prevent="handleSubmit">
         <b-form-group
           class="my-0"
@@ -35,36 +34,35 @@
           invalid-feedback="Name is required"
         >
           <b-form-input
-            placeholder="Enter your name"
+            :placeholder="displayName || 'Enter your name'"
             id="name-input"
-            v-model="name"
+            v-model="displayName"
             :state="nameState"
             required
           ></b-form-input>
         </b-form-group>
       </form>
-
-      <!--  Guest name form buttons -->
+      <div v-if="loading">
+        <b-spinner></b-spinner>
+      </div>
       <template slot="modal-footer" slot-scope="{ ok, cancel }">
         <b-row cols="1" class="mx-auto">
-          <!-- Begin button -->
-          <b-btn
+          <b-button
             size="lg"
             class="guest-signin-begin-btn my-1"
             variant="success"
             @click="ok()"
           >
-            <strong>Join</strong>
-          </b-btn>
-
-          <b-btn
+            <strong>Submit</strong>
+          </b-button>
+          <b-button
             size="small"
             class="guest-signin-cancel-btn my-1"
             variant="secondary"
             @click="cancel()"
           >
             <strong>Cancel</strong>
-          </b-btn>
+          </b-button>
         </b-row>
       </template>
     </b-modal>
@@ -74,9 +72,13 @@
 <script>
 export default {
   name: "ModalDisplayNameEditor",
+  props: {
+    callback: { required: false, type: Function }
+  },
   data() {
     return {
-      name: "",
+      loading: false,
+      displayName: null,
       nameState: null
     };
   },
@@ -87,29 +89,43 @@ export default {
       return valid;
     },
     resetModal() {
-      this.name = "";
       this.nameState = null;
     },
     handleOk(bvModalEvt) {
-      // Prevent modal from closing
       bvModalEvt.preventDefault();
-      // Trigger submit handler
       this.handleSubmit();
     },
     handleSubmit() {
-      // Exit when the form isn't valid
       if (!this.checkFormValidity()) {
         return;
       }
       this.$store
-        .dispatch("interactor/setDisplayName", this.name)
+        .dispatch("interactor/setDisplayName", this.displayName)
         .then(() => {
-          this.$bvModal.hide("modal-prevent-closing");
+          this.$bvModal.hide("modal-display-name-editor");
+          this.$emit("display-name-updated");
         })
         .catch(error => {
           console.log(error);
         });
     }
+  },
+  created() {
+    this.$store
+      .dispatch("interactor/loadDisplayName")
+      .then(displayName => {
+        console.log(displayName);
+        if (!displayName) {
+          this.$bvModal.show("modal-display-name-editor");
+        } else {
+          this.$bvModal.hide("modal-display-name-editor");
+          this.$emit("display-name-updated");
+        }
+        this.displayName = displayName;
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 };
 </script>

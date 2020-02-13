@@ -126,6 +126,7 @@ croniter = ">=0.3.30"
 reference = "4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"
 type = "git"
 url = "https://github.com/garytyler/beatserver"
+
 [[package]]
 category = "main"
 description = "Foreign Function Interface for Python calling C code."
@@ -266,13 +267,12 @@ category = "main"
 description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
 name = "django"
 optional = false
-python-versions = ">=3.6"
-version = "3.0.3"
+python-versions = ">=3.5"
+version = "2.2.10"
 
 [package.dependencies]
-asgiref = ">=3.2,<4.0"
 pytz = "*"
-sqlparse = ">=0.2.2"
+sqlparse = "*"
 
 [package.extras]
 argon2 = ["argon2-cffi (>=16.1.0)"]
@@ -590,6 +590,7 @@ version = "2.1.1"
 reference = "1911c203a13826d2eb03d582d60874b91e36f4fc"
 type = "git"
 url = "https://github.com/pycqa/pyflakes"
+
 [[package]]
 category = "main"
 description = "Hamcrest framework for matcher objects"
@@ -974,7 +975,7 @@ test = ["zope.event"]
 testing = ["coverage", "nose", "zope.event"]
 
 [metadata]
-content-hash = "db26926989bdffae5932cf6f122c2d0de2926e37b0b14db5a0c4a0c63ba43c1d"
+content-hash = "178947432f9c55b787bf07be75c48a366dfd0b5095e110a59342fb14b3b20425"
 python-versions = "==3.8"
 
 [metadata.files]
@@ -1104,8 +1105,8 @@ dj-database-url = [
     {file = "dj_database_url-0.5.0-py2.py3-none-any.whl", hash = "sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9"},
 ]
 django = [
-    {file = "Django-3.0.3-py3-none-any.whl", hash = "sha256:c91c91a7ad6ef67a874a4f76f58ba534f9208412692a840e1d125eb5c279cb0a"},
-    {file = "Django-3.0.3.tar.gz", hash = "sha256:2f1ba1db8648484dd5c238fb62504777b7ad090c81c5f1fd8d5eb5ec21b5f283"},
+    {file = "Django-2.2.10-py3-none-any.whl", hash = "sha256:9a4635813e2d498a3c01b10c701fe4a515d76dd290aaa792ccb65ca4ccb6b038"},
+    {file = "Django-2.2.10.tar.gz", hash = "sha256:1226168be1b1c7efd0e66ee79b0e0b58b2caa7ed87717909cd8a57bb13a7079a"},
 ]
 django-configurations = [
     {file = "django-configurations-2.2.tar.gz", hash = "sha256:9e3bcea1355ac50a4c9f854f751d214cb17e5f8adf18405a4488d0a1e8945915"},

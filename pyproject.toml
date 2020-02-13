@@ -10,7 +10,7 @@ beatserver = {git = "https://github.com/garytyler/beatserver", rev = "4e3ebd8130
 channels = "*"
 channels-redis = "*"
 dj-database-url = "*"
-django = ">=2.2.9"
+django = "^2"
 django-configurations = "*"
 django-redis = "*"
 django-rest-framework = "*"

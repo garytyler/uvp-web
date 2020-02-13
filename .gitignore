@@ -1,7 +1,11 @@
 # File created using '.gitignore Generator' for Visual Studio Code: https://bit.ly/vscode-gig
 
-# Created by https://www.gitignore.io/api/vuejs,vue,visualstudiocode,venv,python,node,linux,dotenv,django,redis
-# Edit at https://www.gitignore.io/?templates=vuejs,vue,visualstudiocode,venv,python,node,linux,dotenv,django,redis
+# Created by https://www.gitignore.io/api/vuejs,vue,visualstudiocode,venv,redis,python,node,linux,dotenv,django,direnv,virtualenv
+# Edit at https://www.gitignore.io/?templates=vuejs,vue,visualstudiocode,venv,redis,python,node,linux,dotenv,django,direnv,virtualenv
+
+### direnv ###
+.direnv
+.envrc
 
 ### Django ###
 *.log
@@ -89,7 +93,7 @@ target/
 #   However, in case of collaboration, if having platform-specific dependencies or dependencies
 #   having no cross-platform support, pipenv may install dependencies that don't work, or not
 #   install all needed dependencies.
-Pipfile.lock
+#Pipfile.lock
 
 # celery beat schedule file
 celerybeat-schedule
@@ -265,6 +269,12 @@ temp/
 
 # pyenv
 
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+
 # celery beat schedule file
 
 # SageMath parsed files
@@ -298,8 +308,12 @@ env.bak/
 venv.bak/
 pip-selfcheck.json
 
+### VirtualEnv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+
 ### VisualStudioCode ###
-.vscode/
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -328,9 +342,12 @@ sketch
 npm-debug.log
 yarn-error.log
 
-# End of https://www.gitignore.io/api/vuejs,vue,visualstudiocode,venv,python,node,linux,dotenv,django,redis
+# End of https://www.gitignore.io/api/vuejs,vue,visualstudiocode,venv,redis,python,node,linux,dotenv,django,direnv,virtualenv
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
+
+# VS Code config directory
+.vscode/
 
 # Splinter
 .splinter_screens

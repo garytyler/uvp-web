@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "seevr"
+version = "0.1.0"
+description = ""
+authors = ["Gary Tyler <mail@garytyler.com>"]
+
+[tool.poetry.dependencies]
+python = "==3.8"
+beatserver = {git = "https://github.com/garytyler/beatserver", rev = "4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"}
+channels = "*"
+channels-redis = "*"
+dj-database-url = "*"
+django = ">=2.2.9"
+django-configurations = "*"
+django-redis = "*"
+django-rest-framework = "*"
+django-webpack-loader = "*"
+psycopg2-binary = "*"
+whitenoise = "*"
+
+[tool.poetry.dev-dependencies]
+flake8 = "*"
+isort = "*"
+mypy = "*"
+pre-commit = "*"
+pyflakes = {git = "https://github.com/pycqa/pyflakes", rev = "1911c20"}
+pytest = "*"
+pytest-asyncio = "*"
+pytest-django = "*"
+pytest-mock = "*"
+pytest-splinter = "*"
+tox = "*"

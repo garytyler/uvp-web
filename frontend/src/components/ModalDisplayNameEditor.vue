@@ -125,6 +125,8 @@ export default {
       })
       .catch(error => {
         console.log(error);
+        this.$bvModal.show("modal-display-name-editor");
+        this.$emit("display-name-updated");
       });
   }
 };

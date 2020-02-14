@@ -1,23 +1,28 @@
 <template>
   <div>
-    <h4>Feature: {{ feature }}</h4>
-    <h2>Display Name: {{ displayName }}</h2>
-
-    <ModalDisplayNameEditor v-on:display-name-is-set="connectWebsocket" />
+    <div>
+      <p class="text-center h2">{{ featureTitle }}</p>
+    </div>
+    <div>
+      <DisplayNameEditor v-on:display-name-updated="connectWebsocket()" />
+    </div>
+    <div>
+      <h4>Guest List: {{ guestList }}</h4>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
-import ModalDisplayNameEditor from "@/components/ModalDisplayNameEditor.vue";
+import { mapGetters } from "vuex";
+import DisplayNameEditor from "@/components/DisplayNameEditor.vue";
 
 export default {
   name: "InteractorApp",
-  components: { ModalDisplayNameEditor },
+  components: { DisplayNameEditor },
   computed: {
-    ...mapState("interactor", {
-      feature: "feature",
-      displayName: "displayName"
+    ...mapGetters("interactor", {
+      featureTitle: "featureTitle",
+      guestList: "guestList"
     })
   },
   methods: {

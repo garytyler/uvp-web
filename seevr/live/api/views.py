@@ -2,9 +2,10 @@ from django.http import Http404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from seevr.live.api.serializers import FeatureSerializer
 from seevr.live.models import Feature
+from asgiref.sync import async_to_sync
+from seevr.live import state
 
 
 class FeatureViewSet(viewsets.ModelViewSet):
@@ -23,8 +24,15 @@ class GuestAPIView(APIView):
     def post(self, request, format=None):
         guest_name = request.data.get("name")
         if not guest_name:
-            return Response("Name is required.", status=status.HTTP_400_BAD_REQUEST,)
-        else:
-            request.session["name"] = guest_name
-            request.session.save()
-            return Response({"name": request.session["name"]})
+            return Response(
+                "Guest name is required.", status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        request.session["name"] = guest_name
+        request.session.save()
+
+        feature_slug = request.data.get("feature_slug")
+        feature = Feature.objects.get(slug=feature_slug)
+        async_to_sync(state.broadcast_feature_state)(feature)
+
+        return Response({"name": request.session["name"]})

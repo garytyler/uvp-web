@@ -7,12 +7,18 @@ const state = {
 
 const getters = {
   feature: state => state.feature,
+  featureSlug: state => state.feature.slug,
+  featureTitle: state => state.feature.title,
+  guestList: state => state.feature.guest_queue,
   displayName: state => state.displayName
 };
 
 const mutations = {
   SET_FEATURE(state, feature) {
     state.feature = feature;
+  },
+  UPDATE_FEATURE(state, feature) {
+    state.feature = { ...state.feature, ...feature };
   },
   SET_DISPLAY_NAME(state, displayName) {
     state.displayName = displayName;
@@ -49,10 +55,10 @@ const actions = {
         });
     });
   },
-  setDisplayName({ commit }, displayName) {
+  setDisplayName({ commit }, profile) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/api/guest/`, { name: displayName })
+        .post(`/api/guest/`, profile)
         .then(response => {
           commit("SET_DISPLAY_NAME", response.data.name);
           resolve(response);
@@ -62,6 +68,9 @@ const actions = {
           reject(error);
         });
     });
+  },
+  receiveGuestWebsocketMessage(store, data) {
+    store.commit("UPDATE_FEATURE", data.feature);
   }
 };
 

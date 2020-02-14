@@ -9,6 +9,7 @@ from channels.db import database_sync_to_async as db_sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 
+from seevr.live.api import serializers
 from seevr.live import caching
 from seevr.live.models import Feature
 from seevr.live.utils import async_get_session
@@ -130,45 +131,18 @@ async def get_guest_queue_member_status(feature) -> dict:
 
 
 async def broadcast_feature_state(feature):
-    guest_datas = []
     for session_key in feature.guest_queue:
-        session = await async_get_session(session_key)
-        guest_datas.append(
-            {"guest_name": session["guest_name"], "session_key": session_key}
-        )
-
-    for guest_data in guest_datas:
         await get_channel_layer().group_send(
-            guest_data["session_key"],
+            session_key,
             {
                 "type": "send_to_client",
                 "message": {
                     "text_data": json.dumps(
                         {
-                            "feature": {
-                                "presenter_channel": feature.presenter_channel,
-                                "title": feature.title,
-                            },
-                            "guest_queue": guest_datas,
+                            "action": "interactor/receiveGuestWebsocketMessage",
+                            "feature": serializers.FeatureSerializer(feature).data,
                         }
                     )
                 },
             },
         )
-    # await get_channel_layer().group_send(
-    #     feature.slug,
-    #     {
-    #         "type": "send_to_client",
-    #         "message": {
-    #             "text_data": json.dumps(
-    #                 {
-    #                     "feature": {
-    #                         "presenter_channel": feature.presenter_channel,
-    #                         "title": feature.title,
-    #                     },
-    #                     "guest_queue": queue_data,
-    #                 }
-    #             )
-    #         },
-    #     },
-    # )

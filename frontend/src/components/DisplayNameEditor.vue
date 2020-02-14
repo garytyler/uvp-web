@@ -1,11 +1,36 @@
 <template>
   <div>
-    <b-button v-b-modal.modal-display-name-editor>Edit Name</b-button>
+    <b-card no-body class="rounded-0" size="sm" bg-variant="light">
+      <b-card-text class="ml-2 mt-2 py-0 my-0" id="display-name-label">
+        Your Name
+        <p class="h2 text-wrap">
+          {{ displayName }}
+          <b-button
+            class="m-0 p-0"
+            id="edit-button"
+            pill
+            size="lg"
+            variant="secondary-outline"
+            v-b-modal.modal-display-name-editor
+          >
+            <p class="h2 m-0 p-0" style="font-size:1.5em;">
+              <b-icon
+                class="m-0 p-0"
+                icon="pencil"
+                variant="secondary"
+              ></b-icon>
+            </p>
+          </b-button>
+        </p>
+      </b-card-text>
+    </b-card>
+
     <b-modal
       id="modal-display-name-editor"
       size="sm"
       ref="modal"
       title="What's your name?"
+      return-focus="<body>"
       centered
       no-close-on-backdrop
       no-close-on-esc
@@ -21,7 +46,7 @@
       header-border-variant="light"
     >
       <template slot="modal-header">
-        <b-card-title class="mx-auto my-0 text-center">
+        <b-card-title class="mx-auto my-0" id="text-center">
           What's your name?
         </b-card-title>
       </template>
@@ -34,6 +59,8 @@
           invalid-feedback="Name is required"
         >
           <b-form-input
+            autofocus
+            ref="displayNameInput"
             :placeholder="displayName || 'Enter your name'"
             id="name-input"
             v-model="displayName"
@@ -42,9 +69,7 @@
           ></b-form-input>
         </b-form-group>
       </form>
-      <div v-if="loading">
-        <b-spinner></b-spinner>
-      </div>
+
       <template slot="modal-footer" slot-scope="{ ok, cancel }">
         <b-row cols="1" class="mx-auto">
           <b-button
@@ -70,17 +95,23 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
-  name: "ModalDisplayNameEditor",
+  name: "DisplayNameEditor",
   props: {
     callback: { required: false, type: Function }
   },
   data() {
     return {
-      loading: false,
       displayName: null,
       nameState: null
     };
+  },
+  computed: {
+    ...mapGetters("interactor", {
+      featureSlug: "featureSlug"
+    })
   },
   methods: {
     checkFormValidity() {
@@ -92,17 +123,20 @@ export default {
       this.nameState = null;
     },
     handleOk(bvModalEvt) {
-      bvModalEvt.preventDefault();
+      bvModalEvt.preventDefault("modal-display-name-editor");
       this.handleSubmit();
     },
     handleSubmit() {
       if (!this.checkFormValidity()) {
         return;
       }
+      let profile = { name: this.displayName, feature_slug: this.featureSlug };
       this.$store
-        .dispatch("interactor/setDisplayName", this.displayName)
+        .dispatch("interactor/setDisplayName", profile)
         .then(() => {
-          this.$bvModal.hide("modal-display-name-editor");
+          this.$nextTick(() => {
+            this.$bvModal.hide("modal-display-name-editor");
+          });
           this.$emit("display-name-updated");
         })
         .catch(error => {
@@ -116,9 +150,13 @@ export default {
       .then(displayName => {
         console.log(displayName);
         if (!displayName) {
-          this.$bvModal.show("modal-display-name-editor");
+          this.$nextTick(() => {
+            this.$bvModal.show("modal-display-name-editor");
+          });
         } else {
-          this.$bvModal.hide("modal-display-name-editor");
+          this.$nextTick(() => {
+            this.$bvModal.hide("modal-display-name-editor");
+          });
           this.$emit("display-name-updated");
         }
         this.displayName = displayName;
@@ -126,7 +164,6 @@ export default {
       .catch(error => {
         console.log(error);
         this.$bvModal.show("modal-display-name-editor");
-        this.$emit("display-name-updated");
       });
   }
 };

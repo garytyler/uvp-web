@@ -1,12 +1,11 @@
 <template>
-  <div>
-    <div>
-      <p class="text-center h2">{{ featureTitle }}</p>
-    </div>
+  <v-container>
+    <p class="text-center display-1 info--text">{{ featureTitle }}</p>
+
     <NameEditor v-on:display-name-updated="connectWebsocket()" />
     <br />
     <GuestListTable />
-  </div>
+  </v-container>
 </template>
 
 <script>

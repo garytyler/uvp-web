@@ -1,97 +1,69 @@
 <template>
   <div>
-    <b-card no-body class="rounded-0" size="sm" bg-variant="light">
-      <b-card-text class="mx-2 mt-2" id="display-name-label">
-        <!-- <span class="text-secondary">Your Name</span> -->
-        Your Name
-        <p class="h2 text-wrap">
-          {{ displayName }}
-          <b-button
-            class="m-0 p-0"
-            id="edit-button"
-            pill
-            size="lg"
-            variant="secondary-outline"
-            v-b-modal.modal-display-name-editor
-          >
-            <p class="h2 m-0 p-0" style="font-size:1.5em;">
-              <b-icon
-                class="m-0 p-0"
-                icon="pencil"
-                variant="secondary"
-              ></b-icon>
-            </p>
-          </b-button>
-        </p>
-      </b-card-text>
-    </b-card>
+    <v-row justify="center">
+      <v-dialog v-model="dialog" persistent max-width="400px">
+        <template v-slot:activator="{ on }">
+          <v-btn color="secondary" size="sm" dark v-on="on">Edit Name</v-btn>
+        </template>
 
-    <b-modal
-      id="modal-display-name-editor"
-      size="sm"
-      ref="modal"
-      return-focus="body"
-      title="What's your name?"
-      centered
-      no-close-on-backdrop
-      no-close-on-esc
-      hide-header-close
-      cancel-disabled
-      ok-disabled
-      no-stacking
-      @show="resetModal"
-      @hidden="resetModal"
-      @ok="handleOk"
-      no-footer-border
-      footer-border-variant="light"
-      header-border-variant="light"
-    >
-      <template slot="modal-header">
-        <b-card-title class="mx-auto my-0" id="text-center">
-          What's your name?
-        </b-card-title>
-      </template>
+        <v-card>
+          <v-card-title class="align-center">
+            <span class="headline">What's your name?</span>
+          </v-card-title>
 
-      <form ref="form" @submit.stop.prevent="handleSubmit">
-        <b-form-group
-          class="my-0"
-          :state="nameState"
-          label-for="name-input"
-          invalid-feedback="Name is required"
-        >
-          <b-form-input
-            autofocus
-            ref="displayNameInput"
-            :placeholder="displayName || 'Enter your name'"
-            id="name-input"
-            v-model="displayName"
-            :state="nameState"
-            required
-          ></b-form-input>
-        </b-form-group>
-      </form>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col>
+                  <v-text-field
+                    outlined
+                    autofocus
+                    required
+                    placeholder="Enter your name"
+                    :value="displayName"
+                    v-model="submittedDisplayName"
+                    @keyup.native.enter="handleSubmit()"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
 
-      <template slot="modal-footer" slot-scope="{ ok, cancel }">
-        <b-row cols="1" class="mx-auto">
-          <b-button
-            size="lg"
-            class="guest-signin-begin-btn my-1"
-            variant="success"
-            @click="ok()"
-          >
-            <strong>Submit</strong>
-          </b-button>
-          <b-button
-            size="small"
-            class="guest-signin-cancel-btn my-1"
-            variant="secondary"
-            @click="cancel()"
-          >
-            <strong>Cancel</strong>
-          </b-button>
-        </b-row>
-      </template>
-    </b-modal>
+          <v-card-actions>
+            <v-spacer />
+            <div v-if="displayName">
+              <v-row dense>
+                <v-col>
+                  <v-btn
+                    color="primary"
+                    text-color="green darken-4"
+                    @click="handleSubmit()"
+                    >Submit</v-btn
+                  >
+                </v-col>
+
+                <v-col>
+                  <v-btn
+                    color="accent"
+                    @click="dialog = false"
+                    v-if="displayName"
+                    >Cancel</v-btn
+                  >
+                </v-col>
+              </v-row>
+            </div>
+
+            <v-flex v-else text-xs-center align-center>
+              <v-col>
+                <v-btn color="primary" large @click="handleSubmit()">
+                  Submit
+                </v-btn>
+              </v-col>
+            </v-flex>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
   </div>
 </template>
 
@@ -103,65 +75,57 @@ export default {
   },
   data() {
     return {
-      displayName: null,
+      dialog: false,
+      submittedDisplayName: null,
       nameState: null
     };
   },
   computed: {
     featureSlug() {
       return this.$store.getters["guest_app/feature"].slug;
+    },
+    displayName() {
+      return this.$store.getters["guest_app/displayName"];
     }
   },
   methods: {
-    checkFormValidity() {
-      const valid = this.$refs.form.checkValidity();
-      this.nameState = valid;
-      return valid;
-    },
-    resetModal() {
-      this.nameState = null;
-    },
-    handleOk(bvModalEvt) {
-      bvModalEvt.preventDefault("modal-display-name-editor");
-      this.handleSubmit();
-    },
     handleSubmit() {
-      if (!this.checkFormValidity()) {
-        return;
-      }
-      let profile = { name: this.displayName, feature_slug: this.featureSlug };
-      this.$store
-        .dispatch("guest_app/setDisplayName", profile)
-        .then(() => {
-          this.$nextTick(() => {
-            this.$bvModal.hide("modal-display-name-editor");
+      if (
+        this.submittedDisplayName &&
+        this.submittedDisplayName === this.displayName
+      ) {
+        this.dialog = false;
+      } else {
+        this.$store
+          .dispatch("guest_app/setDisplayName", {
+            name: this.submittedDisplayName,
+            feature_slug: this.featureSlug
+          })
+          .then(() => {
+            this.dialog = false;
+            this.$emit("display-name-updated");
+          })
+          .catch(() => {
+            this.dialog = true;
           });
-          this.$emit("display-name-updated");
-        })
-        .catch(error => {
-          console.log(error);
-        });
+      }
     }
   },
   created() {
     this.$store
       .dispatch("guest_app/loadDisplayName")
       .then(displayName => {
-        if (!displayName) {
-          this.$nextTick(() => {
-            this.$bvModal.show("modal-display-name-editor");
-          });
-        } else {
-          this.$nextTick(() => {
-            this.$bvModal.hide("modal-display-name-editor");
-          });
+        if (displayName) {
+          console.log("YES");
+          console.log(displayName);
+          this.dialog = false;
           this.$emit("display-name-updated");
+        } else {
+          this.dialog = true;
         }
-        this.displayName = displayName;
       })
-      .catch(error => {
-        console.log(error);
-        this.$bvModal.show("modal-display-name-editor");
+      .catch(() => {
+        this.dialog = true;
       });
   }
 };

@@ -1,5 +1,6 @@
 const BundleTracker = require("webpack-bundle-tracker");
 module.exports = {
+  // django-webpack-loader configuration
   publicPath: "http://127.0.0.1:8080/", // Use 127.0.0.1 for Windows/WSL and 0.0.0.0 should work otherwise.
   outputDir: "./dist/",
 
@@ -27,11 +28,13 @@ module.exports = {
       .headers({ "Access-Control-Allow-Origin": ["*"] });
   },
 
-  // uncomment before executing 'npm run build'
   css: {
     extract: {
       filename: "bundle.css",
       chunkFilename: "bundle.css"
     }
-  }
+  },
+
+  // vuejs configuration
+  transpileDependencies: ["vuetify"]
 };

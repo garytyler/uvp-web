@@ -1,7 +1,8 @@
 <template>
   <div>
     <b-card no-body class="rounded-0" size="sm" bg-variant="light">
-      <b-card-text class="ml-2 mt-2 py-0 my-0" id="display-name-label">
+      <b-card-text class="mx-2 mt-2" id="display-name-label">
+        <!-- <span class="text-secondary">Your Name</span> -->
         Your Name
         <p class="h2 text-wrap">
           {{ displayName }}
@@ -29,8 +30,8 @@
       id="modal-display-name-editor"
       size="sm"
       ref="modal"
+      return-focus="body"
       title="What's your name?"
-      return-focus="<body>"
       centered
       no-close-on-backdrop
       no-close-on-esc
@@ -95,10 +96,8 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-
 export default {
-  name: "DisplayNameEditor",
+  name: "NameEditor",
   props: {
     callback: { required: false, type: Function }
   },
@@ -109,9 +108,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("interactor", {
-      featureSlug: "featureSlug"
-    })
+    featureSlug() {
+      return this.$store.getters["interactor/feature"].slug;
+    }
   },
   methods: {
     checkFormValidity() {
@@ -148,7 +147,6 @@ export default {
     this.$store
       .dispatch("interactor/loadDisplayName")
       .then(displayName => {
-        console.log(displayName);
         if (!displayName) {
           this.$nextTick(() => {
             this.$bvModal.show("modal-display-name-editor");

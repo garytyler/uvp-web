@@ -3,34 +3,31 @@
     <div>
       <p class="text-center h2">{{ featureTitle }}</p>
     </div>
-    <div>
-      <DisplayNameEditor v-on:display-name-updated="connectWebsocket()" />
-    </div>
-    <div>
-      <h4>Guest List: {{ guestList }}</h4>
-    </div>
+    <NameEditor v-on:display-name-updated="connectWebsocket()" />
+    <br />
+    <GuestListTable />
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import DisplayNameEditor from "@/components/DisplayNameEditor.vue";
+import NameEditor from "@/components/NameEditor.vue";
+import GuestListTable from "@/components/GuestListTable.vue";
 
 export default {
   name: "InteractorApp",
-  components: { DisplayNameEditor },
+  components: { NameEditor, GuestListTable },
   computed: {
-    ...mapGetters("interactor", {
-      featureTitle: "featureTitle",
-      guestList: "guestList"
-    })
+    featureSlug() {
+      return this.$store.getters["interactor/feature"].slug;
+    },
+    featureTitle() {
+      return this.$store.getters["interactor/feature"].title;
+    }
   },
   methods: {
     connectWebsocket() {
       if (!this.$store.state.socket.isConnected) {
-        this.$connect(
-          `ws://localhost:8000/ws/interactor/${this.feature.slug}/`
-        );
+        this.$connect(`ws://localhost:8000/ws/interactor/${this.featureSlug}/`);
       }
     }
   }

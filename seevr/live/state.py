@@ -139,7 +139,7 @@ async def broadcast_feature_state(feature):
                 "message": {
                     "text_data": json.dumps(
                         {
-                            "action": "interactor/receiveGuestWebsocketMessage",
+                            "action": "guest_app/receiveGuestWebsocketMessage",
                             "feature": serializers.FeatureSerializer(feature).data,
                         }
                     )

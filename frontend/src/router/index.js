@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import AccountApp from "@/views/AccountApp.vue";
-import InteractorApp from "@/views/InteractorApp.vue";
+import GuestApp from "@/views/GuestApp.vue";
 import Error404NotFound from "@/views/errors/Error404NotFound.vue";
 import store from "@/store";
 
@@ -9,7 +9,7 @@ Vue.use(VueRouter);
 
 var loadFeatureBeforeRouterEnter = function(to, from, next) {
   store
-    .dispatch("interactor/loadFeature", to.params.feature_slug)
+    .dispatch("guest_app/loadFeature", to.params.feature_slug)
     .then(function() {
       next();
     })
@@ -29,7 +29,7 @@ const routes = [
   {
     path: "/feature/:feature_slug",
     name: "guest-app",
-    component: InteractorApp,
+    component: GuestApp,
     beforeEnter: loadFeatureBeforeRouterEnter
   },
   {

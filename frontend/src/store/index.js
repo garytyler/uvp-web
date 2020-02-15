@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import createLogger from "vuex/dist/logger";
-import interactor from "./modules/interactor";
+import guest_app from "./modules/guest_app";
 import VueNativeSock from "vue-native-websocket";
 
 Vue.use(Vuex);
@@ -10,7 +10,7 @@ const debug = process.env.NODE_ENV !== "production";
 
 const store = new Vuex.Store({
   modules: {
-    interactor
+    guest_app
   },
   strict: debug,
   plugins: debug ? [createLogger()] : [],
@@ -56,8 +56,8 @@ Vue.use(VueNativeSock, "ws://example.com", {
 });
 
 if (module.hot) {
-  module.hot.accept(["./modules/interactor"], () => {
-    const newInteractorModule = require("./modules/interactor").default;
+  module.hot.accept(["./modules/guest_app"], () => {
+    const newInteractorModule = require("./modules/guest_app").default;
     store.hotUpdate({
       modules: {
         interactor: newInteractorModule

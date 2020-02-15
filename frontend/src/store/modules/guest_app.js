@@ -7,9 +7,6 @@ const state = {
 
 const getters = {
   feature: state => state.feature,
-  featureSlug: state => state.feature.slug,
-  featureTitle: state => state.feature.title,
-  guestList: state => state.feature.guest_queue,
   displayName: state => state.displayName
 };
 

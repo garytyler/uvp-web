@@ -19,6 +19,9 @@ const mutations = {
   },
   SET_SESSION_GUEST(state, sessionGuest) {
     state.sessionGuest = sessionGuest;
+  },
+  DELETE_GUEST(state, guest_id) {
+    state.guests = state.guests.filter(i => i.id != guest_id);
   }
 };
 
@@ -71,6 +74,25 @@ const actions = {
         .patch(`/api/feature/${feature_slug}/guest/${guest_id}/`, guest)
         .then(response => {
           commit("SET_SESSION_GUEST", response.data);
+          resolve(response.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+  deleteGuest({ commit, state }, guest) {
+    let guest_id = guest.id;
+    let feature_slug = state.feature.slug;
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`/api/feature/${feature_slug}/guest/${guest_id}/`, guest)
+        .then(response => {
+          if (response.status == 204) {
+            commit("DELETE_GUEST", state.feature, guest);
+          }
+          console.log(response);
+          console.log(response.data);
           resolve(response.data);
         })
         .catch(error => {

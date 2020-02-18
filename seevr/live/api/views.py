@@ -1,4 +1,5 @@
 from asgiref.sync import async_to_sync
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -54,3 +55,17 @@ class GuestAPIView(APIView):
         async_to_sync(state.broadcast_feature_state)(feature)
 
         return Response({**session_store.load(), "id": request.session.session_key})
+
+    def delete(self, request, feature_slug, guest_id):
+        feature = get_object_or_404(Feature, slug=feature_slug)
+
+        if feature.guest_queue.remove(guest_id):
+            error_code = status.HTTP_204_NO_CONTENT
+            session_store = get_session_store(guest_id)
+            session_store.flush()
+            async_to_sync(state.broadcast_feature_state)(feature)
+
+        else:
+            error_code = status.HTTP_404_NOT_FOUND
+
+        return Response(status=error_code,)

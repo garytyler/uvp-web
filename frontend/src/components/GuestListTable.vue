@@ -170,9 +170,16 @@ export default {
       this.dialog = true;
     },
     deleteItem(item) {
-      const index = this.featureGuests.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
-        this.featureGuests.splice(index, 1);
+        this.$store
+          .dispatch("guest_app/deleteGuest", item)
+          .then(() => {
+            this.dialog = false;
+            this.$emit("session-guest-set");
+          })
+          .catch(() => {
+            this.dialog = true;
+          });
     },
     handleSubmit() {
       this.$store
@@ -186,7 +193,6 @@ export default {
         });
     }
   },
-
   mounted() {
     let table = this.$refs.table.$el.querySelector("tbody");
     const _self = this;

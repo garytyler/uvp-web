@@ -116,7 +116,7 @@ export default {
     this.$store
       .dispatch("guest_app/loadSessionGuest")
       .then(data => {
-        if (data.name) {
+        if (data.name && this.featureGuests.some(i => i.id === data.id)) {
           this.dialog = false;
           this.$emit("session-guest-set");
         } else {

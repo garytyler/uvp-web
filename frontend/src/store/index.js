@@ -57,10 +57,10 @@ Vue.use(VueNativeSock, "ws://example.com", {
 
 if (module.hot) {
   module.hot.accept(["./modules/guest_app"], () => {
-    const newInteractorModule = require("./modules/guest_app").default;
+    const newGuestAppModule = require("./modules/guest_app").default;
     store.hotUpdate({
       modules: {
-        interactor: newInteractorModule
+        guest_app: newGuestAppModule
       }
     });
   });

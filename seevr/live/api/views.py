@@ -1,11 +1,12 @@
-from django.http import Http404
+from asgiref.sync import async_to_sync
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from seevr.live import state
 from seevr.live.api.serializers import FeatureSerializer
 from seevr.live.models import Feature
-from asgiref.sync import async_to_sync
-from seevr.live import state
+from seevr.live.utils import get_session_store
 
 
 class FeatureViewSet(viewsets.ModelViewSet):
@@ -15,13 +16,14 @@ class FeatureViewSet(viewsets.ModelViewSet):
 
 
 class GuestAPIView(APIView):
-    def get(self, request, format=None):
-        guest_name = request.session.get("name")
-        if not guest_name:
-            raise Http404
-        return Response({"name": guest_name})
+    attr_keys = ["name"]
 
-    def post(self, request, format=None):
+    def get(self, request):
+        guest_name = request.session.get("name")
+        request.session.save()
+        return Response({"name": guest_name, "id": request.session.session_key})
+
+    def post(self, request):
         guest_name = request.data.get("name")
         if not guest_name:
             return Response(
@@ -35,4 +37,20 @@ class GuestAPIView(APIView):
         feature = Feature.objects.get(slug=feature_slug)
         async_to_sync(state.broadcast_feature_state)(feature)
 
-        return Response({"name": request.session["name"]})
+        return Response(
+            {"name": request.session["name"], "id": request.session.session_key}
+        )
+
+    def patch(self, request, feature_slug, guest_id):
+        session_store = get_session_store(guest_id)
+
+        for key in self.attr_keys:
+            value = request.data.get(key)
+            if value:
+                session_store[key] = value
+        session_store.save()
+
+        feature = Feature.objects.get(slug=feature_slug)
+        async_to_sync(state.broadcast_feature_state)(feature)
+
+        return Response({**session_store.load(), "id": request.session.session_key})

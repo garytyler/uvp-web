@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from seevr.live.models import Feature, Guest
-from seevr.live.utils import get_sessions
+from seevr.live.utils import get_session
 
 
 class FeatureSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class FeatureSerializer(serializers.ModelSerializer):
     title = serializers.CharField()
     slug = serializers.SlugField(read_only=True)
     turn_duration = serializers.DurationField(read_only=True)
-    guest_queue = serializers.SerializerMethodField()
+    guests = serializers.SerializerMethodField()
 
     class Meta:
         model = Feature
@@ -18,8 +18,13 @@ class FeatureSerializer(serializers.ModelSerializer):
     def get_created_at(self, instance):
         return instance.created_at.strftime("%B %d, %Y")
 
-    def get_guest_queue(self, instance):
-        return get_sessions(list(instance.guest_queue))
+    def get_guests(self, instance):
+        result = []
+        for session_key in instance.guest_queue:
+            session_store = get_session(session_key)
+            session_store["id"] = session_key
+            result.append(session_store)
+        return result
 
 
 class GuestSerializer(serializers.HyperlinkedModelSerializer):

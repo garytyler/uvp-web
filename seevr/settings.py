@@ -119,7 +119,7 @@ class Common(Configuration):
 
     # User data
     AUTH_USER_MODEL = "accounts.User"
-    SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
     # # Channels
     ASGI_APPLICATION = "seevr.routing.application"

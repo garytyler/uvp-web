@@ -8,5 +8,10 @@ router.register(r"features", api_views.FeatureViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("guest/", api_views.GuestAPIView.as_view(), name="guest",),
+    path(r"guest/", api_views.GuestAPIView.as_view()),
+    path(r"guest/<str:guest_id>/", api_views.GuestAPIView.as_view()),
+    path(
+        r"feature/<str:feature_slug>/guest/<str:guest_id>/",
+        api_views.GuestAPIView.as_view(),
+    ),
 ]

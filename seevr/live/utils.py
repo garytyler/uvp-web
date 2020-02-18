@@ -20,3 +20,7 @@ def get_sessions(session_keys: list):
 
 async def async_get_sessions(session_keys: list):
     return await db_sync_to_async(get_sessions)(session_keys=session_keys)
+
+
+def get_session_store(session_key: str):
+    return SessionStore(session_key)

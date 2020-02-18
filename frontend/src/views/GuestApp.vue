@@ -1,26 +1,31 @@
 <template>
   <v-container>
-    <p class="text-center display-1 info--text">{{ featureTitle }}</p>
-
-    <NameEditor v-on:display-name-updated="connectWebsocket()" />
+    <p class="text-center display-1 info--primary">{{ featureTitle }}</p>
+    <GuestSessionInitializer v-on:session-guest-set="connectWebsocket()" />
     <br />
     <GuestListTable />
   </v-container>
 </template>
 
 <script>
-import NameEditor from "@/components/NameEditor.vue";
+import GuestSessionInitializer from "@/components/GuestSessionInitializer.vue";
 import GuestListTable from "@/components/GuestListTable.vue";
 
 export default {
   name: "GuestApp",
-  components: { NameEditor, GuestListTable },
+  components: { GuestSessionInitializer, GuestListTable },
   computed: {
     featureSlug() {
       return this.$store.getters["guest_app/feature"].slug;
     },
     featureTitle() {
       return this.$store.getters["guest_app/feature"].title;
+    },
+    sessionGuestId() {
+      return this.$store.getters["guest_app/sessionGuest"]?.id;
+    },
+    sessionGuest() {
+      return this.$store.getters["guest_app/sessionGuest"];
     }
   },
   methods: {

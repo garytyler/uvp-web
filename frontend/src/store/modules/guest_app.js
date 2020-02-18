@@ -2,12 +2,12 @@ import axios from "axios";
 
 const state = {
   feature: null,
-  displayName: null
+  sessionGuest: null
 };
 
 const getters = {
   feature: state => state.feature,
-  displayName: state => state.displayName
+  sessionGuest: state => state.sessionGuest
 };
 
 const mutations = {
@@ -17,8 +17,8 @@ const mutations = {
   UPDATE_FEATURE(state, feature) {
     state.feature = { ...state.feature, ...feature };
   },
-  SET_DISPLAY_NAME(state, displayName) {
-    state.displayName = displayName;
+  SET_SESSION_GUEST(state, sessionGuest) {
+    state.sessionGuest = sessionGuest;
   }
 };
 
@@ -29,7 +29,7 @@ const actions = {
         .get(`/api/features/${slug}/`)
         .then(response => {
           commit("SET_FEATURE", response.data);
-          resolve(response);
+          resolve(response.data);
         })
         .catch(error => {
           console.log(error);
@@ -37,31 +37,43 @@ const actions = {
         });
     });
   },
-  loadDisplayName({ commit }) {
+  loadSessionGuest({ commit }) {
     return new Promise((resolve, reject) => {
       axios
         .get(`/api/guest/`)
         .then(response => {
-          let displayName = response.data.name;
-          commit("SET_DISPLAY_NAME", displayName);
-          resolve(displayName);
+          commit("SET_SESSION_GUEST", response.data);
+          resolve(response.data);
         })
         .catch(error => {
-          console.log(error);
           reject(error);
         });
     });
   },
-  setDisplayName({ commit }, profile) {
+  setSessionGuest({ commit }, sessionGuest) {
     return new Promise((resolve, reject) => {
       axios
-        .post(`/api/guest/`, profile)
+        .post(`/api/guest/`, sessionGuest)
         .then(response => {
-          commit("SET_DISPLAY_NAME", response.data.name);
-          resolve(response);
+          commit("SET_SESSION_GUEST", response.data);
+          resolve(response.data);
         })
         .catch(error => {
-          console.log(error);
+          reject(error);
+        });
+    });
+  },
+  updateGuest({ commit, state }, guest) {
+    let guest_id = guest.id;
+    let feature_slug = state.feature.slug;
+    return new Promise((resolve, reject) => {
+      axios
+        .patch(`/api/feature/${feature_slug}/guest/${guest_id}/`, guest)
+        .then(response => {
+          commit("SET_SESSION_GUEST", response.data);
+          resolve(response.data);
+        })
+        .catch(error => {
           reject(error);
         });
     });

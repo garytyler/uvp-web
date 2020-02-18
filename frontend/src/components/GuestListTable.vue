@@ -5,39 +5,82 @@
     ref="table"
     mobile-breakpoint="0"
     :headers="headers"
-    :items="guests"
-    @item-selected="onItemSelected"
+    :items="featureGuests"
     class="elevation-4"
     hide-default-footer
     hide-default-header
   >
+    <template v-slot:top>
+      <v-dialog
+        persistent
+        class="elevation-12"
+        hide-overlay
+        v-model="dialog"
+        max-width="400px"
+      >
+        <v-card>
+          <v-card-title>
+            <v-container>
+              <v-flex text-left>
+                <span class="headline text--info">Edit Name</span>
+              </v-flex>
+            </v-container>
+          </v-card-title>
+
+          <v-card-text>
+            <v-container>
+              <v-flex text-center>
+                <v-text-field
+                  outlined
+                  autofocus
+                  required
+                  label="Your Name"
+                  v-model="editedItem.name"
+                  @keyup.native.enter="handleSubmit()"
+                >
+                </v-text-field>
+              </v-flex>
+            </v-container>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-container>
+              <v-flex text-right>
+                <v-btn text color="accent" @click="dialog = false">
+                  Cancel
+                </v-btn>
+                <v-btn text color="primary" @click="handleSubmit">
+                  Save
+                </v-btn>
+              </v-flex>
+            </v-container>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </template>
+
     <template v-slot:item.name="{ item }">
       <v-chip
-        v-if="guests.indexOf(item) === 0"
+        v-if="featureGuests.indexOf(item) === 0"
         color="green"
         text-color="white"
       >
         <v-avatar left class="green darken-4">
-          {{ guests.indexOf(item) }}
+          {{ featureGuests.indexOf(item) }}
         </v-avatar>
         {{ item.name }}
       </v-chip>
 
-      <v-chip v-if="guests.indexOf(item) !== 0">
+      <v-chip v-if="featureGuests.indexOf(item) !== 0">
         <v-avatar left class="green darken-4">
-          {{ guests.indexOf(item) }}
+          {{ featureGuests.indexOf(item) }}
         </v-avatar>
         {{ item.name }}
       </v-chip>
     </template>
 
     <template v-slot:item.handle="{ item }">
-      <div v-if="guests.indexOf(item) < 2">
-        <v-icon small disabled>
-          drag_handle
-        </v-icon>
-      </div>
-      <div v-else>
+      <div v-if="featureGuests.indexOf(item) > 0">
         <div class="handle">
           <v-icon small>
             drag_handle
@@ -53,8 +96,8 @@
     </template>
 
     <template v-slot:item.edit-action="{ item }">
-      <div v-if="featureOwner || displayName === item.name">
-        <v-icon class="mr-2" @click="editItem(item)">
+      <div v-if="featureOwner || sessionGuestId === item.id">
+        <v-icon class="mr-2" @click="initEditDialog(item)">
           edit
         </v-icon>
       </div>
@@ -72,7 +115,10 @@ export default {
       default: true // Set to false before deployment
     }
   },
-
+  data: () => ({
+    dialog: false,
+    editedItem: {}
+  }),
   computed: {
     headers() {
       let result = [
@@ -109,28 +155,35 @@ export default {
         return result;
       }
     },
-    guests() {
-      return this.$store.getters["guest_app/feature"].guest_queue;
+    featureGuests() {
+      return this.$store.getters["guest_app/feature"].guests;
     },
-    displayName() {
-      return this.$store.getters["guest_app/displayName"];
+    sessionGuestId() {
+      return this.$store.getters["guest_app/sessionGuest"]?.id;
     }
   },
   methods: {
-    editItem(item) {
+    initEditDialog(item) {
       console.log(item);
-      this.editedIndex = this.guestItems.indexOf(item);
+      this.editedIndex = this.featureGuests.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
-
     deleteItem(item) {
-      const index = this.guestItems.indexOf(item);
+      const index = this.featureGuests.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
-        this.guestItems.splice(index, 1);
+        this.featureGuests.splice(index, 1);
     },
-    onItemSelected(item) {
-      item.isSelected = false;
+    handleSubmit() {
+      this.$store
+        .dispatch("guest_app/updateGuest", this.editedItem)
+        .then(() => {
+          this.dialog = false;
+          this.$emit("session-guest-set");
+        })
+        .catch(() => {
+          this.dialog = true;
+        });
     }
   },
 
@@ -141,8 +194,8 @@ export default {
       handle: ".handle", // Use handle so user can select text
       onEnd({ newIndex, oldIndex }) {
         try {
-          const rowSelected = _self.guestItems.splice(oldIndex, 1)[0]; // Get the selected row and remove it
-          _self.guestItems.splice(newIndex, 0, rowSelected); // Move it to the new index
+          const rowSelected = _self.featureGuests.splice(oldIndex, 1)[0]; // Get the selected row and remove it
+          _self.featureGuests.splice(newIndex, 0, rowSelected); // Move it to the new index
         } catch {
           console.error(
             `Reordering not implemented. - newIndex=${newIndex} oldIndex=${oldIndex}`

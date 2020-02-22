@@ -66,7 +66,7 @@ class CachedListSet:
                 self._key, {v: max_score + n + 1 for n, v in enumerate(values)}, nx=True
             )
 
-    def remove(self, value):
+    def remove(self, value) -> int:
         return self.redis.zrem(self._key, value)
 
     def pop(self):

@@ -107,6 +107,8 @@
 
 <script>
 import Sortable from "sortablejs";
+import { mapGetters } from "vuex";
+
 export default {
   props: {
     featureOwner: {
@@ -155,12 +157,7 @@ export default {
         return result;
       }
     },
-    featureGuests() {
-      return this.$store.getters["guest_app/feature"].guests;
-    },
-    sessionGuestId() {
-      return this.$store.getters["guest_app/sessionGuest"]?.id;
-    }
+    ...mapGetters("guest_app", ["featureGuests", "sessionGuestId"])
   },
   methods: {
     initEditDialog(item) {

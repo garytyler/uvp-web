@@ -2,12 +2,24 @@ import axios from "axios";
 
 const state = {
   feature: null,
-  sessionGuest: null
+  sessionGuest: null,
+  interactMode: false
 };
 
 const getters = {
+  // feature and attributes
   feature: state => state.feature,
-  sessionGuest: state => state.sessionGuest
+  featureSlug: getters => getters.feature?.slug,
+  featureTitle: getters => getters.feature?.title,
+  featureGuests: getters => getters.feature?.guests,
+  featurePresenterChannel: getters => getters.feature?.presenter_channel,
+  // sessionGuest and attributes
+  sessionGuest: state => state.sessionGuest,
+  sessionGuestId: getters => getters.sessionGuest?.id,
+  sessionGuestName: getters => getters.sessionGuest?.name,
+  // other
+  interactingGuest: getters => getters.featureGuests?.[0],
+  interactingGuestId: getters => getters.interactingGuest?.id
 };
 
 const mutations = {
@@ -22,6 +34,9 @@ const mutations = {
   },
   DELETE_GUEST(state, guest_id) {
     state.guests = state.guests.filter(i => i.id != guest_id);
+  },
+  SET_INTERACT_MODE(state, value) {
+    state.mode = value;
   }
 };
 
@@ -43,7 +58,7 @@ const actions = {
   loadSessionGuest({ commit }) {
     return new Promise((resolve, reject) => {
       axios
-        .get(`/api/guest/`)
+        .get(`/api/feature/${state.feature.slug}/guest/`)
         .then(response => {
           commit("SET_SESSION_GUEST", response.data);
           resolve(response.data);
@@ -54,9 +69,10 @@ const actions = {
     });
   },
   setSessionGuest({ commit }, sessionGuest) {
+    console.log(sessionGuest);
     return new Promise((resolve, reject) => {
       axios
-        .post(`/api/guest/`, sessionGuest)
+        .post(`/api/feature/${state.feature.slug}/guest/`, sessionGuest)
         .then(response => {
           commit("SET_SESSION_GUEST", response.data);
           resolve(response.data);
@@ -67,11 +83,9 @@ const actions = {
     });
   },
   updateGuest({ commit, state }, guest) {
-    let guest_id = guest.id;
-    let feature_slug = state.feature.slug;
     return new Promise((resolve, reject) => {
       axios
-        .patch(`/api/feature/${feature_slug}/guest/${guest_id}/`, guest)
+        .patch(`/api/feature/${state.feature.slug}/guest/${guest.id}/`, guest)
         .then(response => {
           commit("SET_SESSION_GUEST", response.data);
           resolve(response.data);
@@ -82,11 +96,9 @@ const actions = {
     });
   },
   deleteGuest({ commit, state }, guest) {
-    let guest_id = guest.id;
-    let feature_slug = state.feature.slug;
     return new Promise((resolve, reject) => {
       axios
-        .delete(`/api/feature/${feature_slug}/guest/${guest_id}/`, guest)
+        .delete(`/api/feature/${state.feature.slug}/guest/${guest.id}/`, guest)
         .then(response => {
           if (response.status == 204) {
             commit("DELETE_GUEST", state.feature, guest);
@@ -100,8 +112,9 @@ const actions = {
         });
     });
   },
-  receiveGuestWebsocketMessage(store, data) {
-    store.commit("UPDATE_FEATURE", data.feature);
+  // Websocket receivers
+  receiveFeature({ commit }, data) {
+    commit("SET_FEATURE", data.feature);
   }
 };
 

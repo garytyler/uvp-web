@@ -17,18 +17,14 @@
         <v-card-text>
           <v-container>
             <v-flex text-center text--secondary>
-              <v-icon
-                color="darker-5"
-                v-for="n in featureGuests.length"
-                :key="n"
-              >
+              <v-icon color="darker-5" v-for="n in numFeatureGuests" :key="n">
                 person
               </v-icon>
-              <p v-if="featureGuests.length === 1">
+              <p v-if="numFeatureGuests === 1">
                 There is 1 guest ahead of you.
               </p>
               <p v-else>
-                There are {{ featureGuests.length }} guests ahead of you.
+                There are {{ numFeatureGuests }} guests ahead of you.
               </p>
             </v-flex>
           </v-container>
@@ -41,7 +37,7 @@
                 label="Your Name"
                 placeholder="What's your name?"
                 v-model="editedItem.name"
-                @keyup.native.enter="handleSubmit()"
+                @keyup.native.enter="handleSubmit"
               >
               </v-text-field>
             </v-flex>
@@ -63,6 +59,8 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
   data: () => ({
     dialog: false,
@@ -70,17 +68,15 @@ export default {
     nameState: null
   }),
   computed: {
-    featureTitle() {
-      return this.$store.getters["guest_app/feature"].title;
-    },
-    featureGuests() {
-      return this.$store.getters["guest_app/feature"].guests;
-    },
-    featureSlug() {
-      return this.$store.getters["guest_app/feature"].slug;
-    },
-    sessionGuestName() {
-      return this.$store.getters["guest_app/sessionGuest"]?.name;
+    ...mapGetters("guest_app", [
+      "featureTitle",
+      "featureGuests",
+      "featureSlug",
+      "sessionGuestName",
+      "isPresenterOnline"
+    ]),
+    numFeatureGuests() {
+      return isNaN(this.featureGuests?.length) ? 0 : this.featureGuests.length;
     }
   },
   methods: {
@@ -106,7 +102,6 @@ export default {
       }
     },
     launchDialog(item) {
-      console.log(item);
       this.editedIndex = this.featureGuests.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;

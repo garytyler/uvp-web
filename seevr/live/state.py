@@ -9,10 +9,9 @@ from channels.db import database_sync_to_async as db_sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 
-from seevr.live.api import serializers
 from seevr.live import caching
+from seevr.live.api import serializers
 from seevr.live.models import Feature
-from seevr.live.utils import async_get_session
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +138,7 @@ async def broadcast_feature_state(feature):
                 "message": {
                     "text_data": json.dumps(
                         {
-                            "action": "guest_app/receiveGuestWebsocketMessage",
+                            "action": "guest_app/receiveFeature",
                             "feature": serializers.FeatureSerializer(feature).data,
                         }
                     )

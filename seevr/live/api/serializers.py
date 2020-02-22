@@ -10,6 +10,7 @@ class FeatureSerializer(serializers.ModelSerializer):
     slug = serializers.SlugField(read_only=True)
     turn_duration = serializers.DurationField(read_only=True)
     guests = serializers.SerializerMethodField()
+    presenter_channel = serializers.CharField()
 
     class Meta:
         model = Feature
@@ -19,6 +20,14 @@ class FeatureSerializer(serializers.ModelSerializer):
         return instance.created_at.strftime("%B %d, %Y")
 
     def get_guests(self, instance):
+        result = []
+        for session_key in instance.guest_queue:
+            session_store = get_session(session_key)
+            session_store["id"] = session_key
+            result.append(session_store)
+        return result
+
+    def get_presenter_channel(self, instance):
         result = []
         for session_key in instance.guest_queue:
             session_store = get_session(session_key)

@@ -5,7 +5,6 @@
     <div v-if="isInteractingGuest && isPresenterOnline">
       <GuestInteractControls />
     </div>
-    <div v-else></div>
     <br />
     <GuestListTable />
   </v-container>
@@ -32,17 +31,26 @@ export default {
       "interactingGuestId",
       "sessionGuestId",
       "featurePresenterChannel"
-    ])
-  },
-  methods: {
+    ]),
+
     isInteractingGuest() {
-      return this.interactingGuestId === this.sessionGuestId;
+      let result = this.interactingGuestId === this.sessionGuestId;
+      console.log("isInteractingGuest");
+      console.log(result);
+      return result;
     },
     isPresenterOnline() {
-      return this.featurePresenterChannel
-        ? this.featurePresenterChannel.length > 0
-        : false;
-    },
+      if (
+        this.featurePresenterChannel &&
+        this.featurePresenterChannel.length > 0
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  },
+  methods: {
     connectWebsocket() {
       if (!this.$store.state.socket.isConnected) {
         this.$connect(`ws://localhost:8000/ws/guest_app/${this.featureSlug}/`);

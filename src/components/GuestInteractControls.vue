@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-dialog class="elevation-12">
+    <v-dialog class="elevation-12" v-model="dialog">
       <v-card>
         <v-card-actions>
           <v-container fluid>
@@ -51,7 +51,8 @@ import device from "@/common/device.js";
 export default {
   data() {
     return {
-      isSending: false
+      isSending: false,
+      dialog: true
     };
   },
   computed: {

@@ -2,24 +2,40 @@ import axios from "axios";
 
 const state = {
   feature: null,
-  sessionGuest: null,
-  interactMode: false
+  sessionGuest: null
 };
 
 const getters = {
-  // feature and attributes
-  feature: state => state.feature,
-  featureSlug: getters => getters.feature?.slug,
-  featureTitle: getters => getters.feature?.title,
-  featureGuests: getters => getters.feature?.guests,
-  featurePresenterChannel: getters => getters.feature?.presenter_channel,
-  // sessionGuest and attributes
-  sessionGuest: state => state.sessionGuest,
-  sessionGuestId: getters => getters.sessionGuest?.id,
-  sessionGuestName: getters => getters.sessionGuest?.name,
-  // other
-  interactingGuest: getters => getters.featureGuests?.[0],
-  interactingGuestId: getters => getters.interactingGuest?.id
+  feature(state) {
+    return state.feature;
+  },
+  featureSlug(state) {
+    return state.feature ? state.feature.slug : null;
+  },
+  featureTitle(state) {
+    return state.feature ? state.feature.title : null;
+  },
+  featureGuests(state) {
+    return state.feature ? state.feature.guests : null;
+  },
+  featurePresenterChannel(state) {
+    return state.feature ? state.feature.presenter_channel : null;
+  },
+  sessionGuest(state) {
+    return state.sessionGuest;
+  },
+  sessionGuestId(state) {
+    return state.sessionGuest ? state.sessionGuest.id : null;
+  },
+  sessionGuestName(state) {
+    return state.sessionGuest?.name;
+  },
+  interactingGuest(state) {
+    return state.feature?.guests?.length ? state.feature.guests[0] : null;
+  },
+  interactingGuestId(state) {
+    return state.feature?.guests?.length ? state.feature.guests[0].id : null;
+  }
 };
 
 const mutations = {

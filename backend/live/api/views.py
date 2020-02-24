@@ -4,10 +4,10 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from seevr.live import state
-from seevr.live.api.serializers import FeatureSerializer
-from seevr.live.models import Feature
-from seevr.live.utils import get_session_store
+from backend.live import state
+from backend.live.api.serializers import FeatureSerializer
+from backend.live.models import Feature
+from backend.live.utils import get_session_store
 
 
 class FeatureViewSet(viewsets.ModelViewSet):

@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 # from django.views.decorators.csrf import csrf_exempt
-from seevr.live.api import views as api_views
+from backend.live.api import views as api_views
 
 router = DefaultRouter()
 router.register(r"features", api_views.FeatureViewSet)

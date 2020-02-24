@@ -1,6 +1,6 @@
 from django.urls import re_path
 
-from seevr.live import consumers
+from backend.live import consumers
 
 websocket_urlpatterns = [
     re_path(r"^ws/guest_app/(?P<feature_slug>[^/]+)/$", consumers.GuestConsumer),

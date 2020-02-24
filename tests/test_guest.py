@@ -3,7 +3,7 @@ import json
 import pytest
 from channels.db import database_sync_to_async as db_sync_to_async
 
-from seevr.live.models import Feature
+from backend.live.models import Feature
 
 
 @pytest.mark.asyncio

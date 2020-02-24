@@ -1,7 +1,7 @@
-"""seevr URL Configuration
+"""project URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoseevr.com/en/1.11/topics/http/urls/
+    https://docs.djangoproject.com/en/1.11/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -16,11 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path, re_path
 
-from seevr.views import IndexTemplateView
+from backend.views import index_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("seevr.live.api.urls")),
-    # path("", include("seevr.live.urls")),
-    re_path(r"^.*$", IndexTemplateView.as_view(), name="entry-point"),
+    path("api/", include("backend.live.api.urls")),
+    # path("", include("backend.live.urls")),
+    path("", index_view, name="index"),
+    re_path(r"^.*$", index_view, name="entry-point"),
 ]

@@ -126,6 +126,7 @@ croniter = ">=0.3.30"
 reference = "4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"
 type = "git"
 url = "https://github.com/garytyler/beatserver"
+
 [[package]]
 category = "main"
 description = "Foreign Function Interface for Python calling C code."
@@ -317,14 +318,6 @@ version = "0.1.0"
 
 [package.dependencies]
 djangorestframework = "*"
-
-[[package]]
-category = "main"
-description = "Transparently use webpack with django"
-name = "django-webpack-loader"
-optional = false
-python-versions = "*"
-version = "0.6.0"
 
 [[package]]
 category = "main"
@@ -589,6 +582,7 @@ version = "2.1.1"
 reference = "1911c203a13826d2eb03d582d60874b91e36f4fc"
 type = "git"
 url = "https://github.com/pycqa/pyflakes"
+
 [[package]]
 category = "main"
 description = "Hamcrest framework for matcher objects"
@@ -973,7 +967,7 @@ test = ["zope.event"]
 testing = ["coverage", "nose", "zope.event"]
 
 [metadata]
-content-hash = "178947432f9c55b787bf07be75c48a366dfd0b5095e110a59342fb14b3b20425"
+content-hash = "806d4f255de0a508c42891877c7baf0b20e3067020f41dfb842da6d15d25809e"
 python-versions = "==3.8"
 
 [metadata.files]
@@ -1116,10 +1110,6 @@ django-redis = [
 ]
 django-rest-framework = [
     {file = "django-rest-framework-0.1.0.tar.gz", hash = "sha256:47a8f496fa69e3b6bd79f68dd7a1527d907d6b77f009e9db7cf9bb21cc565e4a"},
-]
-django-webpack-loader = [
-    {file = "django-webpack-loader-0.6.0.tar.gz", hash = "sha256:60bab6b9a037a5346fad12d2a70a6bc046afb33154cf75ed640b93d3ebd5f520"},
-    {file = "django_webpack_loader-0.6.0-py2.py3-none-any.whl", hash = "sha256:970b968c2a8975fb7eff56a3bab5d0d90d396740852d1e0c50c5cfe2b824199a"},
 ]
 djangorestframework = [
     {file = "djangorestframework-3.11.0-py3-none-any.whl", hash = "sha256:05809fc66e1c997fd9a32ea5730d9f4ba28b109b9da71fccfa5ff241201fd0a4"},

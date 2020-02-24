@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from seevr.live.models import Feature, Guest
-from seevr.live.utils import get_session
+from backend.live.models import Feature, Guest
+from backend.live.utils import get_session
 
 
 class FeatureSerializer(serializers.ModelSerializer):

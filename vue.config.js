@@ -1,40 +1,25 @@
-const BundleTracker = require("webpack-bundle-tracker");
 module.exports = {
-  // django-webpack-loader configuration
-  publicPath: "http://127.0.0.1:8080/", // Use 127.0.0.1 for Windows/WSL and 0.0.0.0 should work otherwise.
   outputDir: "./dist/",
-
-  chainWebpack: config => {
-    config
-      .merge({ devtool: "source-map" })
-      .plugin("BundleTracker")
-      .use(BundleTracker, [{ filename: "./webpack-stats.json" }]);
-
-    config.output.filename("bundle.js");
-
-    config.optimization.splitChunks(false);
-
-    config.resolve.alias.set("__STATIC__", "static");
-
-    config.devServer
-      // the first 3 lines of the following code have been added to the configuration
-      .public("http://127.0.0.1:8080")
-      .host("127.0.0.1")
-      .port(8080)
-      .hotOnly(true)
-      .watchOptions({ poll: 1000 })
-      .https(false)
-      .disableHostCheck(true)
-      .headers({ "Access-Control-Allow-Origin": ["*"] });
-  },
-
-  css: {
-    extract: {
-      filename: "bundle.css",
-      chunkFilename: "bundle.css"
+  assetsDir: "static",
+  // baseUrl: process.env.NODE_ENV === 'production'
+  // ? 'http://cdn123.com'
+  // : '/',
+  // For Production, replace set baseUrl to CDN
+  // And set the CDN origin to `yourdomain.com/static`
+  // Whitenoise will serve once to CDN which will then cache
+  // and distribute
+  devServer: {
+    proxy: {
+      "/api*": {
+        // Forward frontend dev server request for /api to django dev server
+        target: "http://localhost:8000/"
+      },
+      "/ws*": {
+        // Forward frontend dev server request for /ws to django dev server
+        target: "ws://localhost:8000/"
+      }
     }
   },
-
   // vuejs configuration
   transpileDependencies: ["vuetify"]
 };

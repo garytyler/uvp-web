@@ -11,13 +11,13 @@ class MotionSender {
   }
   sendData() {
     if (!this.socket || !this.motionData.orientation) {
-      console.log("No orientation data available.");
+      // console.log("No orientation data available.");
     } else {
       let dataBytes = new Float64Array(this.motionData.orientation);
       if (dataBytes) {
         this.socket.send(dataBytes);
       } else {
-        console.log(`No data found: ${dataBytes}`);
+        // console.log(`No data found: ${dataBytes}`);
       }
     }
   }

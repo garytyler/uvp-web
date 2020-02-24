@@ -13,8 +13,8 @@ from django.core.management import call_command
 from django.test import Client
 from django_redis import get_redis_connection
 
-from seevr.live.models import Feature
-from seevr.routing import application
+from backend.live.models import Feature
+from backend.routing import application
 
 
 @pytest.fixture(autouse=True)

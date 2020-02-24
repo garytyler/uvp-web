@@ -35,8 +35,6 @@ export default {
 
     isInteractingGuest() {
       let result = this.interactingGuestId === this.sessionGuestId;
-      console.log("isInteractingGuest");
-      console.log(result);
       return result;
     },
     isPresenterOnline() {
@@ -53,7 +51,7 @@ export default {
   methods: {
     connectWebsocket() {
       if (!this.$store.state.socket.isConnected) {
-        this.$connect(`ws://localhost:8000/ws/guest_app/${this.featureSlug}/`);
+        this.$connect(`/ws/guest_app/${this.featureSlug}/`);
       }
     }
   },

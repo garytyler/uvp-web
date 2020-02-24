@@ -66,7 +66,6 @@ const actions = {
           resolve(response.data);
         })
         .catch(error => {
-          console.log(error);
           reject(error);
         });
     });
@@ -85,7 +84,6 @@ const actions = {
     });
   },
   setSessionGuest({ commit }, sessionGuest) {
-    console.log(sessionGuest);
     return new Promise((resolve, reject) => {
       axios
         .post(`/api/feature/${state.feature.slug}/guest/`, sessionGuest)
@@ -119,8 +117,6 @@ const actions = {
           if (response.status == 204) {
             commit("DELETE_GUEST", state.feature, guest);
           }
-          console.log(response);
-          console.log(response.data);
           resolve(response.data);
         })
         .catch(error => {

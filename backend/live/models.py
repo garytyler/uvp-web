@@ -6,7 +6,7 @@ from django.core.cache import caches
 from django.db import models
 from django.utils.text import slugify
 
-from seevr.live import caching
+from backend.live import caching
 
 cache = caches[settings.SESSION_CACHE_ALIAS]
 

@@ -28,18 +28,19 @@ const store = new Vuex.Store({
       Vue.prototype.$socket = event.currentTarget;
       state.socket.isConnected = true;
     },
-    SOCKET_ONCLOSE(state, event) {
-      console.info(state, event);
+    SOCKET_ONCLOSE(state) {
       state.socket.isConnected = false;
     },
-    SOCKET_ONERROR(state, event) {
-      console.error(state, event);
+    SOCKET_ONERROR(state) {
+      state;
+      //console.error(state, event);
     },
     SOCKET_ONMESSAGE(state, message) {
       state.socket.message = message;
     },
     SOCKET_RECONNECT(state, count) {
-      console.info(state, count);
+      state, count;
+      //console.info(state, count);
     },
     SOCKET_RECONNECT_ERROR(state) {
       state.socket.reconnectError = true;

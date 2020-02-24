@@ -9,9 +9,9 @@ from channels.db import database_sync_to_async as db_sync_to_async
 from channels.layers import get_channel_layer
 from django.conf import settings
 
-from seevr.live import caching
-from seevr.live.api import serializers
-from seevr.live.models import Feature
+from backend.live import caching
+from backend.live.api import serializers
+from backend.live.models import Feature
 
 log = logging.getLogger(__name__)
 

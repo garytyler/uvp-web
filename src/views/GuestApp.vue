@@ -15,6 +15,7 @@ import GuestSessionInitializer from "@/components/GuestSessionInitializer.vue";
 import GuestListTable from "@/components/GuestListTable.vue";
 import GuestInteractControls from "@/components/GuestInteractControls.vue";
 import { mapGetters } from "vuex";
+import { pathToWsUrl } from "@/utils/urls.js";
 
 export default {
   name: "GuestApp",
@@ -51,7 +52,7 @@ export default {
   methods: {
     connectWebsocket() {
       if (!this.$store.state.socket.isConnected) {
-        this.$connect(`/ws/guest_app/${this.featureSlug}/`);
+        this.$connect(pathToWsUrl(`/ws/guest/${this.featureSlug}/`));
       }
     }
   },

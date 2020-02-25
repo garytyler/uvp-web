@@ -1,6 +1,11 @@
 <template>
   <v-row>
-    <v-dialog class="elevation-12" v-model="dialog">
+    <v-dialog
+      persistent
+      no-click-animation
+      class="elevation-12"
+      v-model="dialog"
+    >
       <v-card>
         <v-card-actions>
           <v-container fluid>
@@ -46,7 +51,7 @@
 <script>
 import { mapGetters } from "vuex";
 import Vue from "vue";
-import device from "@/common/device.js";
+import device from "@/utils/device.js";
 
 export default {
   data() {

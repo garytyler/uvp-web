@@ -167,15 +167,19 @@ export default {
       this.dialog = true;
     },
     deleteItem(item) {
+      console.log(typeof item);
+      console.log(item.id);
       confirm("Are you sure you want to delete this item?") &&
         this.$store
-          .dispatch("guest_app/deleteGuest", item)
+          .dispatch("guest_app/deleteGuest", item.id)
           .then(() => {
+            console.log("DELETED GUEST ITEM");
             this.dialog = false;
             this.$emit("session-guest-set");
           })
-          .catch(() => {
-            this.dialog = true;
+          .catch(error => {
+            console.log("ERROR DELETING GUEST ITEM" + error);
+            this.dialog = false;
           });
     },
     handleSubmit() {

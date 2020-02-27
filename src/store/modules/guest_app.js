@@ -49,10 +49,7 @@ const mutations = {
     state.sessionGuest = sessionGuest;
   },
   DELETE_GUEST(state, guest_id) {
-    state.guests = state.guests.filter(i => i.id != guest_id);
-  },
-  SET_INTERACT_MODE(state, value) {
-    state.mode = value;
+    state.feature.guests.filter(i => i.id != guest_id);
   }
 };
 
@@ -75,8 +72,12 @@ const actions = {
       axios
         .get(`/api/feature/${state.feature.slug}/guest/`)
         .then(response => {
-          commit("SET_SESSION_GUEST", response.data);
-          resolve(response.data);
+          if (response.status == 200) {
+            commit("SET_SESSION_GUEST", response.data);
+            resolve(response.data);
+          } else {
+            reject(response.error);
+          }
         })
         .catch(error => {
           reject(error);
@@ -88,8 +89,12 @@ const actions = {
       axios
         .post(`/api/feature/${state.feature.slug}/guest/`, sessionGuest)
         .then(response => {
-          commit("SET_SESSION_GUEST", response.data);
-          resolve(response.data);
+          if (response.status == 200) {
+            commit("SET_SESSION_GUEST", response.data);
+            resolve(response.data);
+          } else {
+            reject(response.error);
+          }
         })
         .catch(error => {
           reject(error);
@@ -101,23 +106,29 @@ const actions = {
       axios
         .patch(`/api/feature/${state.feature.slug}/guest/${guest.id}/`, guest)
         .then(response => {
-          commit("SET_SESSION_GUEST", response.data);
-          resolve(response.data);
+          if (response.status == 200) {
+            commit("SET_SESSION_GUEST", response.data);
+            resolve(response.data);
+          } else {
+            reject(response.error);
+          }
         })
         .catch(error => {
           reject(error);
         });
     });
   },
-  deleteGuest({ commit, state }, guest) {
+  deleteGuest({ commit, state }, guest_id) {
     return new Promise((resolve, reject) => {
       axios
-        .delete(`/api/feature/${state.feature.slug}/guest/${guest.id}/`, guest)
+        .delete(`/api/feature/${state.feature.slug}/guest/${guest_id}/`)
         .then(response => {
           if (response.status == 204) {
-            commit("DELETE_GUEST", state.feature, guest);
+            commit("DELETE_GUEST", state.feature, guest_id);
+            resolve(response.data);
+          } else {
+            reject(response.error);
           }
-          resolve(response.data);
         })
         .catch(error => {
           reject(error);

@@ -1,3 +1,21 @@
+async function getOrientationPermissions() {
+  return new Promise(resolve => {
+    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+      // handle regular non iOS 13+ devices
+      resolve(true);
+    }
+    DeviceOrientationEvent.requestPermission()
+      .then(permissionState => {
+        if (permissionState === "granted") {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      })
+      .catch(console.error);
+  });
+}
+
 class MotionSender {
   constructor() {
     this.intervalometer_id = null;
@@ -42,5 +60,6 @@ class MotionSender {
 }
 
 export default {
-  orientation: new MotionSender()
+  motionSender: new MotionSender(),
+  getOrientationPermissions: getOrientationPermissions
 };

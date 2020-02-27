@@ -9,14 +9,21 @@ module.exports = {
   // Whitenoise will serve once to CDN which will then cache
   // and distribute
   devServer: {
+    // https: true
+    disableHostCheck: true,
+    // public: "gt.ngrok.io"
     proxy: {
       "/api*": {
         // Forward frontend dev server request for /api to django dev server
-        target: "http://localhost:8000/"
+        // target: process.env.BACKEND_URL_BASENAME
+        target: `http://${process.env.BACKEND_URL_BASENAME}/`
       },
       "/ws*": {
         // Forward frontend dev server request for /ws to django dev server
-        target: "ws://localhost:8000/"
+        // target: "ws://localhost:8000/"
+        target: `ws://${process.env.BACKEND_URL_BASENAME}/`,
+        // target: process.env.BACKEND_URL_BASENAME,
+        ws: true
       }
     }
   },

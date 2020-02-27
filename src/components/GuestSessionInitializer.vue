@@ -1,5 +1,6 @@
 <template>
   <div>
+    ASDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
     <v-dialog
       persistent
       class="elevation-12"
@@ -37,7 +38,7 @@
                 label="Your Name"
                 placeholder="What's your name?"
                 v-model="editedItem.name"
-                @keyup.native.enter="handleSubmit"
+                @keyup.native.enter="handleSignUpSubmit()"
               >
               </v-text-field>
             </v-flex>
@@ -47,7 +48,7 @@
         <v-card-actions>
           <v-container>
             <v-flex text-center>
-              <v-btn color="primary" large @click="handleSubmit()">
+              <v-btn color="primary" large @click="handleSignUpSubmit()">
                 Join
               </v-btn>
             </v-flex>
@@ -55,17 +56,20 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    {{ status }}
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+import device from "@/utils/device.js";
 
 export default {
   data: () => ({
     dialog: false,
     editedItem: {},
-    nameState: null
+    nameState: null,
+    status: "NO STATUS"
   }),
   computed: {
     ...mapGetters("guest_app", [
@@ -80,7 +84,15 @@ export default {
     }
   },
   methods: {
-    handleSubmit() {
+    async handleSignUpSubmit() {
+      const permissions = await device.getOrientationPermissions();
+      if (permissions === true) {
+        this.dialog = false;
+        this.$emit("session-guest-set");
+      } else {
+        this.dialog = true;
+      }
+
       if (
         this.editedItem.name &&
         this.editedItem.name === this.sessionGuestName
@@ -93,21 +105,16 @@ export default {
             feature_slug: this.featureSlug
           })
           .then(() => {
-            this.dialog = false;
             this.$emit("session-guest-set");
+            this.dialog = false;
           })
           .catch(() => {
             this.dialog = true;
           });
       }
-    },
-    launchDialog(item) {
-      this.editedIndex = this.featureGuests.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
     }
   },
-  mounted() {
+  async mounted() {
     this.$store
       .dispatch("guest_app/loadSessionGuest")
       .then(data => {

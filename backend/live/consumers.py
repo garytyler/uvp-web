@@ -83,11 +83,11 @@ class GuestConsumer(AsyncWebsocketConsumer):
     async def receive_bytes_data(self, bytes_data):
         orientation_repr = "{0:+f}{1:+f}{2:+f}".format(*array("d", bytes_data))
         log.debug(f"{self.__class__.__name__} received bytes - {orientation_repr=}")
-        print(self.feature.presenter_channel)
-        await self.channel_layer.send(
-            self.feature.presenter_channel,
-            {"type": "layerevent.new.motion.state", "data": bytes_data},
-        )
+        if self.feature.presenter_channel:
+            await self.channel_layer.send(
+                self.feature.presenter_channel,
+                {"type": "layerevent.new.motion.state", "data": bytes_data},
+            )
 
     @channelmethod
     async def send_to_client(self, text_data=None, bytes_data=None, close=False):

@@ -1,4 +1,4 @@
-function pathToWsUrl(urlPath) {
+function urlPathToWsUrl(urlPath) {
   let _url;
   // Use wss:// if running on https://
   const scheme = window.location.protocol === "https:" ? "wss" : "ws";
@@ -16,4 +16,4 @@ function pathToWsUrl(urlPath) {
   return _url;
 }
 
-export { pathToWsUrl };
+export { urlPathToWsUrl };

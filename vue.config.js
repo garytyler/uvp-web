@@ -1,3 +1,4 @@
+var path = require("path");
 module.exports = {
   outputDir: "./dist/",
   assetsDir: "static",
@@ -9,6 +10,7 @@ module.exports = {
   // Whitenoise will serve once to CDN which will then cache
   // and distribute
   devServer: {
+    https: true,
     proxy: {
       "/api*": {
         // Forward frontend dev server request for /api to django dev server

@@ -14,12 +14,12 @@
         }
     ],
     "env": {
-        "DJANGO_ALLOWED_HOSTS": {
-            "description": "The host/domain names that this Django site can serve, delimited by commas. For a basic Heroku deployment, use the full app url: APPNAME.herokuapp.com",
-            "value": ".herokuapp.com"
+        "DJANGO_SETTINGS_MODULE": {
+            "description": "Set Django Settings to Production",
+            "value": "backend.settings.prod"
         },
         "SECRET_KEY": {
-            "description": "A secret key for verifying the integrity of signed cookies.",
+            "description": "Secret key for verifying the integrity of signed cookies.",
             "generator": "secret"
         }
     },

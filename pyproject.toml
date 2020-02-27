@@ -6,11 +6,11 @@ authors = ["Gary Tyler <mail@garytyler.com>"]
 
 [tool.poetry.dependencies]
 python = "==3.8"
-beatserver = {git = "https://github.com/garytyler/beatserver", rev = "4e3ebd8130ca0caf2c8e3559df2167b28ea93d91"}
+beatserver = "*"
 channels = "*"
 channels-redis = "*"
 dj-database-url = "*"
-django = "^2"
+django = ">=2.2.10"
 django-configurations = "*"
 django-redis = "*"
 django-rest-framework = "*"

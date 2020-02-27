@@ -6,7 +6,7 @@ import dj_database_url
 from ._base import *  # noqa: F403,F401
 
 # Domain name
-ALLOWED_HOSTS: list = []
+ALLOWED_HOSTS: list = ["*"]
 
 
 # Security

@@ -1,6 +1,6 @@
 # seevr-web
 
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/garytyler/seevr-web/tree/master)
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/garytyler/seevr-web/tree/https)
 
 ## Useful environment variables
 

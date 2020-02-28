@@ -3,6 +3,7 @@ import Vuex from "vuex";
 import createLogger from "vuex/dist/logger";
 import guest_app from "./modules/guest_app";
 import VueNativeSock from "vue-native-websocket";
+// import { urlPathToWsUrl } from "@/utils/urls.js";
 
 Vue.use(Vuex);
 

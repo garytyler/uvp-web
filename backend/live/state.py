@@ -130,18 +130,12 @@ async def get_guest_queue_member_status(feature) -> dict:
 
 
 async def broadcast_feature_state(feature):
-    for session_key in feature.guest_queue:
-        await get_channel_layer().group_send(
-            session_key,
-            {
-                "type": "send_to_client",
-                "message": {
-                    "text_data": json.dumps(
-                        {
-                            "action": "guest_app/receiveFeature",
-                            "feature": serializers.FeatureSerializer(feature).data,
-                        }
-                    )
-                },
-            },
-        )
+    json_data = json.dumps(
+        {
+            "action": "guest_app/receiveFeature",
+            "feature": serializers.FeatureSerializer(feature).data,
+        }
+    )
+    await get_channel_layer().group_send(
+        feature.slug, {"type": "send_to_client", "message": {"text_data": json_data}}
+    )

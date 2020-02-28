@@ -29,26 +29,21 @@ def channelmethod(func):
 
 class GuestConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-
         # Verify
-        self.feature = await db_sync_to_async(
-            lambda: Feature.objects.get(
-                slug=self.scope["url_route"]["kwargs"]["feature_slug"]
-            )
-        )()
-        if not self.feature and self.scope["session"]["guest_name"]:
+        try:
+            self.feature = await db_sync_to_async(
+                lambda: Feature.objects.get(
+                    slug=self.scope["url_route"]["kwargs"]["feature_slug"]
+                )
+            )()
+        except Feature.DoesNotExist:
             raise DenyConnection()
+
+        await db_sync_to_async(self.scope["session"].save)()
+        await self.channel_layer.group_add(self.feature.slug, self.channel_name)
 
         # Accept
         await self.accept()
-
-        # Add to queue
-        self.feature.guest_queue.append(self.scope["session"].session_key)
-        self.feature.member_channels.append(self.channel_name)
-        # await self.channel_layer.group_add(self.feature.slug, self.channel_name)
-        await self.channel_layer.group_add(
-            self.scope["session"].session_key, self.channel_name
-        )
 
         # Broadcast state
         await state.broadcast_feature_state(self.feature)
@@ -100,10 +95,9 @@ class GuestConsumer(AsyncWebsocketConsumer):
         await self.close(close_code)
 
     async def disconnect(self, close_code):
-        # self.feature.member_channels.remove(self.channel_name)
-        await self.channel_layer.group_discard(
-            self.scope["session"].session_key, self.channel_name
-        )
+        sk = getattr(self.scope["session"], "session_key")
+        if sk:
+            await self.channel_layer.group_discard(sk, self.channel_name)
 
 
 class PresenterConsumer(AsyncWebsocketConsumer):

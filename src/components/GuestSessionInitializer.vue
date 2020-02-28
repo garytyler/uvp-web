@@ -1,6 +1,5 @@
 <template>
   <div>
-    ASDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
     <v-dialog
       persistent
       class="elevation-12"
@@ -56,7 +55,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    {{ status }}
   </div>
 </template>
 
@@ -77,6 +75,7 @@ export default {
       "featureGuests",
       "featureSlug",
       "sessionGuestName",
+      "sessionGuestId",
       "isPresenterOnline"
     ]),
     numFeatureGuests() {
@@ -88,7 +87,6 @@ export default {
       const permissions = await device.getOrientationPermissions();
       if (permissions === true) {
         this.dialog = false;
-        this.$emit("session-guest-set");
       } else {
         this.dialog = true;
       }
@@ -120,7 +118,6 @@ export default {
       .then(data => {
         if (data.name && this.featureGuests.some(i => i.id === data.id)) {
           this.dialog = false;
-          this.$emit("session-guest-set");
         } else {
           this.dialog = true;
         }

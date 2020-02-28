@@ -4,7 +4,7 @@ import AccountApp from "@/views/AccountApp.vue";
 import GuestApp from "@/views/GuestApp.vue";
 import Error404NotFound from "@/views/errors/Error404NotFound.vue";
 import store from "@/store";
-
+import GuestListTable from "@/components/GuestListTable.vue";
 Vue.use(VueRouter);
 
 var loadFeatureBeforeRouterEnter = function(to, from, next) {
@@ -28,9 +28,14 @@ const routes = [
   },
   {
     path: "/feature/:feature_slug",
-    name: "guest-app",
     component: GuestApp,
-    beforeEnter: loadFeatureBeforeRouterEnter
+    beforeEnter: loadFeatureBeforeRouterEnter,
+    children: [
+      {
+        path: "",
+        component: GuestListTable
+      }
+    ]
   },
   {
     path: "/not-found",

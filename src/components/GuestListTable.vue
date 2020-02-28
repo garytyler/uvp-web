@@ -1,108 +1,122 @@
 <template>
-  <v-data-table
-    no-data-text="Queue is empty."
-    item-key="name"
-    ref="table"
-    mobile-breakpoint="0"
-    :headers="headers"
-    :items="featureGuests"
-    class="elevation-4"
-    hide-default-footer
-    hide-default-header
-  >
-    <template v-slot:top>
-      <v-dialog
-        persistent
-        class="elevation-12"
-        hide-overlay
-        v-model="dialog"
-        max-width="400px"
-      >
-        <v-card>
-          <v-card-title>
-            <v-container>
-              <v-flex text-left>
-                <span class="headline text--info">Edit Name</span>
-              </v-flex>
-            </v-container>
-          </v-card-title>
+  <div>
+    <v-data-table
+      no-data-text="Queue is empty."
+      item-key="name"
+      ref="table"
+      mobile-breakpoint="0"
+      :headers="headers"
+      :items="featureGuests"
+      class="elevation-4"
+      hide-default-footer
+      hide-default-header
+    >
+      <template v-slot:top>
+        <v-dialog
+          persistent
+          class="elevation-12"
+          hide-overlay
+          v-model="dialog"
+          max-width="400px"
+        >
+          <v-card>
+            <v-card-title>
+              <v-container>
+                <v-flex text-left>
+                  <span class="headline text--info">Edit Name</span>
+                </v-flex>
+              </v-container>
+            </v-card-title>
 
-          <v-card-text>
-            <v-container>
-              <v-flex text-center>
-                <v-text-field
-                  outlined
-                  autofocus
-                  required
-                  label="Your Name"
-                  v-model="editedItem.name"
-                  @keyup.native.enter="handleSubmit()"
-                >
-                </v-text-field>
-              </v-flex>
-            </v-container>
-          </v-card-text>
+            <v-card-text>
+              <v-container>
+                <v-flex text-center>
+                  <v-text-field
+                    outlined
+                    autofocus
+                    required
+                    label="Your Name"
+                    v-model="editedItem.name"
+                    @keyup.native.enter="handleSubmit()"
+                  >
+                  </v-text-field>
+                </v-flex>
+              </v-container>
+            </v-card-text>
 
-          <v-card-actions>
-            <v-container>
-              <v-flex text-right>
-                <v-btn text color="accent" @click="dialog = false">
-                  Cancel
-                </v-btn>
-                <v-btn text color="primary" @click="handleSubmit">
-                  Save
-                </v-btn>
-              </v-flex>
-            </v-container>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </template>
+            <v-card-actions>
+              <v-container>
+                <v-flex text-right>
+                  <v-btn text color="accent" @click="dialog = false">
+                    Cancel
+                  </v-btn>
+                  <v-btn text color="primary" @click="handleSubmit">
+                    Save
+                  </v-btn>
+                </v-flex>
+              </v-container>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </template>
 
-    <template v-slot:item.name="{ item }">
-      <v-chip
-        v-if="featureGuests.indexOf(item) === 0"
-        color="green"
-        text-color="white"
-      >
-        <v-avatar left class="green darken-4">
-          {{ featureGuests.indexOf(item) }}
-        </v-avatar>
-        {{ item.name }}
-      </v-chip>
+      <template v-slot:item.index="{ item }">
+        <v-chip
+          :color="
+            item.id === sessionGuestId
+              ? 'info darken-2'
+              : featureGuests.indexOf(item) === 0
+              ? 'success darken-2'
+              : 'secondary'
+          "
+          text-color="white"
+        >
+          <span class="headline text--accent">
+            {{ featureGuests.indexOf(item) }}
+          </span>
+        </v-chip>
+      </template>
 
-      <v-chip v-if="featureGuests.indexOf(item) !== 0">
-        <v-avatar left class="green darken-4">
-          {{ featureGuests.indexOf(item) }}
-        </v-avatar>
-        {{ item.name }}
-      </v-chip>
-    </template>
+      <template v-slot:item.name="{ item }">
+        <v-chip
+          :color="
+            item.id === sessionGuestId
+              ? 'info darken-2'
+              : featureGuests.indexOf(item) === 0
+              ? 'success darken-2'
+              : 'secondary'
+          "
+          text-color="white"
+        >
+          <span class="headline">{{ item.name }}</span>
+        </v-chip>
+      </template>
 
-    <template v-slot:item.handle="{ item }">
-      <div v-if="featureGuests.indexOf(item) > 0">
-        <div class="handle">
-          <v-icon small>
-            drag_handle
+      <template v-slot:item.handle="{ item }">
+        <div v-if="featureGuests.indexOf(item) > 0">
+          <div class="handle">
+            <v-icon small>
+              drag_handle
+            </v-icon>
+          </div>
+        </div>
+      </template>
+
+      <template v-slot:item.delete-action="{ item }">
+        <v-icon @click="deleteItem(item)">
+          delete
+        </v-icon>
+      </template>
+
+      <template v-slot:item.edit-action="{ item }">
+        <div v-if="featureOwner || sessionGuestId === item.id">
+          <v-icon class="mr-2" @click="initEditDialog(item)">
+            edit
           </v-icon>
         </div>
-      </div>
-    </template>
-
-    <template v-slot:item.delete-action="{ item }">
-      <v-icon @click="deleteItem(item)">
-        delete
-      </v-icon>
-    </template>
-
-    <template v-slot:item.edit-action="{ item }">
-      <div v-if="featureOwner || sessionGuestId === item.id">
-        <v-icon class="mr-2" @click="initEditDialog(item)">
-          edit
-        </v-icon>
-      </div>
-    </template>
-  </v-data-table>
+      </template>
+    </v-data-table>
+  </div>
 </template>
 
 <script>
@@ -123,7 +137,13 @@ export default {
   }),
   computed: {
     headers() {
-      let result = [
+      let _headers = [
+        {
+          text: "Index",
+          align: "start",
+          sortable: false,
+          value: "index"
+        },
         {
           text: "Name",
           align: "start",
@@ -145,7 +165,7 @@ export default {
             align: "start",
             sortable: false
           },
-          ...result,
+          ..._headers,
           {
             text: "Delete",
             align: "end",
@@ -154,12 +174,19 @@ export default {
           }
         ];
       } else {
-        return result;
+        return _headers;
       }
     },
     ...mapGetters("guest_app", ["featureGuests", "sessionGuestId"])
   },
   methods: {
+    rowClick: function(item, row) {
+      console.log("Clicked" + row);
+      row.select(false);
+      row.deselect(item, false);
+      //item  - selected item
+    },
+
     initEditDialog(item) {
       console.log(item);
       this.editedIndex = this.featureGuests.indexOf(item);

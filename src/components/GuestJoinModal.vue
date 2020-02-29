@@ -5,7 +5,7 @@
       class="elevation-12"
       hide-overlay
       max-width="400px"
-      v-model="sessionGuestIsNotInFeatureGuests"
+      v-model="showSignupModal"
     >
       <v-card>
         <v-card-title>
@@ -16,7 +16,7 @@
 
         <v-card-text>
           <v-container>
-            <v-flex text-center text--secondary>
+            <v-row justify="center" class="text--secondary">
               <v-icon color="darker-5" v-for="n in numFeatureGuests" :key="n">
                 person
               </v-icon>
@@ -26,7 +26,7 @@
               <p v-else>
                 There are {{ numFeatureGuests }} guests ahead of you.
               </p>
-            </v-flex>
+            </v-row>
           </v-container>
           <v-container>
             <v-flex text-center>
@@ -81,11 +81,14 @@ export default {
     numFeatureGuests() {
       return isNaN(this.featureGuests?.length) ? 0 : this.featureGuests.length;
     },
-    sessionGuestIsNotInFeatureGuests() {
+    sessionGuestIsInFeatureGuests() {
+      return this.featureGuests.some(i => i.id === this.sessionGuestId);
+    },
+    showSignupModal() {
       if (!this.sessionGuestLoaded) {
         return false;
       } else {
-        return !this.featureGuests.some(i => i.id === this.sessionGuestId);
+        return !this.sessionGuestIsInFeatureGuests;
       }
     }
   },
@@ -98,15 +101,17 @@ export default {
       });
     }
   },
-  async beforeMount() {
-    this.$store
-      .dispatch("guest_app/loadSessionGuest")
-      .then(() => {
-        this.sessionGuestLoaded = true;
-      })
-      .catch(() => {
-        this.sessionGuestLoaded = true;
-      });
+  beforeCreate() {
+    if (!this.$store.sessionGuest) {
+      this.$store
+        .dispatch("guest_app/loadSessionGuest")
+        .then(() => {
+          this.sessionGuestLoaded = true;
+        })
+        .catch(() => {
+          this.sessionGuestLoaded = true;
+        });
+    }
   }
 };
 </script>

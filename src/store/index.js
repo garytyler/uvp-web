@@ -3,7 +3,6 @@ import Vuex from "vuex";
 import createLogger from "vuex/dist/logger";
 import guest_app from "./modules/guest_app";
 import VueNativeSock from "vue-native-websocket";
-// import { urlPathToWsUrl } from "@/utils/urls.js";
 
 Vue.use(Vuex);
 
@@ -33,15 +32,13 @@ const store = new Vuex.Store({
       state.socket.isConnected = false;
     },
     SOCKET_ONERROR(state) {
-      state;
-      //console.error(state, event);
+      console.error(state, event);
     },
     SOCKET_ONMESSAGE(state, message) {
       state.socket.message = message;
     },
     SOCKET_RECONNECT(state, count) {
-      state, count;
-      //console.info(state, count);
+      console.info(state, count);
     },
     SOCKET_RECONNECT_ERROR(state) {
       state.socket.reconnectError = true;

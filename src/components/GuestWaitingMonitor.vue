@@ -22,7 +22,8 @@ export default {
         this.interactingGuestId !== null &&
         this.interactingGuestId === this.sessionGuestId,
       () => {
-        this.$router.push("/feature/interact");
+        let featureSlug = this.$store.getters["interact/feature"].slug;
+        this.$router.replace(`/feature/${featureSlug}/interact`);
       }
     );
   }

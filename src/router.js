@@ -18,21 +18,12 @@ const routes = [
     props: true
   },
   {
-    path: "/feature/:feature_slug",
-    redirect: to => {
-      return {
-        path: "/feature",
-        query: { feature_slug: to.params.feature_slug }
-      };
-    }
-  },
-  {
-    path: "/feature",
+    path: "/feature/:featureSlug",
     component: InteractApp,
     beforeEnter: function(to, from, next) {
-      let feature_slug = to.query.feature_slug;
+      let featureSlug = to.params.featureSlug;
       store
-        .dispatch("interact/loadFeature", feature_slug)
+        .dispatch("interact/loadFeature", featureSlug)
         .then(() => {
           next(vm => {
             if (!vm.$store.state.socket.isConnected) {
@@ -41,7 +32,7 @@ const routes = [
           });
         })
         .catch(() => {
-          next(`/not-found/?message=Feature not found: ${feature_slug}`);
+          next(`/not-found/?message=Feature not found: ${featureSlug}`);
         });
     },
     children: [

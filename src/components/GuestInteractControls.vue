@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-    {{ status }}
     <v-row justify="center">
       <v-col cols="10">
         <v-row rows="3">
@@ -47,8 +46,7 @@ export default {
   data() {
     return {
       isSending: false,
-      dialog: true,
-      status: "NO STATUS"
+      dialog: true
     };
   },
   computed: {

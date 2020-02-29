@@ -52,7 +52,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("guest_app", [
+    ...mapGetters("interact", [
       "featurePresenterChannel",
       "sessionGuestId",
       "featureGuests"

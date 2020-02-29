@@ -7,13 +7,14 @@
             block
             align="stretch"
             style="height: 100px;"
+            :disabled="!isFeaturePresenterOnline"
             :color="isSending ? 'accent' : 'primary'"
             @click="
               isSending ? stopSendingDeviceMotion() : startSendingDeviceMotion()
             "
           >
             <span class="headline">
-              {{ isSending ? "Pause" : "Start" }}
+              {{ isSending ? "Stop" : "Start" }}
             </span>
           </v-btn>
         </v-row>
@@ -50,14 +51,11 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("interact", [
-      "featurePresenterChannel",
-      "sessionGuestId",
-      "featureGuests"
-    ])
+    ...mapGetters("interact", ["isFeaturePresenterOnline"])
   },
   methods: {
     startSendingDeviceMotion() {
+      console.log(this.isPresenterOnline);
       device.motionSender.start(Vue.prototype.$socket, 30, true);
       this.isSending = device.motionSender.isSending;
     },

@@ -1,5 +1,5 @@
 <template>
-  <v-div>
+  <div>
     <v-system-bar v-show="systemBarVisible" app dark>
       {{ featureTitle }}
       <v-spacer></v-spacer>
@@ -34,7 +34,7 @@
     <v-content>
       <router-view />
     </v-content>
-  </v-div>
+  </div>
 </template>
 
 <script>
@@ -54,13 +54,9 @@ export default {
       "interactingGuestId",
       "sessionGuestId",
       "featurePresenterChannel",
-      "featureGuests"
-    ]),
-    isPresenterOnline() {
-      return (
-        this.featurePresenterChannel && this.featurePresenterChannel.length > 0
-      );
-    }
+      "featureGuests",
+      "isPresenterOnline"
+    ])
   }
 };
 </script>

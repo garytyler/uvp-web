@@ -21,6 +21,9 @@ const getters = {
   featurePresenterChannel(state) {
     return state.feature ? state.feature.presenter_channel : null;
   },
+  isFeaturePresenterOnline(state) {
+    return Boolean(state.feature?.presenter_channel?.length > 0);
+  },
   sessionGuest(state) {
     return state.sessionGuest;
   },

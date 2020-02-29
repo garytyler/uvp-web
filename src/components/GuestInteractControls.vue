@@ -58,7 +58,6 @@ export default {
       "featureGuests"
     ])
   },
-
   methods: {
     startSendingDeviceMotion() {
       device.motionSender.start(Vue.prototype.$socket, 30, true);

@@ -5,19 +5,20 @@ import GuestApp from "@/views/GuestApp.vue";
 import Error404NotFound from "@/views/errors/Error404NotFound.vue";
 import store from "@/store";
 import GuestListTable from "@/components/GuestListTable.vue";
+
 Vue.use(VueRouter);
 
-var loadFeatureBeforeRouterEnter = function(to, from, next) {
+function loadFeatureBeforeRouterEnter(to, from, next) {
+  let featureSlug = to.params.featureSlug;
   store
-    .dispatch("guest_app/loadFeature", to.params.feature_slug)
-    .then(function() {
+    .dispatch("guest_app/loadFeature", featureSlug)
+    .then(() => {
       next();
     })
-    .catch(error => {
-      let message = `Feature not found: ${error.config.url}`;
-      next(`/not-found/?message=${message}`);
+    .catch(() => {
+      next(`/not-found/?message=Feature not found: ${featureSlug}`);
     });
-};
+}
 
 const routes = [
   {
@@ -27,7 +28,7 @@ const routes = [
     props: true
   },
   {
-    path: "/feature/:feature_slug",
+    path: "/feature/:featureSlug",
     component: GuestApp,
     beforeEnter: loadFeatureBeforeRouterEnter,
     children: [

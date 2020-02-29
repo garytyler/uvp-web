@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <p class="text-center display-1 info--primary">{{ featureTitle }}</p>
-    <GuestSession />
+    <GuestJoinModal />
 
     <div v-if="isInteractingGuest && isPresenterOnline">
       <GuestInteractControls />
@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import GuestSession from "@/components/GuestSession.vue";
+import GuestJoinModal from "@/components/GuestJoinModal.vue";
 import GuestInteractControls from "@/components/GuestInteractControls.vue";
 import { mapGetters } from "vuex";
 import { urlPathToWsUrl } from "@/utils/urls.js";
@@ -21,7 +21,7 @@ import { urlPathToWsUrl } from "@/utils/urls.js";
 export default {
   name: "GuestApp",
   components: {
-    GuestSession,
+    GuestJoinModal,
     GuestInteractControls
   },
   computed: {

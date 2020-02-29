@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div v-cloak>
     <v-dialog
       persistent
       class="elevation-12"
       hide-overlay
-      v-model="dialog"
       max-width="400px"
+      v-model="sessionGuestIsNotInFeatureGuests"
     >
       <v-card>
         <v-card-title>
@@ -64,7 +64,7 @@ import device from "@/utils/device.js";
 
 export default {
   data: () => ({
-    dialog: false,
+    sessionGuestLoaded: false,
     editedItem: {},
     nameState: null,
     status: "NO STATUS"
@@ -80,50 +80,32 @@ export default {
     ]),
     numFeatureGuests() {
       return isNaN(this.featureGuests?.length) ? 0 : this.featureGuests.length;
+    },
+    sessionGuestIsNotInFeatureGuests() {
+      if (!this.sessionGuestLoaded) {
+        return false;
+      } else {
+        return !this.featureGuests.some(i => i.id === this.sessionGuestId);
+      }
     }
   },
   methods: {
     async handleSignUpSubmit() {
-      const permissions = await device.getOrientationPermissions();
-      if (permissions === true) {
-        this.dialog = false;
-      } else {
-        this.dialog = true;
-      }
-
-      if (
-        this.editedItem.name &&
-        this.editedItem.name === this.sessionGuestName
-      ) {
-        this.dialog = false;
-      } else {
-        this.$store
-          .dispatch("guest_app/setSessionGuest", {
-            name: this.editedItem.name,
-            feature_slug: this.featureSlug
-          })
-          .then(() => {
-            this.$emit("session-guest-set");
-            this.dialog = false;
-          })
-          .catch(() => {
-            this.dialog = true;
-          });
-      }
+      await device.getOrientationPermissions();
+      this.$store.dispatch("guest_app/setSessionGuest", {
+        name: this.editedItem.name,
+        feature_slug: this.featureSlug
+      });
     }
   },
-  async mounted() {
+  async beforeMount() {
     this.$store
       .dispatch("guest_app/loadSessionGuest")
-      .then(data => {
-        if (data.name && this.featureGuests.some(i => i.id === data.id)) {
-          this.dialog = false;
-        } else {
-          this.dialog = true;
-        }
+      .then(() => {
+        this.sessionGuestLoaded = true;
       })
       .catch(() => {
-        this.dialog = true;
+        this.sessionGuestLoaded = true;
       });
   }
 };

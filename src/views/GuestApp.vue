@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <p class="text-center display-1 info--primary">{{ featureTitle }}</p>
-    <GuestSessionInitializer />
+    <GuestSession />
 
     <div v-if="isInteractingGuest && isPresenterOnline">
       <GuestInteractControls />
@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import GuestSessionInitializer from "@/components/GuestSessionInitializer.vue";
+import GuestSession from "@/components/GuestSession.vue";
 import GuestInteractControls from "@/components/GuestInteractControls.vue";
 import { mapGetters } from "vuex";
 import { urlPathToWsUrl } from "@/utils/urls.js";
@@ -21,12 +21,11 @@ import { urlPathToWsUrl } from "@/utils/urls.js";
 export default {
   name: "GuestApp",
   components: {
-    GuestSessionInitializer,
+    GuestSession,
     GuestInteractControls
   },
   computed: {
     ...mapGetters("guest_app", [
-      "feature",
       "featureTitle",
       "featureSlug",
       "interactingGuestId",
@@ -34,12 +33,11 @@ export default {
       "featurePresenterChannel",
       "featureGuests"
     ]),
-    receiveFeatureGuests() {
-      return this.featureGuests;
-    },
     isInteractingGuest() {
-      let result = this.interactingGuestId === this.sessionGuestId;
-      return result;
+      return (
+        this.interactingGuestId !== null &&
+        this.interactingGuestId === this.sessionGuestId
+      );
     },
     isPresenterOnline() {
       if (

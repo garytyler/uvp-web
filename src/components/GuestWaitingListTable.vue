@@ -177,7 +177,7 @@ export default {
         return _headers;
       }
     },
-    ...mapGetters("guest_app", ["featureGuests", "sessionGuestId"])
+    ...mapGetters("interact", ["featureGuests", "sessionGuestId"])
   },
   methods: {
     rowClick: function(item, row) {
@@ -198,7 +198,7 @@ export default {
       console.log(item.id);
       confirm("Are you sure you want to delete this item?") &&
         this.$store
-          .dispatch("guest_app/deleteGuest", item.id)
+          .dispatch("interact/deleteGuest", item.id)
           .then(() => {
             console.log("DELETED GUEST ITEM");
             this.dialog = false;
@@ -211,7 +211,7 @@ export default {
     },
     handleSubmit() {
       this.$store
-        .dispatch("guest_app/updateGuest", this.editedItem)
+        .dispatch("interact/updateGuest", this.editedItem)
         .then(() => {
           this.dialog = false;
           this.$emit("session-guest-set");

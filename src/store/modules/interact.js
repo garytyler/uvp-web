@@ -118,13 +118,13 @@ const actions = {
         });
     });
   },
-  deleteGuest({ commit, state }, guest_id) {
+  deleteGuest({ commit, state }, guestId) {
     return new Promise((resolve, reject) => {
       axios
-        .delete(`/api/feature/${state.feature.slug}/guest/${guest_id}/`)
+        .delete(`/api/feature/${state.feature.slug}/guest/${guestId}/`)
         .then(response => {
           if (response.status == 204) {
-            commit("DELETE_GUEST", state.feature, guest_id);
+            commit("DELETE_GUEST", state.feature, guestId);
             resolve(response.data);
           } else {
             reject(response.error);

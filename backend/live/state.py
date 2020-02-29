@@ -132,7 +132,7 @@ async def get_guest_queue_member_status(feature) -> dict:
 async def broadcast_feature_state(feature):
     json_data = json.dumps(
         {
-            "action": "guest_app/receiveFeature",
+            "action": "interact/receiveFeature",
             "feature": serializers.FeatureSerializer(feature).data,
         }
     )

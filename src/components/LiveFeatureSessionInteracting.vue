@@ -51,11 +51,10 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("interact", ["isFeaturePresenterOnline"])
+    ...mapGetters("live", ["isFeaturePresenterOnline"])
   },
   methods: {
     startSendingDeviceMotion() {
-      console.log(this.isPresenterOnline);
       device.motionSender.start(Vue.prototype.$socket, 30, true);
       this.isSending = device.motionSender.isSending;
     },

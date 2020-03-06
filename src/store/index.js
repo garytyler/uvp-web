@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import createLogger from "vuex/dist/logger";
-import interact from "./modules/interact";
+import live from "./modules/live";
 import VueNativeSock from "vue-native-websocket";
 
 Vue.use(Vuex);
@@ -10,7 +10,7 @@ const debug = process.env.NODE_ENV !== "production";
 
 const store = new Vuex.Store({
   modules: {
-    interact
+    live
   },
   strict: debug,
   plugins: debug ? [createLogger()] : [],
@@ -55,11 +55,11 @@ Vue.use(VueNativeSock, "ws://example.com", {
 });
 
 if (module.hot) {
-  module.hot.accept(["./modules/interact"], () => {
-    const newInteractAppModule = require("./modules/interact").default;
+  module.hot.accept(["./modules/live"], () => {
+    const newLiveModule = require("./modules/live").default;
     store.hotUpdate({
       modules: {
-        interact: newInteractAppModule
+        live: newLiveModule
       }
     });
   });

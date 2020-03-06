@@ -70,10 +70,9 @@ export default {
     status: "NO STATUS"
   }),
   computed: {
-    ...mapGetters("interact", [
+    ...mapGetters("live", [
       "featureTitle",
       "featureGuests",
-      "featureSlug",
       "sessionGuestName",
       "sessionGuestId",
       "isPresenterOnline"
@@ -95,7 +94,7 @@ export default {
   methods: {
     async handleSignUpSubmit() {
       await device.getOrientationPermissions();
-      this.$store.dispatch("interact/setSessionGuest", {
+      this.$store.dispatch("live/setSessionGuest", {
         name: this.editedItem.name,
         feature_slug: this.featureSlug
       });
@@ -104,13 +103,9 @@ export default {
   beforeCreate() {
     if (!this.$store.sessionGuest) {
       this.$store
-        .dispatch("interact/loadSessionGuest")
-        .then(() => {
-          this.sessionGuestLoaded = true;
-        })
-        .catch(() => {
-          this.sessionGuestLoaded = true;
-        });
+        .dispatch("live/loadSessionGuest")
+        .then(() => (this.sessionGuestLoaded = true))
+        .catch(() => (this.sessionGuestLoaded = true));
     }
   }
 };

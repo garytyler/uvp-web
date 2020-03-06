@@ -177,41 +177,33 @@ export default {
         return _headers;
       }
     },
-    ...mapGetters("interact", ["featureGuests", "sessionGuestId"])
+    ...mapGetters("live", ["featureGuests", "sessionGuestId"])
   },
   methods: {
     rowClick: function(item, row) {
-      console.log("Clicked" + row);
       row.select(false);
       row.deselect(item, false);
-      //item  - selected item
     },
 
     initEditDialog(item) {
-      console.log(item);
       this.editedIndex = this.featureGuests.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
     deleteItem(item) {
-      console.log(typeof item);
-      console.log(item.id);
       confirm("Are you sure you want to delete this item?") &&
         this.$store
-          .dispatch("interact/deleteGuest", item.id)
+          .dispatch("live/deleteGuest", item.id)
           .then(() => {
-            console.log("DELETED GUEST ITEM");
             this.dialog = false;
-            this.$emit("session-guest-set");
           })
-          .catch(error => {
-            console.log("ERROR DELETING GUEST ITEM" + error);
+          .catch(() => {
             this.dialog = false;
           });
     },
     handleSubmit() {
       this.$store
-        .dispatch("interact/updateGuest", this.editedItem)
+        .dispatch("live/updateGuest", this.editedItem)
         .then(() => {
           this.dialog = false;
           this.$emit("session-guest-set");
@@ -223,13 +215,12 @@ export default {
   },
   mounted() {
     let table = this.$refs.table.$el.querySelector("tbody");
-    const _self = this;
     Sortable.create(table, {
       handle: ".handle", // Use handle so user can select text
       onEnd({ newIndex, oldIndex }) {
         try {
-          const rowSelected = _self.featureGuests.splice(oldIndex, 1)[0]; // Get the selected row and remove it
-          _self.featureGuests.splice(newIndex, 0, rowSelected); // Move it to the new index
+          const rowSelected = this.featureGuests.splice(oldIndex, 1)[0]; // Get the selected row and remove it
+          this.featureGuests.splice(newIndex, 0, rowSelected); // Move it to the new index
         } catch {
           console.error(
             `Reordering not implemented. - newIndex=${newIndex} oldIndex=${oldIndex}`

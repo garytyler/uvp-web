@@ -28,16 +28,13 @@ class MotionSender {
     this.handleOrientationEvent = this.handleOrientationEvent.bind(this);
   }
   sendData() {
-    if (!this.socket || !this.motionData.orientation) {
-      // console.log("No orientation data available.");
-    } else {
+    if (this.socket || !this.motionData.orientation) {
       let dataBytes = new Float64Array(this.motionData.orientation);
       if (dataBytes) {
         this.socket.send(dataBytes);
-      } else {
-        // console.log(`No data found: ${dataBytes}`);
       }
     }
+    // TODO: Handle an else case here
   }
   handleOrientationEvent(e) {
     this.motionData.orientation = [e.alpha, e.beta, e.gamma];

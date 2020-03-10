@@ -107,9 +107,8 @@ class PresenterConsumer(AsyncWebsocketConsumer):
             lambda: Feature.objects.get(slug=feature_slug)
         )()
         self.feature.presenter_channel = self.channel_name
-
         await self.accept()
-
+        await state.broadcast_feature_state(self.feature)
         if getattr(settings, "USE_THREAD_BASED_FEATURE_OBSERVERS", None):
             await state.watch_feature_state_in_thread(feature_slug)
 
@@ -124,7 +123,7 @@ class PresenterConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         self.feature.presenter_channel = None
-        await db_sync_to_async(self.feature.save)()
+        await state.broadcast_feature_state(self.feature)
 
 
 class StateObserverConsumer(AsyncConsumer):

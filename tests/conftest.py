@@ -11,6 +11,17 @@ from ._helpers.servers import UvicornTestServerProcess, UvicornTestServerThread
 from ._helpers.utils import UniqueRandomStringFactory
 
 
+def pytest_addoption(parser):
+    parser.addoption("--server-port", action="store", type=int)
+    parser.addoption("--server-host", action="store", type=int)
+
+
+def pytest_generate_tests(metafunc):
+    if "server_port" in metafunc.fixturenames:
+        metafunc.parametrize("server_port", [metafunc.config.getoption("server_port")])
+        metafunc.parametrize("server_host", [metafunc.config.getoption("server_host")])
+
+
 @pytest.mark.skip
 @pytest.fixture(autouse=True)
 def suppress_application_log_capture(caplog):
@@ -56,11 +67,11 @@ def server_thread(server_thread_factory):
 
 
 @pytest.fixture
-def server_proc(xprocess, unused_tcp_port):
+def server_proc(xprocess, unused_tcp_port, server_port, server_host):
     yield UvicornTestServerProcess(
         xprocess_instance=xprocess,
-        host="127.0.0.1",
-        port=unused_tcp_port,
+        host=server_host if server_host else "127.0.0.1",
+        port=server_port if server_port else unused_tcp_port,
         env={
             "PYTHONPATH": settings.BASE_DIR,
             "SECRET_KEY": "not_secret_test_key",

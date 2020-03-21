@@ -20,7 +20,6 @@ def test_server_thread_context_manager(server_thread):
 
 def test_server_thread_http_request(server_thread):
     with server_thread(limit_max_requests=1, lifespan=False) as server:
-        print(server.addr)
         resp = requests.get(server.addr + "/api")
         assert resp.status_code == 200
 

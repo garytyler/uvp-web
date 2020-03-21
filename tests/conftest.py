@@ -7,8 +7,8 @@ from fastapi.testclient import TestClient
 
 from app.core import settings
 
-from ._helpers.servers import UvicornTestServerProcess, UvicornTestServerThread
-from ._helpers.utils import UniqueRandomStringFactory
+from ._fixtures.servers import UvicornTestServerProcess, UvicornTestServerThread
+from ._fixtures.utils import UniqueRandomStringFactory
 
 
 def pytest_addoption(parser):
@@ -78,8 +78,15 @@ def server_proc(xprocess, unused_tcp_port, server_port, server_host):
             "ALLOWED_HOSTS": "localhost,127.0.0.1",
             "DATABASE_URL": "sqlite:///db.sqlite3",
             "REDIS_URL": "redis://localhost:6379",
+            "PYTHONDONTWRITEBYTECODE": "1",
         },
+        timeout_keep_alive=0,
     )
+
+
+@pytest.fixture
+def random_string_factory() -> Callable:
+    return UniqueRandomStringFactory()
 
 
 @pytest.fixture

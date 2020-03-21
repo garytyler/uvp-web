@@ -1,6 +1,6 @@
 from fastapi.routing import APIRouter
 
-from .endpoints import home
+from .endpoints import broadcast
 
 rest_router = APIRouter()
-rest_router.include_router(home.router)
+rest_router.include_router(broadcast.router)

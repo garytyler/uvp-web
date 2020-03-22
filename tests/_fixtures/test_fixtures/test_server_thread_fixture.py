@@ -1,4 +1,12 @@
+import pytest
 import requests
+
+
+@pytest.fixture
+def app():
+    from .testapp import app
+
+    yield app
 
 
 def test_server_thread_is_alive(server_thread):

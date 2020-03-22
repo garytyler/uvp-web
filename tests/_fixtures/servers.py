@@ -110,9 +110,10 @@ class UvicornTestServerProcess(BaseTestServer):
         "lifespan": "on",
     }
 
-    def __init__(self, xprocess_instance, env, *args, **kwargs):
+    def __init__(self, xprocess_instance, app: str, env: dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.xprocess = xprocess_instance
+        self.app = app
         self.env = env
 
     def start(self) -> None:
@@ -135,7 +136,7 @@ class UvicornTestServerProcess(BaseTestServer):
                     # ready status, uvicorn log level must be >'info', so either 'info',
                     # 'debug', or 'trace'.
                     "--log-level=info",
-                    "app.main:app",
+                    self.app,
                 ]
                 env = self.env
 

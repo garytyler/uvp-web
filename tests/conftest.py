@@ -5,10 +5,8 @@ from typing import Callable
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core import settings
-
 from ._fixtures.servers import UvicornTestServerProcess, UvicornTestServerThread
-from ._fixtures.utils import UniqueRandomStringFactory
+from ._fixtures.utils import UniqueRandomStringFactory, get_unused_tcp_port
 
 
 def pytest_addoption(parser):
@@ -45,12 +43,12 @@ def client(app):
 
 
 @pytest.fixture
-def server_thread_factory(app, unused_tcp_port_factory):
+def server_thread_factory(app):
     server_threads = []
 
     def _server_thread_factory(*args, **kwargs):
-        nonlocal app, unused_tcp_port_factory, server_threads
-        server_thread = UvicornTestServerThread(app=app, port=unused_tcp_port_factory())
+        nonlocal server_threads
+        server_thread = UvicornTestServerThread(app=app, port=get_unused_tcp_port())
         server_thread(*args, **kwargs)
         server_threads.append(server_thread)
         return server_thread
@@ -67,20 +65,20 @@ def server_thread(server_thread_factory):
 
 
 @pytest.fixture
-def server_proc(xprocess, unused_tcp_port, server_port, server_host):
+def server_proc(xprocess, request):
     yield UvicornTestServerProcess(
         xprocess_instance=xprocess,
-        host=server_host if server_host else "127.0.0.1",
-        port=server_port if server_port else unused_tcp_port,
+        app="app.main:app",
+        host="127.0.0.1",
+        port=get_unused_tcp_port(),
         env={
-            "PYTHONPATH": settings.BASE_DIR,
+            "PYTHONPATH": request.config.rootdir,
             "SECRET_KEY": "not_secret_test_key",
             "ALLOWED_HOSTS": "localhost,127.0.0.1",
             "DATABASE_URL": "sqlite:///db.sqlite3",
             "REDIS_URL": "redis://localhost:6379",
             "PYTHONDONTWRITEBYTECODE": "1",
         },
-        timeout_keep_alive=0,
     )
 
 
@@ -92,14 +90,18 @@ def random_string_factory() -> Callable:
 @pytest.fixture
 def guest_name_factory() -> Callable:
     """Create a new random guest name"""
-    return UniqueRandomStringFactory(
-        letters=True,
-        numbers=False,
-        num_words_min=1,
-        num_words_max=3,
-        word_length_min=3,
-        word_length_max=9,
-    ).title()
+
+    def _guest_name_factory():
+        return UniqueRandomStringFactory(
+            letters=True,
+            numbers=False,
+            num_words_min=1,
+            num_words_max=3,
+            word_length_min=3,
+            word_length_max=9,
+        ).title()
+
+    return _guest_name_factory
 
 
 @pytest.fixture

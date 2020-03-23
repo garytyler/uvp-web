@@ -1,6 +1,6 @@
 import os
 
-import databases
+# import databases
 from starlette.applications import Starlette
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings, Secret
@@ -20,7 +20,8 @@ SECRET_KEY = config("SECRET_KEY", cast=Secret)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=CommaSeparatedStrings)
 
 # Database
-DATABASE_URL = config("DATABASE_URL", cast=databases.DatabaseURL)
+# DATABASE_URL = config("DATABASE_URL", cast=databases.DatabaseURL)
+DATABASE_URL = config("DATABASE_URL")
 
 # Caching
 REDIS_URL = config("REDIS_URL")

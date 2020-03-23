@@ -378,3 +378,6 @@ yarn-error.log*
 migrations
 !migrations/0001_initial.py
 frontend/webpack-stats.json
+
+# Tortoise ORM
+*.sqlite*

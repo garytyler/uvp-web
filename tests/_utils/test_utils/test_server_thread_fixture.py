@@ -32,7 +32,7 @@ def test_server_thread_http_request(server_thread):
         assert resp.status_code == 200
 
 
-def test_server_thread_factory_http_requests_to_many_servers(server_thread_factory,):
+def test_server_thread_factory_http_requests_to_many_servers(server_thread_factory):
     server_threads = [
         server_thread_factory(limit_max_requests=1, lifespan=False) for n in range(3)
     ]

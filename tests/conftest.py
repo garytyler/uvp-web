@@ -1,30 +1,30 @@
-import logging
-import random
-from typing import Callable
-
 import pytest
-from fastapi.testclient import TestClient
+from starlette.config import environ as app_environ
 
-from ._fixtures.servers import UvicornTestServerProcess, UvicornTestServerThread
-from ._fixtures.utils import UniqueRandomStringFactory, get_unused_tcp_port
+from ._utils.ports import get_unused_tcp_port
+from ._utils.servers import UvicornTestServerProcess, UvicornTestServerThread
+
+
+def pytest_configure():
+    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_configure
+    """
+    app_environ["DATABASE_URL"] = "sqlite://:memory:"
 
 
 def pytest_addoption(parser):
+    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_addoption
+    """
+    # Set host/port for multiprocessing test server with command line options
     parser.addoption("--server-port", action="store", type=int)
     parser.addoption("--server-host", action="store", type=int)
 
 
 def pytest_generate_tests(metafunc):
+    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_generate_tests
+    """
     if "server_port" in metafunc.fixturenames:
         metafunc.parametrize("server_port", [metafunc.config.getoption("server_port")])
         metafunc.parametrize("server_host", [metafunc.config.getoption("server_host")])
-
-
-@pytest.mark.skip
-@pytest.fixture(autouse=True)
-def suppress_application_log_capture(caplog):
-    caplog.set_level(logging.CRITICAL, logger="")
-    caplog.set_level(logging.CRITICAL, logger="live")
 
 
 @pytest.fixture
@@ -32,14 +32,6 @@ def app():
     from app.main import app
 
     yield app
-
-
-@pytest.fixture
-def client(app):
-    """Make a 'client' fixture available to test cases."""
-    # Creating within a context manager ensures that and shutdown with every test case.
-    with TestClient(app) as test_client:
-        yield test_client
 
 
 @pytest.fixture
@@ -80,55 +72,3 @@ def server_proc(xprocess, request):
             "PYTHONDONTWRITEBYTECODE": "1",
         },
     )
-
-
-@pytest.fixture
-def random_string_factory() -> Callable:
-    return UniqueRandomStringFactory()
-
-
-@pytest.fixture
-def guest_name_factory() -> Callable:
-    """Create a new random guest name"""
-
-    def _guest_name_factory():
-        return UniqueRandomStringFactory(
-            letters=True,
-            numbers=False,
-            num_words_min=1,
-            num_words_max=3,
-            word_length_min=3,
-            word_length_max=9,
-        ).title()
-
-    return _guest_name_factory
-
-
-@pytest.fixture
-def feature_title_factory() -> Callable:
-    return UniqueRandomStringFactory(
-        letters=True,
-        numbers=False,
-        num_words_min=2,
-        num_words_max=3,
-        word_length_min=2,
-        word_length_max=9,
-    )
-
-
-@pytest.fixture
-def session_key_factory() -> Callable[[], str]:
-    """Create a new random 32-character integer that imitates a session key"""
-    return UniqueRandomStringFactory(
-        letters=True,
-        numbers=True,
-        num_words_min=1,
-        num_words_max=1,
-        word_length_min=32,
-        word_length_max=32,
-    )
-
-
-@pytest.fixture
-def random_euler_rotation():
-    return [random.uniform(0, 360) for i in range(3)]

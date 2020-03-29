@@ -7,7 +7,7 @@ from fastapi.websockets import WebSocket
 from starlette.concurrency import run_until_first_complete
 from starlette.endpoints import WebSocketEndpoint
 
-from app.services.broadcast import broadcast
+from app.services.broadcasting import broadcast
 
 log = logging.getLogger(__name__)
 router = APIRouter()

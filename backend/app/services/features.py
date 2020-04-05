@@ -1,4 +1,4 @@
-from slugify import slugify
+from slugify import slugify  # type: ignore
 
 
 def feature_with_slug_exists(slug: str) -> bool:

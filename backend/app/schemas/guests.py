@@ -18,4 +18,4 @@ class GuestUpdate(CustomPydanticBase):
 
 Tortoise.init_models(["app.models.guests"], "models")
 
-GuestOut = pydantic_model_creator(Guest)
+GuestOut = pydantic_model_creator(Guest, name="models.Guest")

@@ -35,4 +35,4 @@ class FeatureUpdate(CustomPydanticBase):
 
 Tortoise.init_models(["app.models.features"], "models")
 
-FeatureOut = pydantic_model_creator(Feature)
+FeatureOut = pydantic_model_creator(Feature, name="models.Feature")

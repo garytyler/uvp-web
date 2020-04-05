@@ -1,3 +1,4 @@
+import uuid
 from typing import Generic, Optional, Type, TypeVar
 
 from app.models.base import CustomTortoiseBase
@@ -15,7 +16,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
-    async def get(self, id: str) -> Optional[ModelType]:
+    async def get(self, id: uuid.UUID) -> Optional[ModelType]:
         return await self.model.filter(id=id).first()
 
     # async def get_multi(self, *, skip=0, limit=100) -> List[ModelType]:

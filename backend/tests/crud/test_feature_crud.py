@@ -2,7 +2,11 @@ import pytest
 from app.crud.features import crud_feature
 from app.schemas.features import FeatureCreate
 from async_asgi_testclient import TestClient
-from tests._utils.features import create_random_feature, create_random_feature_title
+from tests._utils.features import (
+    create_random_feature,
+    create_random_feature_slug,
+    create_random_feature_title,
+)
 from tests._utils.guests import create_random_guest
 
 
@@ -11,6 +15,7 @@ async def test_feature_crud_create(app):
     async with TestClient(app):
         params = {
             "title": create_random_feature_title(),
+            "slug": create_random_feature_slug(),
             "turn_duration": 90,
         }
         feature_in = FeatureCreate(**params)
@@ -20,7 +25,7 @@ async def test_feature_crud_create(app):
 
 
 @pytest.mark.asyncio
-async def test_feature_crud_get(app,):
+async def test_feature_crud_get(app):
     async with TestClient(app):
         created_feature = await create_random_feature()
         gotten_feature = await crud_feature.get(id=created_feature.id)
@@ -32,7 +37,7 @@ async def test_feature_crud_get(app,):
 
 @pytest.mark.skip
 @pytest.mark.asyncio
-async def test_feature_crud_get_guests(app,):
+async def test_feature_crud_get_guests(app):
 
     async with TestClient(app):
         created_feature = await create_random_feature()

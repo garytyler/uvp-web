@@ -41,3 +41,11 @@ async def read_features():
     for i in features:
         await i.fetch_related("guests")
     return features
+
+
+@router.delete("/features/{id}", response_model=int)
+async def delete_feature(id: str):
+    deleted_count = await crud_feature.delete(id=id)
+    if not deleted_count:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return deleted_count

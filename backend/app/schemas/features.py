@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Optional
 
 from app.models.features import Feature
 from tortoise import Tortoise
@@ -9,7 +10,7 @@ from .base import CustomPydanticBase
 
 class FeatureCreate(CustomPydanticBase):
     title: str
-    slug: str
+    slug: Optional[str]
     turn_duration: int = 180
 
 

@@ -43,6 +43,17 @@ async def test_feature_crud_get_all(app):
         assert gotten_features == created_features
 
 
+@pytest.mark.asyncio
+async def test_feature_crud_delete(app):
+    async with TestClient(app):
+        created_features = [await create_random_feature() for _ in range(5)]
+        rem_id = created_features[3].id
+        deleted_count = await crud_feature.delete(id=rem_id)
+        assert deleted_count == 1
+        deleted_count = await crud_feature.get(id=created_features[3].id)
+        assert deleted_count is None
+
+
 @pytest.mark.skip
 @pytest.mark.asyncio
 async def test_feature_crud_get_guests(app):

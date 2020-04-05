@@ -91,3 +91,15 @@ async def test_features_http_get_all(app):
         assert response.status_code == 200
         content = response.json()
         assert [i["title"] for i in content] == [i.title for i in features]
+
+
+@pytest.mark.asyncio
+async def test_features_http_delete(app):
+    path = "/api/features/{id}"
+    async with TestClient(app) as client:
+        features = [await create_random_feature() for _ in range(5)]
+        response = await client.delete(path.format(id=features[3].id))
+        assert response.status_code == 200
+        assert response.json() == 1
+        response = await client.delete(path.format(id=features[3].id))
+        assert response.status_code == 404

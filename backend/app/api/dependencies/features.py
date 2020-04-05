@@ -1,13 +1,10 @@
-from typing import Dict
-
+from app.schemas.features import FeatureCreate
 from app.services.features import feature_with_slug_exists, generate_unique_feature_slug
 
 
-async def validate_feature_slug(body: Dict[str, str]) -> Dict[str, str]:
-
-    slug_in = body.get("slug", "").strip()
-    if not slug_in:
-        body["slug"] = await generate_unique_feature_slug(title=body["title"])
-    elif await feature_with_slug_exists(slug_in):
-        raise ValueError(f"Feature with slug '{slug_in}' already exists")
-    return body
+async def validate_feature_slug(feature_in: FeatureCreate) -> FeatureCreate:
+    if not feature_in.slug or not feature_in.slug.strip():
+        feature_in.slug = await generate_unique_feature_slug(title=feature_in.title)
+    elif await feature_with_slug_exists(feature_in.slug):
+        raise ValueError(f"Feature with slug '{feature_in.slug}' already exists")
+    return feature_in

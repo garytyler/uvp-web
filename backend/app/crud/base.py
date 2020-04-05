@@ -32,7 +32,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj = await self.model.create(**obj_data)
         return db_obj
 
-    async def remove(self, *, id: int) -> ModelType:
-        obj = await self.model.get(id)
-        await self.model.delete(obj)
-        return obj
+    async def delete(self, *, id: uuid.UUID) -> ModelType:
+        deleted_count = await self.model.filter(id=id).delete()
+        return deleted_count

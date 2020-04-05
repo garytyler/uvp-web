@@ -382,3 +382,6 @@ frontend/webpack-stats.json
 
 # Tortoise ORM
 *.sqlite*
+
+# Docker
+docker-stack.yml

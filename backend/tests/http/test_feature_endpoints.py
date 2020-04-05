@@ -80,3 +80,14 @@ async def test_features_http_get_by_slug(app):
         content = response.json()
         assert content["title"] == random_feature.title
         assert content["turn_duration"] == random_feature.turn_duration
+
+
+@pytest.mark.asyncio
+async def test_features_http_get_all(app):
+    path = "/api/features"
+    async with TestClient(app) as client:
+        features = [await create_random_feature() for _ in range(5)]
+        response = await client.get(path)
+        assert response.status_code == 200
+        content = response.json()
+        assert [i["title"] for i in content] == [i.title for i in features]

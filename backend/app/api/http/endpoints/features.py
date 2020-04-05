@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 from app.api.dependencies.features import validate_feature_slug
 from app.crud.features import crud_feature
@@ -19,7 +20,7 @@ async def create_feature(feature_in: FeatureCreate = Depends(validate_feature_sl
 
 
 @router.get("/features/{id_or_slug}", response_model=FeatureOut)
-async def get_feature(id_or_slug: str):
+async def read_feature(id_or_slug: str):
     try:
         id_or_slug = uuid.UUID(id_or_slug, version=4)
     except ValueError:
@@ -32,3 +33,11 @@ async def get_feature(id_or_slug: str):
     else:
         raise HTTPException(status_code=404, detail="Could not create item")
     return feature
+
+
+@router.get("/features", response_model=List[FeatureOut])
+async def read_features():
+    features = await crud_feature.get_all()
+    for i in features:
+        await i.fetch_related("guests")
+    return features

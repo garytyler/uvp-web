@@ -31,15 +31,17 @@ async def test_http_endpoint_create_current_guest(app):
 
 @pytest.mark.asyncio
 async def test_http_endpoint_get_current_guest(app):
-    path = "/api/guests/{guest_id}"
+    path = "/api/guest"
     async with TestClient(app) as client:
-        created_feature = await create_random_feature()
-        created_guests = [await create_random_guest(created_feature) for _ in range(3)]
-        response = await client.get(path.format(guest_id=created_guests[1].id))
-        assert response.status_code == 200
-        assert response.json()["id"] == str(created_guests[1].id)
-        assert response.json()["name"] == str(created_guests[1].name)
-        assert response.json()["feature_id"] == str(created_guests[1].feature_id)
+        feature_id = (await create_random_feature()).id
+        response = await client.post(
+            "/api/features/{feature_id}/guest".format(feature_id=feature_id),
+            json={"name": create_random_guest_name(), "feature_id": str(feature_id)},
+        )
+        created_guest = response.json()
+        response = await client.get(path)
+        gotten_guest = response.json()
+        assert gotten_guest == created_guest
 
 
 @pytest.mark.asyncio

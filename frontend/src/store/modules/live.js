@@ -75,7 +75,7 @@ const actions = {
   loadSessionGuest({ commit }, featureSlug) {
     return new Promise((resolve, reject) => {
       axios
-        .get(`/api/feature/${featureSlug}/guest/`)
+        .get(`/api/guest/`)
         .then((response) => response.data)
         .then((sessionGuest) => {
           commit("SET_SESSION_GUEST", sessionGuest);

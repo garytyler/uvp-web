@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.websocket_route("/guest")
+@router.websocket_route("/guest/{slug}")
 class GuestWebSocketApp(WebSocketEndpoint):
     # encoding = "text"
 

@@ -64,7 +64,7 @@ export default {
           return error;
         }),
         vm.$store
-          .dispatch("live/loadSessionGuest", vm.featureSlug)
+          .dispatch("live/loadSessionGuest")
           .catch(error => {
             return error;
           })

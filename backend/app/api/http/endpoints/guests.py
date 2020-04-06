@@ -4,6 +4,8 @@ from app.crud.guests import crud_guest
 from app.schemas.guests import GuestCreate, GuestOut
 from fastapi import APIRouter, HTTPException, Request
 
+# from loguru import logger
+
 router = APIRouter()
 
 
@@ -19,17 +21,17 @@ async def create_current_guest(request: Request, guest_in: GuestCreate):
 
 
 @router.get("/guest", response_model=GuestOut)
-async def get_current_guest(request: Request, guest_in: GuestCreate):
+async def get_current_guest(request: Request):
     guest_id = request.session.get("guest_id")
+    print(guest_id)
     if guest_id:
-        raise HTTPException(status_code=400, detail="Guest already exists")
+        guest = await crud_guest.get(id=guest_id)
     else:
-        guest = await crud_guest.create(obj_in=guest_in)
-        request.session["guest_id"] = str(guest.id)
+        raise HTTPException(status_code=404)
     return guest
 
 
 @router.get("/guests/{guest_id}", response_model=GuestOut)
-async def get_feature(guest_id: str):
+async def get_guest(guest_id: str):
     guest = await crud_guest.get(id=uuid.UUID(guest_id))
     return guest

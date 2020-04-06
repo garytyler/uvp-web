@@ -17,6 +17,7 @@ DEBUG = config("DEBUG", cast=bool, default=False)
 SECRET_KEY = config("SECRET_KEY", cast=Secret)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=CommaSeparatedStrings)
 HTTPS_REDIRECT = config("HTTPS_REDIRECT", default=True)
+BACKEND_CORS_ORIGINS = config("BACKEND_CORS_ORIGINS", cast=CommaSeparatedStrings)
 
 # Database
 DATABASE_URL = config("DATABASE_URL")

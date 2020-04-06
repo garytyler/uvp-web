@@ -20,7 +20,7 @@ async def create_feature(feature_in: FeatureCreate = Depends(validate_feature_sl
 
 
 @router.get("/features/{id_or_slug}", response_model=FeatureOut)
-async def read_feature(id_or_slug: str):
+async def get_feature(id_or_slug: str):
     try:
         feature_uuid: uuid.UUID = uuid.UUID(id_or_slug, version=4)
     except ValueError:
@@ -36,7 +36,7 @@ async def read_feature(id_or_slug: str):
 
 
 @router.get("/features", response_model=List[FeatureOut])
-async def read_features():
+async def get_all_features():
     features = await crud_feature.get_all()
     for i in features:
         await i.fetch_related("guests")

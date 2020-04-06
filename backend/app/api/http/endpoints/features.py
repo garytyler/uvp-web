@@ -22,11 +22,11 @@ async def create_feature(feature_in: FeatureCreate = Depends(validate_feature_sl
 @router.get("/features/{id_or_slug}", response_model=FeatureOut)
 async def read_feature(id_or_slug: str):
     try:
-        id_or_slug = uuid.UUID(id_or_slug, version=4)
+        feature_uuid: uuid.UUID = uuid.UUID(id_or_slug, version=4)
     except ValueError:
-        feature = await crud_feature.get_by_slug(slug=id_or_slug)
+        feature = await crud_feature.get_by_slug(slug=id_or_slug)  # type: ignore
     else:
-        feature = await crud_feature.get(id=id_or_slug)
+        feature = await crud_feature.get(id=feature_uuid)  # type: ignore
 
     if feature:
         await feature.fetch_related("guests")
@@ -44,7 +44,7 @@ async def read_features():
 
 
 @router.delete("/features/{id}", response_model=int)
-async def delete_feature(id: str):
+async def delete_feature(id: uuid.UUID):
     deleted_count = await crud_feature.delete(id=id)
     if not deleted_count:
         raise HTTPException(status_code=404, detail="Item not found")

@@ -1,3 +1,5 @@
+import uuid
+
 from app.crud.guests import crud_guest
 from app.schemas.guests import GuestCreate, GuestOut
 from fastapi import APIRouter, HTTPException, Request
@@ -29,5 +31,5 @@ async def get_current_guest(request: Request, guest_in: GuestCreate):
 
 @router.get("/guests/{guest_id}", response_model=GuestOut)
 async def get_feature(guest_id: str):
-    guest = await crud_guest.get(id=guest_id)
+    guest = await crud_guest.get(id=uuid.UUID(guest_id))
     return guest

@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Optional
 
 from app.models.features import Feature
@@ -16,8 +15,8 @@ class FeatureCreate(CustomPydanticBase):
 
 class FeatureUpdate(CustomPydanticBase):
     title: str
-    slug: str
-    turn_duration: timedelta
+    slug: Optional[str]
+    turn_duration: int = 180
 
 
 Tortoise.init_models(["app.models.features"], "models")

@@ -676,6 +676,7 @@ version = "2.1.1"
 reference = "1911c203a13826d2eb03d582d60874b91e36f4fc"
 type = "git"
 url = "https://github.com/pycqa/pyflakes"
+
 [[package]]
 category = "dev"
 description = "Python parsing module"
@@ -873,23 +874,17 @@ version = "0.10.0"
 [[package]]
 category = "main"
 description = "Easy async ORM for python, built with relations in mind"
-develop = true
 name = "tortoise-orm"
 optional = false
 python-versions = "*"
-version = "0.16.3"
+version = "0.16.4"
 
 [package.dependencies]
 aiosqlite = ">=0.11.0"
 ciso8601 = ">=2.1.2"
 iso8601 = ">=0.1.12"
-pypika = ">=0.35.21"
+pypika = ">=0.36.1"
 typing-extensions = ">=3.7"
-
-[package.source]
-reference = ""
-type = "directory"
-url = "../../tortoise-orm"
 
 [[package]]
 category = "dev"
@@ -987,7 +982,7 @@ python-versions = ">=3.6.1"
 version = "8.1"
 
 [metadata]
-content-hash = "138b4919212610ba866ee78073e5d9fc716810110802cf04d941f3df03e3b41e"
+content-hash = "b7519312f7534c2087913fd013676489ce60282cc80b4b087b0bd8e9b18c106c"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -1430,7 +1425,9 @@ toml = [
     {file = "toml-0.10.0-py2.py3-none-any.whl", hash = "sha256:235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e"},
     {file = "toml-0.10.0.tar.gz", hash = "sha256:229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c"},
 ]
-tortoise-orm = []
+tortoise-orm = [
+    {file = "tortoise-orm-0.16.4.tar.gz", hash = "sha256:b59a734a0983e7325fdce2ed42612427c9b3d134e83b45e2de080862a8854c77"},
+]
 typed-ast = [
     {file = "typed_ast-1.4.1-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:73d785a950fc82dd2a25897d525d003f6378d1cb23ab305578394694202a58c3"},
     {file = "typed_ast-1.4.1-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:aaee9905aee35ba5905cfb3c62f3e83b3bec7b39413f0a7f19be4e547ea01ebb"},

@@ -18,3 +18,4 @@ def add_middlewares(app):
     )
     if settings.HTTPS_REDIRECT is True:
         app.add_middleware(HTTPSRedirectMiddleware)
+    pass

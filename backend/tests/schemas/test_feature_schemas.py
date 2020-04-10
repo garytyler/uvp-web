@@ -11,7 +11,7 @@ async def test_schemas_feature_out_guests(app):
         feature = await create_random_feature()
         for _ in range(3):
             await create_random_guest(feature)
-        await feature.fetch_related("guests")
+        await feature.fetch_related("guests", "presenters")
         feature_out = FeatureOut.from_orm(feature)
         feature_guests_ids = [i.id for i in feature.guests]
         feature_out_guests_ids = [i["id"] for i in feature_out.dict()["guests"]]

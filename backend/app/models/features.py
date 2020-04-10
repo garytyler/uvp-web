@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import uuid
+
 from app.models.guests import Guest
+from app.models.presenters import Presenter
 from tortoise import fields
 
 from .base import CustomTortoiseBase, TimestampMixin
@@ -8,10 +11,13 @@ from .base import CustomTortoiseBase, TimestampMixin
 
 class Feature(TimestampMixin, CustomTortoiseBase):
     id = fields.UUIDField(pk=True, read_only=True)
+    guest_channel = fields.UUIDField(default=uuid.uuid4, read_only=True)
+    presenter_channel = fields.UUIDField(default=uuid.uuid4, read_only=True)
     title = fields.CharField(max_length=100, unique=True)
     slug = fields.CharField(index=True, required=True, unique=True, max_length=50)
     turn_duration = fields.IntField(required=True)
     guests = fields.ReverseRelation[Guest]
+    presenters = fields.ReverseRelation[Presenter]
 
     class Meta:
         table = "features"
@@ -23,7 +29,4 @@ class Feature(TimestampMixin, CustomTortoiseBase):
         return self.__repr__()
 
     class PydanticMeta:
-        exclude = (
-            "created_at",
-            "updated_at",
-        )
+        exclude = ("created_at", "modified_at")

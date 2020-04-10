@@ -5,4 +5,4 @@ from .ws.routes import ws_router
 
 router = APIRouter()
 router.include_router(http_router, prefix="/api")
-router.include_router(ws_router, prefix="/api/ws")
+router.include_router(ws_router, prefix="/ws")

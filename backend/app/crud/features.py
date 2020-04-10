@@ -13,4 +13,4 @@ class CRUDFeature(CRUDBase[Feature, FeatureCreate, FeatureUpdate]):
         return await self.model.all()
 
 
-crud_feature = CRUDFeature(Feature)
+crud_features = CRUDFeature(Feature)

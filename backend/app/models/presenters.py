@@ -5,18 +5,17 @@ from tortoise import fields
 from .base import CustomTortoiseBase, TimestampMixin
 
 
-class Guest(TimestampMixin, CustomTortoiseBase):
+class Presenter(TimestampMixin, CustomTortoiseBase):
     id = fields.UUIDField(pk=True, read_only=True)
-    name = fields.CharField(max_length=100)
     feature = fields.ForeignKeyField(
-        "models.Feature", on_delete="CASCADE", related_name="guests"
+        "models.Feature", on_delete="CASCADE", related_name="presenters", null=True
     )
 
     class Meta:
-        table = "guests"
+        table = "presenters"
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}: {str(self.id)} name='{self.name}'>"
+        return f"<{self.__class__.__name__}: {str(self.id)}>"
 
     def __str__(self):
         return self.__repr__()
@@ -25,5 +24,5 @@ class Guest(TimestampMixin, CustomTortoiseBase):
         exclude = (
             "created_at",
             "modified_at",
-            "feature",
+            # "feature",
         )

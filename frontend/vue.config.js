@@ -1,25 +1,26 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+const fs = require("fs");
+
 module.exports = {
   assetsDir: "static",
   outputDir: "./dist/",
   configureWebpack: {
     devtool: "source-map",
-    // baseUrl: process.env.NODE_ENV === 'production'
-    // ? 'http://cdn123.com'
-    // : '/',
-    // For Production, replace set baseUrl to CDN
-    // And set the CDN origin to `yourdomain.com/static`
-    // Whitenoise will serve once to CDN which will then cache
-    // and distribute
     devServer: {
       inline: true,
       disableHostCheck: true,
+      https: {
+        key: fs.readFileSync(process.env.SSL_KEYFILE),
+        cert: fs.readFileSync(process.env.SSL_CERTFILE),
+      },
+      public: `${process.env.PUBLIC_URL_BASENAME}/`,
       proxy: {
         "/api/*": {
-          target: `http://${process.env.BACKEND_URL_BASENAME}/`,
+          target: `https://${process.env.BACKEND_URL_BASENAME}/`,
           changeOrigin: true,
         },
         "/ws/*": {
-          target: `ws://${process.env.BACKEND_URL_BASENAME}/`,
+          target: `wss://${process.env.BACKEND_URL_BASENAME}/`,
           changeOrigin: true,
           ws: true,
         },

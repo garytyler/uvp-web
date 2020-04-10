@@ -63,7 +63,7 @@
       <template v-slot:item.index="{ item }">
         <v-chip
           :color="
-            item.id === sessionGuestId
+            item.id === currentGuestId
               ? 'info darken-2'
               : featureGuests.indexOf(item) === 0
               ? 'success darken-2'
@@ -80,7 +80,7 @@
       <template v-slot:item.name="{ item }">
         <v-chip
           :color="
-            item.id === sessionGuestId
+            item.id === currentGuestId
               ? 'info darken-2'
               : featureGuests.indexOf(item) === 0
               ? 'success darken-2'
@@ -109,7 +109,7 @@
       </template>
 
       <template v-slot:item.edit-action="{ item }">
-        <div v-if="featureOwner || sessionGuestId === item.id">
+        <div v-if="featureOwner || currentGuestId === item.id">
           <v-icon class="mr-2" @click="initEditDialog(item)">
             edit
           </v-icon>
@@ -137,7 +137,7 @@ export default {
   }),
   computed: {
     headers() {
-      let _headers = [
+      const _headers = [
         {
           text: "Index",
           align: "start",
@@ -177,7 +177,7 @@ export default {
         return _headers;
       }
     },
-    ...mapGetters("live", ["featureGuests", "sessionGuestId"])
+    ...mapGetters("live", ["featureGuests", "currentGuestId"])
   },
   methods: {
     rowClick: function(item, row) {
@@ -214,7 +214,7 @@ export default {
     }
   },
   mounted() {
-    let table = this.$refs.table.$el.querySelector("tbody");
+    const table = this.$refs.table.$el.querySelector("tbody");
     Sortable.create(table, {
       handle: ".handle", // Use handle so user can select text
       onEnd({ newIndex, oldIndex }) {

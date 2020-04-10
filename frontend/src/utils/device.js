@@ -18,7 +18,7 @@ async function getOrientationPermissions() {
 
 class MotionSender {
   constructor() {
-    this.intervalometer_id = null;
+    this.intervalometerId = null;
     this.isSending = false;
     this.socket = null;
     this.motionData = {
@@ -29,7 +29,7 @@ class MotionSender {
   }
   sendData() {
     if (this.socket || !this.motionData.orientation) {
-      let dataBytes = new Float64Array(this.motionData.orientation);
+      const dataBytes = new Float64Array(this.motionData.orientation);
       if (dataBytes) {
         this.socket.send(dataBytes);
       }
@@ -42,11 +42,11 @@ class MotionSender {
   start(socket, fps) {
     this.socket = socket;
     window.addEventListener("deviceorientation", this.handleOrientationEvent);
-    this.intervalometer_id = setInterval(this.sendData, 1000 / fps);
+    this.intervalometerId = setInterval(this.sendData, 1000 / fps);
     this.isSending = true;
   }
   stop() {
-    clearInterval(this.intervalometer_id);
+    clearInterval(this.intervalometerId);
     window.removeEventListener(
       "deviceorientation",
       this.handleOrientationEvent

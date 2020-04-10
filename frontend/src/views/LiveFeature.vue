@@ -54,7 +54,7 @@ export default {
       "feature",
       "featureTitle",
       "isFeaturePresenterOnline",
-      "sessionGuestIsInteractingGuest"
+      "currentGuestIsInteractingGuest"
     ])
   },
   beforeRouteEnter(to, from, next) {
@@ -64,16 +64,16 @@ export default {
           return error;
         }),
         vm.$store
-          .dispatch("live/loadSessionGuest")
+          .dispatch("live/loadCurrentGuest", vm.featureSlug)
           .catch(error => {
             return error;
           })
       ]).then((feature, guest) => {
         if (!vm.$store.state.socket.isConnected) {
-          vm.$connect(urlPathToWsUrl(`/ws/guest/${vm.featureSlug}/`));
+          vm.$connect(urlPathToWsUrl(`/ws/guest/${vm.featureSlug}`));
         }
-        let targetPath = `/live/${vm.featureSlug}/${
-          !guest || !vm.sessionGuestIsInteractingGuest
+        const targetPath = `/live/${vm.featureSlug}/${
+          !guest || !vm.currentGuestIsInteractingGuest
             ? "waiting"
             : "interacting"
         }`;

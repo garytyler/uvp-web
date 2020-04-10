@@ -10,7 +10,7 @@ const debug = process.env.NODE_ENV !== "production";
 
 const store = new Vuex.Store({
   modules: {
-    live,
+    live
   },
   strict: debug,
   plugins: debug ? [createLogger()] : [],
@@ -20,8 +20,8 @@ const store = new Vuex.Store({
     socket: {
       isConnected: false,
       message: "",
-      reconnectError: false,
-    },
+      reconnectError: false
+    }
   },
   mutations: {
     SOCKET_ONOPEN(state, event) {
@@ -42,8 +42,8 @@ const store = new Vuex.Store({
     },
     SOCKET_RECONNECT_ERROR(state) {
       state.socket.reconnectError = true;
-    },
-  },
+    }
+  }
 });
 
 // VueNativeSock requires url string first arg.
@@ -51,7 +51,7 @@ const store = new Vuex.Store({
 Vue.use(VueNativeSock, "ws://example.com", {
   connectManually: true,
   store: store,
-  format: "json",
+  format: "json"
 });
 
 if (module.hot) {
@@ -59,8 +59,8 @@ if (module.hot) {
     const newLiveModule = require("./modules/live").default;
     store.hotUpdate({
       modules: {
-        live: newLiveModule,
-      },
+        live: newLiveModule
+      }
     });
   });
 }

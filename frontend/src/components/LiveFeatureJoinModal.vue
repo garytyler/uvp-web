@@ -64,7 +64,7 @@ import device from "@/utils/device.js";
 
 export default {
   data: () => ({
-    sessionGuestLoaded: false,
+    currentGuestLoaded: false,
     editedItem: {},
     nameState: null,
     status: "NO STATUS"
@@ -73,39 +73,39 @@ export default {
     ...mapGetters("live", [
       "featureTitle",
       "featureGuests",
-      "sessionGuestName",
-      "sessionGuestId",
+      "currentGuestName",
+      "currentGuestId",
       "isPresenterOnline"
     ]),
     numFeatureGuests() {
       return isNaN(this.featureGuests?.length) ? 0 : this.featureGuests.length;
     },
-    sessionGuestIsInFeatureGuests() {
-      return this.featureGuests.some(i => i.id === this.sessionGuestId);
+    currentGuestIsInFeatureGuests() {
+      return this.featureGuests.some(i => i.id === this.currentGuestId);
     },
     showSignupModal() {
-      if (!this.sessionGuestLoaded) {
+      if (!this.currentGuestLoaded) {
         return false;
       } else {
-        return !this.sessionGuestIsInFeatureGuests;
+        return !this.currentGuestIsInFeatureGuests;
       }
     }
   },
   methods: {
     async handleSignUpSubmit() {
       await device.getOrientationPermissions();
-      this.$store.dispatch("live/setSessionGuest", {
+      this.$store.dispatch("live/setCurrentGuest", {
         name: this.editedItem.name,
-        feature_slug: this.featureSlug
+        featureSlug: this.featureSlug
       });
     }
   },
   beforeCreate() {
-    if (!this.$store.sessionGuest) {
+    if (!this.$store.currentGuest) {
       this.$store
-        .dispatch("live/loadSessionGuest")
-        .then(() => (this.sessionGuestLoaded = true))
-        .catch(() => (this.sessionGuestLoaded = true));
+        .dispatch("live/loadCurrentGuest")
+        .then(() => (this.currentGuestLoaded = true))
+        .catch(() => (this.currentGuestLoaded = true));
     }
   }
 };

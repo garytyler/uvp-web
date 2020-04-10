@@ -1,13 +1,20 @@
 import axios from "axios";
+import applyConverters from "axios-case-converter";
+
+const client = applyConverters(axios.create());
 
 const state = {
   feature: null,
-  sessionGuest: null,
+  currentGuest: null
 };
 
 const getters = {
   feature(state) {
     return state.feature;
+  },
+  featureId(state) {
+    // return getters.feature?.id;
+    return state.feature.id;
   },
   featureTitle(state, getters) {
     return getters.feature ? getters.feature.title : null;
@@ -18,17 +25,20 @@ const getters = {
   featurePresenterChannel(state, getters) {
     return getters.feature ? getters.feature.presenter_channel : null;
   },
+  featurePresenters(state, getters) {
+    return getters.feature ? getters.feature.presenters : null;
+  },
   isFeaturePresenterOnline(state, getters) {
-    return Boolean(getters.featurePresenterChannel?.length > 0);
+    return Boolean(getters.featurePresenters?.length > 0);
   },
-  sessionGuest(state) {
-    return state.sessionGuest;
+  currentGuest(state) {
+    return state.currentGuest;
   },
-  sessionGuestId(state, getters) {
-    return getters.sessionGuest?.id;
+  currentGuestId(state, getters) {
+    return getters.currentGuest?.id;
   },
-  sessionGuestName(state, getters) {
-    return getters.sessionGuest?.name;
+  currentGuestName(state, getters) {
+    return getters.currentGuest?.name;
   },
   interactingGuest(state) {
     return state.featureGuests?.length ? state.feature.guests[0] : null;
@@ -36,12 +46,13 @@ const getters = {
   interactingGuestId(state) {
     return state.featureGuests?.length ? state.feature.guests[0].id : null;
   },
-  sessionGuestIsInteractingGuest(state, getters) {
-    return (
+  currentGuestIsInteractingGuest(state, getters) {
+    const x =
       getters.interactingGuestId &&
-      getters.interactingGuestId === getters.sessionGuestId
-    );
-  },
+      getters.interactingGuestId === getters.currentGuestId;
+    console.log(x);
+    return x;
+  }
 };
 
 const mutations = {
@@ -51,79 +62,85 @@ const mutations = {
   UPDATE_FEATURE(state, feature) {
     state.feature = { ...state.feature, ...feature };
   },
-  SET_SESSION_GUEST(state, sessionGuest) {
-    state.sessionGuest = sessionGuest;
+  SET_CURRENT_GUEST(state, currentGuest) {
+    state.currentGuest = currentGuest;
   },
-  DELETE_GUEST(state, guest_id) {
-    state.feature.guests.filter((i) => i.id != guest_id);
-  },
+  DELETE_GUEST(state, guestId) {
+    state.feature.guests.filter(i => i.id != guestId);
+  }
 };
 
 const actions = {
   loadFeature({ commit }, slug) {
     return new Promise((resolve, reject) => {
-      axios
-        .get(`/api/features/${slug}/`)
-        .then((response) => response.data)
-        .then((feature) => {
+      client
+        .get(`/api/features/${slug}`)
+        .then(response => response.data)
+        .then(feature => {
           commit("SET_FEATURE", feature);
           resolve(feature);
         })
-        .catch((error) => reject(error));
+        .catch(error => reject(error));
     });
   },
-  loadSessionGuest({ commit }, featureSlug) {
+  loadCurrentGuest({ commit }) {
     return new Promise((resolve, reject) => {
-      axios
-        .get(`/api/guest/`)
-        .then((response) => response.data)
-        .then((sessionGuest) => {
-          commit("SET_SESSION_GUEST", sessionGuest);
-          resolve(sessionGuest);
+      client
+        .get(`/api/guests/current`)
+        .then(response => response.data)
+        .then(currentGuest => {
+          commit("SET_CURRENT_GUEST", currentGuest);
+          resolve(currentGuest);
         })
-        .catch((error) => reject(error));
+        .catch(error => reject(error));
     });
   },
-  setSessionGuest({ commit }, sessionGuest) {
+  setCurrentGuest({ commit }, currentGuest) {
+    console.log(currentGuest);
+    console.log(state.feature.id);
     return new Promise((resolve, reject) => {
-      axios
-        .post(`/api/feature/${state.feature.slug}/guest/`, sessionGuest)
-        .then((response) => response.data)
-        .then((sessionGuest) => {
-          commit("SET_SESSION_GUEST", sessionGuest);
-          resolve(sessionGuest);
+      client
+        .put(`/api/features/${state.feature.id}/guests/current`, currentGuest)
+        .then(response => response.data)
+        .then(currentGuest => {
+          commit("SET_CURRENT_GUEST", currentGuest);
+          resolve(currentGuest);
         })
-        .catch((error) => reject(error));
+        .catch(error => reject(error));
     });
   },
   updateGuest({ commit, state }, guest) {
     return new Promise((resolve, reject) => {
-      axios
-        .patch(`/api/feature/${state.feature.slug}/guest/${guest.id}/`, guest)
-        .then((response) => response.data)
-        .then((guest) => {
-          commit("SET_SESSION_GUEST", guest); //TODO This is wrong. We should have this in an api/guest store module.
+      client
+        .patch(`/api/feature/${state.feature.slug}/guest/${guest.id}`, guest)
+        .then(response => response.data)
+        .then(guest => {
+          commit("SET_CURRENT_GUEST", guest); //TODO This is wrong. We should have this in an api/guest store module.
           resolve(guest);
         })
-        .catch((error) => reject(error));
+        .catch(error => reject(error));
     });
   },
   deleteGuest({ commit, state }, guestId) {
     return new Promise((resolve, reject) => {
-      axios
-        .delete(`/api/feature/${state.feature.slug}/guest/${guestId}/`)
-        .then((response) => response.data)
-        .then((data) => {
+      client
+        .delete(`/api/features/${state.feature.id}/guests/${guestId}`)
+        .then(response => {
           commit("DELETE_GUEST", state.feature, guestId);
-          resolve(data);
+          if (response.data === 1) {
+            resolve(response.data);
+          } else {
+            reject(response.error);
+          }
         })
-        .catch((error) => reject(error));
+        .catch(error => reject(error));
     });
   },
   // Websocket receivers
   receiveFeature({ commit }, data) {
+    console.log(data);
     commit("UPDATE_FEATURE", data.feature);
-  },
+  }
 };
 
 export default {
@@ -131,5 +148,5 @@ export default {
   state,
   getters,
   actions,
-  mutations,
+  mutations
 };

@@ -4,29 +4,27 @@ const fs = require("fs");
 module.exports = {
   assetsDir: "static",
   outputDir: "./dist/",
-  configureWebpack: {
-    devtool: "source-map",
-    devServer: {
+  configureWebpack: config => {
+    config.devtool = "source-map";
+    config.devServer = {
       inline: true,
       disableHostCheck: true,
       https: {
         key: fs.readFileSync(process.env.SSL_KEYFILE),
-        cert: fs.readFileSync(process.env.SSL_CERTFILE),
+        cert: fs.readFileSync(process.env.SSL_CERTFILE)
       },
       public: `${process.env.PUBLIC_URL_BASENAME}/`,
       proxy: {
         "/api/*": {
           target: `https://${process.env.BACKEND_URL_BASENAME}/`,
-          changeOrigin: true,
+          changeOrigin: true
         },
         "/ws/*": {
           target: `wss://${process.env.BACKEND_URL_BASENAME}/`,
           changeOrigin: true,
-          ws: true,
-        },
-      },
-    },
-  },
-  // vuejs configuration
-  transpileDependencies: ["vuetify"],
+          ws: true
+        }
+      }
+    };
+  }
 };

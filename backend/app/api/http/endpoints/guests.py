@@ -34,13 +34,17 @@ async def put_current_guest(
     guest_id = request.session.get("guest_id")
     if guest_id and await crud_guests.get(id=guest_id):
         guest_update_db = GuestUpdateDb(name=guest_in.name, feature_id=feature_id)
-        guest = await crud_guests.update(id=guest_id, obj_in=guest_update_db)
+        if not await crud_guests.update(id=uuid.UUID(guest_id), obj_in=guest_update_db):
+            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+        request.session["guest_id"] = str(guest_id)
+        background_tasks.add_task(publish_feature_by_id, id=feature_id)
+        return guest_update_db
     else:
         guest_create_db = GuestCreateDb(name=guest_in.name, feature_id=feature_id)
         guest = await crud_guests.create(obj_in=guest_create_db)
-    request.session["guest_id"] = str(guest.id)
-    background_tasks.add_task(publish_feature_by_id, id=feature_id)
-    return guest
+        request.session["guest_id"] = str(guest.id)
+        background_tasks.add_task(publish_feature_by_id, id=feature_id)
+        return guest
 
 
 @router.get("/guests/current", response_model=GuestOut)

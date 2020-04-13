@@ -25,8 +25,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def update(self, *, id: uuid.UUID, obj_in: UpdateSchemaType) -> ModelType:
         obj_in_data: dict = jsonable_encoder(obj_in)
-        db_obj = self.model.filter(id=id).update(**obj_in_data)
-        return db_obj
+        count_updated = await self.model.filter(id=id).update(**obj_in_data)
+        return count_updated
 
     async def delete(self, *, id: uuid.UUID) -> int:
         deleted_count = await self.model.filter(id=id).delete()

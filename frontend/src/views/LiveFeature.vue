@@ -16,7 +16,7 @@
     <v-sheet>
       <div class="text-center">
         <div class="pt-3">
-          <p class="display-1 teal--text">{{ featureTitle }}</p>
+          <p class="display-1 teal--text">{{ currentFeature.title }}</p>
         </div>
         <v-row justify="center">
           <div v-if="isFeaturePresenterOnline">
@@ -38,50 +38,48 @@
     </v-content>
   </div>
 </template>
-<script>
-import { mapGetters } from "vuex";
-import { urlPathToWsUrl } from "@/utils/urls.js";
 
-export default {
-  props: {
-    featureSlug: {
-      type: String,
-      required: true
+<script lang="ts">
+import Vue from "vue";
+import { store } from "../store";
+import { urlPathToWsUrl } from "../services/urls.js";
+import {
+  readFeature,
+  readIsFeaturePresenterOnline,
+  readIsCurrentGuestInteractingGuest
+} from "../store/live/getters";
+
+export default Vue.extend({
+  computed: {
+    currentFeature() {
+      return readFeature(this.$store);
+    },
+    isFeaturePresenterOnline() {
+      return readIsFeaturePresenterOnline(this.$store);
     }
   },
-  computed: {
-    ...mapGetters("live", [
-      "feature",
-      "featureTitle",
-      "isFeaturePresenterOnline",
-      "currentGuestIsInteractingGuest"
-    ])
+
+  async beforeCreate() {
+    if (!this.$store.state.socket.isConnected) {
+      const featureSlug = this.$route.params.featureSlug;
+      Vue.prototype.$connect(urlPathToWsUrl(`/ws/guest/${featureSlug}`));
+    }
   },
-  beforeRouteEnter(to, from, next) {
+  async beforeRouteEnter(to, from, next) {
     next(vm => {
-      Promise.all([
-        vm.$store.dispatch("live/loadFeature", vm.featureSlug).catch(error => {
-          return error;
-        }),
-        vm.$store
-          .dispatch("live/loadCurrentGuest", vm.featureSlug)
-          .catch(error => {
-            return error;
-          })
-      ]).then((feature, guest) => {
-        if (!vm.$store.state.socket.isConnected) {
-          vm.$connect(urlPathToWsUrl(`/ws/guest/${vm.featureSlug}`));
+      vm.$store.watch(
+        () => readIsCurrentGuestInteractingGuest(store),
+        () => {
+          if (readIsCurrentGuestInteractingGuest(store)) {
+            vm.$router.push(`/live/${to.params.featureSlug}/interacting`);
+          } else {
+            vm.$router.push(`/live/${to.params.featureSlug}/waiting`);
+          }
         }
-        const targetPath = `/live/${vm.featureSlug}/${
-          !guest || !vm.currentGuestIsInteractingGuest
-            ? "waiting"
-            : "interacting"
-        }`;
-        if (targetPath !== to.path) vm.$router.push(targetPath);
-      });
+      );
     });
   }
-};
+});
 </script>
 
 <style></style>

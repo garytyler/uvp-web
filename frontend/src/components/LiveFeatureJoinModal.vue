@@ -59,10 +59,11 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import device from "@/utils/device.js";
-
+import { readGuest, readFeature } from "../store/live/getters";
+import { dispatchUpdateGuest, dispatchGetGuest } from "../store/live/actions";
+import device from "@/services/device.js";
 export default {
+  name: "live-feature-join-modal",
   data: () => ({
     currentGuestLoaded: false,
     editedItem: {},
@@ -70,43 +71,38 @@ export default {
     status: "NO STATUS"
   }),
   computed: {
-    ...mapGetters("live", [
-      "featureTitle",
-      "featureGuests",
-      "currentGuestName",
-      "currentGuestId",
-      "isPresenterOnline"
-    ]),
+    feature() {
+      return readFeature(this.$store);
+    },
+    featureTitle() {
+      return this.feature ? this.feature.title : "...";
+    },
+    currentGuest() {
+      return readGuest(this.$store);
+    },
     numFeatureGuests() {
-      return isNaN(this.featureGuests?.length) ? 0 : this.featureGuests.length;
+      const feature = readFeature(this.$store);
+      return isNaN(feature.guests?.length) ? 0 : this.feature.guests.length;
     },
     currentGuestIsInFeatureGuests() {
-      return this.featureGuests.some(i => i.id === this.currentGuestId);
+      if (!this.currentGuest) return false;
+      return this.feature.guests.some(i => i.id === this.currentGuest.id);
     },
     showSignupModal() {
-      if (!this.currentGuestLoaded) {
-        return false;
-      } else {
-        return !this.currentGuestIsInFeatureGuests;
-      }
+      return !(this.currentGuest && this.currentGuestIsInFeatureGuests);
     }
   },
   methods: {
     async handleSignUpSubmit() {
       await device.getOrientationPermissions();
-      this.$store.dispatch("live/setCurrentGuest", {
+      await dispatchUpdateGuest(this.$store, {
         name: this.editedItem.name,
-        featureSlug: this.featureSlug
+        featureSlug: this.feature.slug
       });
     }
   },
-  beforeCreate() {
-    if (!this.$store.currentGuest) {
-      this.$store
-        .dispatch("live/loadCurrentGuest")
-        .then(() => (this.currentGuestLoaded = true))
-        .catch(() => (this.currentGuestLoaded = true));
-    }
+  async beforeCreate() {
+    await dispatchGetGuest(this.$store);
   }
 };
 </script>

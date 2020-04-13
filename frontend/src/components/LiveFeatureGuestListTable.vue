@@ -6,7 +6,7 @@
       ref="table"
       mobile-breakpoint="0"
       :headers="headers"
-      :items="featureGuests"
+      :items="currentFeature.guests"
       class="elevation-4"
       hide-default-footer
       hide-default-header
@@ -63,16 +63,18 @@
       <template v-slot:item.index="{ item }">
         <v-chip
           :color="
-            item.id === currentGuestId
+            (currentGuest
+            ? item.id === currentGuest.id
+            : false)
               ? 'info darken-2'
-              : featureGuests.indexOf(item) === 0
+              : currentFeature.guests.indexOf(item) === 0
               ? 'success darken-2'
               : 'secondary'
           "
           text-color="white"
         >
           <span class="headline text--accent">
-            {{ featureGuests.indexOf(item) }}
+            {{ currentFeature.guests.indexOf(item) }}
           </span>
         </v-chip>
       </template>
@@ -80,9 +82,11 @@
       <template v-slot:item.name="{ item }">
         <v-chip
           :color="
-            item.id === currentGuestId
+            (currentGuest
+            ? item.id === currentGuest.id
+            : false)
               ? 'info darken-2'
-              : featureGuests.indexOf(item) === 0
+              : currentFeature.guests.indexOf(item) === 0
               ? 'success darken-2'
               : 'secondary'
           "
@@ -93,7 +97,7 @@
       </template>
 
       <template v-slot:item.handle="{ item }">
-        <div v-if="featureGuests.indexOf(item) > 0">
+        <div v-if="currentFeature.guests.indexOf(item) > 0">
           <div class="handle">
             <v-icon small>
               drag_handle
@@ -109,7 +113,7 @@
       </template>
 
       <template v-slot:item.edit-action="{ item }">
-        <div v-if="featureOwner || currentGuestId === item.id">
+        <div v-if="featureOwner || currentGuest.id === item.id">
           <v-icon class="mr-2" @click="initEditDialog(item)">
             edit
           </v-icon>
@@ -120,8 +124,12 @@
 </template>
 
 <script>
+import { dispatchGetFeature, dispatchUpdateGuest } from "../store/live/actions";
+import { readFeature, readGuest } from "../store/live/getters";
+// import { dispatchDeleteGuest } from "@/store/live";
+import { dispatchDeleteGuest } from "../store/live/actions";
 import Sortable from "sortablejs";
-import { mapGetters } from "vuex";
+// import { mapGetters } from "vuex";
 
 export default {
   props: {
@@ -177,7 +185,12 @@ export default {
         return _headers;
       }
     },
-    ...mapGetters("live", ["featureGuests", "currentGuestId"])
+    currentFeature() {
+      return readFeature(this.$store);
+    },
+    currentGuest() {
+      return readGuest(this.$store);
+    }
   },
   methods: {
     rowClick: function(item, row) {
@@ -185,32 +198,22 @@ export default {
       row.deselect(item, false);
     },
 
-    initEditDialog(item) {
-      this.editedIndex = this.featureGuests.indexOf(item);
+    async initEditDialog(item) {
+      this.editedIndex = this.currentFeature.guests.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
-    deleteItem(item) {
-      confirm("Are you sure you want to delete this item?") &&
-        this.$store
-          .dispatch("live/deleteGuest", item.id)
-          .then(() => {
-            this.dialog = false;
-          })
-          .catch(() => {
-            this.dialog = false;
-          });
+    async deleteItem(item) {
+      if (confirm("Are you sure you want to delete this item?")) {
+        await dispatchDeleteGuest(this.$store, { guestId: item.id });
+        this.dialog = false;
+      }
     },
-    handleSubmit() {
-      this.$store
-        .dispatch("live/updateGuest", this.editedItem)
-        .then(() => {
-          this.dialog = false;
-          this.$emit("session-guest-set");
-        })
-        .catch(() => {
-          this.dialog = true;
-        });
+    async handleSubmit() {
+      await dispatchUpdateGuest(this.$store, this.editedItem);
+      this.dialog = this.currentGuest
+        ? Boolean(this.currentGuest.name == this.editedItem.name)
+        : false;
     }
   },
   mounted() {
@@ -219,8 +222,8 @@ export default {
       handle: ".handle", // Use handle so user can select text
       onEnd({ newIndex, oldIndex }) {
         try {
-          const rowSelected = this.featureGuests.splice(oldIndex, 1)[0]; // Get the selected row and remove it
-          this.featureGuests.splice(newIndex, 0, rowSelected); // Move it to the new index
+          const rowSelected = this.currentFeature.guests.splice(oldIndex, 1)[0]; // Get the selected row and remove it
+          this.currentFeature.guests.splice(newIndex, 0, rowSelected); // Move it to the new index
         } catch {
           console.error(
             `Reordering not implemented. - newIndex=${newIndex} oldIndex=${oldIndex}`

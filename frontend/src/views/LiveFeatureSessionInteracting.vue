@@ -39,9 +39,9 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { readIsFeaturePresenterOnline } from "../store/live/getters";
 import Vue from "vue";
-import device from "@/utils/device.js";
+import device from "@/services/device.js";
 
 export default {
   data() {
@@ -51,7 +51,9 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("live", ["isFeaturePresenterOnline"])
+    isFeaturePresenterOnline() {
+      return readIsFeaturePresenterOnline(this.$store);
+    }
   },
   methods: {
     startSendingDeviceMotion() {

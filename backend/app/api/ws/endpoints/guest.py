@@ -1,12 +1,10 @@
 import asyncio
-import json
 import logging
 
+from app.api.dependencies.publish import publish_feature_by_obj
 from app.crud.features import crud_features
-from app.schemas.features import FeatureOut
 from app.services.broadcasting import broadcast
 from fastapi import APIRouter, WebSocket, status
-from fastapi.encoders import jsonable_encoder
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -21,9 +19,7 @@ async def on_connect(websocket: WebSocket) -> None:
 
     await websocket.accept()
 
-    feature_out = await FeatureOut.from_tortoise_orm(feature)
-    data = {"action": "live/receiveFeature", "feature": jsonable_encoder(feature_out)}
-    await websocket.send_json(json.dumps(data))
+    await publish_feature_by_obj(obj=feature)
 
     await run_loops(websocket=websocket, guest_channel=str(feature.guest_channel))
     await disconnect(websocket)

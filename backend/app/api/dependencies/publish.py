@@ -11,7 +11,7 @@ async def publish_feature_by_obj(obj: Feature) -> None:
     await obj.fetch_related("guests", "presenters")
     feature_out = await FeatureOut.from_tortoise_orm(obj)
     feature_out_json = jsonable_encoder(feature_out)
-    data = {"action": "live/receiveFeature", "feature": feature_out_json}
+    data = {"action": "receiveFeature", "feature": feature_out_json}
     await broadcast.publish(channel=str(obj.guest_channel), message=data)
 
 

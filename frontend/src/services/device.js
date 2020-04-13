@@ -1,18 +1,19 @@
 async function getOrientationPermissions() {
-  return new Promise((resolve) => {
-    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+  return new Promise(resolve => {
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      DeviceOrientationEvent.requestPermission()
+        .then(permissionState => {
+          if (permissionState === "granted") {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        })
+        .catch(console.error);
+    } else {
       // handle regular non iOS 13+ devices
       resolve(true);
     }
-    DeviceOrientationEvent.requestPermission()
-      .then((permissionState) => {
-        if (permissionState === "granted") {
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      })
-      .catch(console.error);
   });
 }
 
@@ -22,7 +23,7 @@ class MotionSender {
     this.isSending = false;
     this.socket = null;
     this.motionData = {
-      orientation: null,
+      orientation: null
     };
     this.sendData = this.sendData.bind(this);
     this.handleOrientationEvent = this.handleOrientationEvent.bind(this);
@@ -58,5 +59,5 @@ class MotionSender {
 
 export default {
   motionSender: new MotionSender(),
-  getOrientationPermissions: getOrientationPermissions,
+  getOrientationPermissions: getOrientationPermissions
 };

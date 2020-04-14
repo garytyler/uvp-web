@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from app.crud.features import crud_features
@@ -12,7 +13,7 @@ async def publish_feature_by_obj(obj: Feature) -> None:
     feature_out = await FeatureOut.from_tortoise_orm(obj)
     feature_out_json = jsonable_encoder(feature_out)
     data = {"action": "receiveFeature", "feature": feature_out_json}
-    await broadcast.publish(channel=str(obj.guest_channel), message=data)
+    await broadcast.publish(channel=str(obj.guest_channel), message=json.dumps(data))
 
 
 async def publish_feature_by_id(id: uuid.UUID) -> None:

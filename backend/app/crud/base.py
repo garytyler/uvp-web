@@ -16,8 +16,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
-    async def get(self, *, id: uuid.UUID) -> Optional[ModelType]:
-        return await self.model.filter(id=id).first()
+    async def get(
+        self, *, id: uuid.UUID, fetch_related: list = []
+    ) -> Optional[ModelType]:
+        obj = await self.model.filter(id=id).first()
+        # print(obj)
+        # await obj.fetch_related("feature")
+        # if fetch_related:
+        # await obj.fetch_related(*fetch_related)
+        return obj
 
     async def create(self, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data: dict = jsonable_encoder(obj_in)

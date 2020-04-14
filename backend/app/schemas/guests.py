@@ -8,20 +8,12 @@ from tortoise.contrib.pydantic.creator import pydantic_model_creator
 from .base import CustomPydanticBase
 
 
-class GuestCreateIn(CustomPydanticBase):
-    name: str
-
-
-class GuestCreateDb(CustomPydanticBase):
+class GuestCreate(CustomPydanticBase):
     name: str
     feature_id: UUID4
 
 
-class GuestUpdateIn(CustomPydanticBase):
-    name: str
-
-
-class GuestUpdateDb(CustomPydanticBase):
+class GuestUpdate(CustomPydanticBase):
     name: Optional[str]
     feature_id: Optional[UUID4]
 

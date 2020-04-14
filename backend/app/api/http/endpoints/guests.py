@@ -3,48 +3,39 @@ import uuid
 from app.api.dependencies.publish import publish_feature_by_id
 from app.crud.guests import crud_guests
 from app.models.guests import Guest
-from app.schemas.guests import GuestCreateDb, GuestCreateIn, GuestOut, GuestUpdateDb
+from app.schemas.guests import GuestCreate, GuestOut, GuestUpdate
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 
 router = APIRouter()
 
 
-@router.post("/features/{feature_id}/guests/current", response_model=GuestOut)
+@router.post("/guests/current", response_model=GuestOut)
 async def post_current_guest(
-    request: Request, feature_id: str, guest_in: GuestCreateIn
+    request: Request, guest_in: GuestCreate, background_tasks: BackgroundTasks,
 ):
     guest_id = request.session.get("guest_id")
     if guest_id and await crud_guests.get(id=guest_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Guest already exists",
         )
-    guest_db = GuestCreateDb(name=guest_in.name, feature_id=uuid.UUID(feature_id))
-    guest = await crud_guests.create(obj_in=guest_db)
+    guest = await crud_guests.create(obj_in=guest_in)
+    background_tasks.add_task(publish_feature_by_id, id=guest.feature_id)
     request.session["guest_id"] = str(guest.id)
     return guest
 
 
-@router.put("/features/{feature_id}/guests/current", response_model=GuestOut)
-async def put_current_guest(
+@router.patch("/guests/{guest_id}", response_model=GuestOut)
+async def update_current_guest(
     request: Request,
     background_tasks: BackgroundTasks,
-    feature_id: uuid.UUID,
-    guest_in: GuestCreateIn,
+    guest_id: uuid.UUID,
+    guest_in: GuestUpdate,
 ):
-    guest_id = request.session.get("guest_id")
-    if guest_id and await crud_guests.get(id=guest_id):
-        guest_update_db = GuestUpdateDb(name=guest_in.name, feature_id=feature_id)
-        if not await crud_guests.update(id=uuid.UUID(guest_id), obj_in=guest_update_db):
-            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-        request.session["guest_id"] = str(guest_id)
-        background_tasks.add_task(publish_feature_by_id, id=feature_id)
-        return guest_update_db
-    else:
-        guest_create_db = GuestCreateDb(name=guest_in.name, feature_id=feature_id)
-        guest = await crud_guests.create(obj_in=guest_create_db)
-        request.session["guest_id"] = str(guest.id)
-        background_tasks.add_task(publish_feature_by_id, id=feature_id)
-        return guest
+    count_updated = await crud_guests.update(id=guest_id, obj_in=guest_in)
+    if not count_updated:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    background_tasks.add_task(publish_feature_by_id, id=guest_in.feature_id)
+    return await crud_guests.get(id=guest_id)
 
 
 @router.get("/guests/current", response_model=GuestOut)
@@ -53,6 +44,10 @@ async def get_current_guest(request: Request):
     if not guest_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     guest = await crud_guests.get(id=guest_id)
+    if not guest:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    # print(guest)
+    await guest.fetch_related("feature")
     return guest
 
 

@@ -33,7 +33,7 @@ async def loop_send_guest_channel_to_client(websocket, guest_channel):
     async with broadcast.subscribe(channel=guest_channel) as subscriber:
         async for event in subscriber:
             await asyncio.sleep(0.01)
-            await websocket.send_json(event.message)
+            await websocket.send_text(event.message)
         await asyncio.sleep(0.01)
 
 

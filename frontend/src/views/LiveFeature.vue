@@ -44,10 +44,36 @@ import Vue from "vue";
 import { store } from "../store";
 import { urlPathToWsUrl } from "../services/urls.js";
 import {
+  dispatchGetFeature,
+  dispatchGetCurrentGuest
+} from "../store/live/actions";
+import {
   readFeature,
+  readGuest,
   readIsFeaturePresenterOnline,
   readIsCurrentGuestInteractingGuest
 } from "../store/live/getters";
+
+const beforeRouteEnterRoutine = async (to, from, next) => {
+  await dispatchGetFeature(store, { slugOrId: to.params.featureSlug });
+  await dispatchGetCurrentGuest(store);
+
+  const feature = readFeature(store);
+  const guest = readGuest(store);
+
+  if (!feature) {
+    console.error("NO FEATURE!"); // TODO
+  } else {
+    const sessionPhase =
+      !guest || !readIsCurrentGuestInteractingGuest(store)
+        ? "lobby"
+        : "interact";
+    next(() => {
+      const targetPath = `/live/${to.params.featureSlug}/${sessionPhase}`;
+      if (targetPath !== to.path) next(targetPath);
+    });
+  }
+};
 
 export default Vue.extend({
   computed: {
@@ -58,26 +84,25 @@ export default Vue.extend({
       return readIsFeaturePresenterOnline(this.$store);
     }
   },
-
   async beforeCreate() {
+    this.$store.watch(
+      () => readIsCurrentGuestInteractingGuest(store),
+      () => {
+        const basePath = `/live/${this.$route.params.featureSlug}`;
+        if (readIsCurrentGuestInteractingGuest(store)) {
+          this.$router.push(basePath + "/interact");
+        } else {
+          this.$router.push(basePath + "/lobby");
+        }
+      }
+    );
     if (!this.$store.state.socket.isConnected) {
       const featureSlug = this.$route.params.featureSlug;
       Vue.prototype.$connect(urlPathToWsUrl(`/ws/guest/${featureSlug}`));
     }
   },
   async beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.$store.watch(
-        () => readIsCurrentGuestInteractingGuest(store),
-        () => {
-          if (readIsCurrentGuestInteractingGuest(store)) {
-            vm.$router.push(`/live/${to.params.featureSlug}/interacting`);
-          } else {
-            vm.$router.push(`/live/${to.params.featureSlug}/waiting`);
-          }
-        }
-      );
-    });
+    await beforeRouteEnterRoutine(to, from, next);
   }
 });
 </script>

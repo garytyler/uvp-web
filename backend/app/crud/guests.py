@@ -1,9 +1,9 @@
 from app.crud.base import CRUDBase
 from app.models.guests import Guest
-from app.schemas.guests import GuestCreateDb, GuestUpdateDb
+from app.schemas.guests import GuestCreate, GuestUpdate
 
 
-class CRUDGuest(CRUDBase[Guest, GuestCreateDb, GuestUpdateDb]):
+class CRUDGuest(CRUDBase[Guest, GuestCreate, GuestUpdate]):
     pass
 
 

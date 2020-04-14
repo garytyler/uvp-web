@@ -60,7 +60,10 @@
 
 <script>
 import { readGuest, readFeature } from "../store/live/getters";
-import { dispatchUpdateGuest, dispatchGetGuest } from "../store/live/actions";
+import {
+  dispatchCreateCurrentGuest,
+  dispatchGetCurrentGuest
+} from "../store/live/actions";
 import device from "@/services/device.js";
 export default {
   name: "live-feature-join-modal",
@@ -95,14 +98,16 @@ export default {
   methods: {
     async handleSignUpSubmit() {
       await device.getOrientationPermissions();
-      await dispatchUpdateGuest(this.$store, {
+      await dispatchCreateCurrentGuest(this.$store, {
         name: this.editedItem.name,
-        featureSlug: this.feature.slug
+        featureId: this.feature.id
       });
     }
   },
   async beforeCreate() {
-    await dispatchGetGuest(this.$store);
+    if (!readGuest(this.$store)) {
+      await dispatchGetCurrentGuest(this.$store);
+    }
   }
 };
 </script>

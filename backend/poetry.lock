@@ -90,6 +90,17 @@ python-versions = ">=3.5.3"
 version = "3.0.1"
 
 [[package]]
+category = "main"
+description = "PEP 3156 implementation of the redis protocol."
+name = "asyncio-redis"
+optional = false
+python-versions = "*"
+version = "0.15.1"
+
+[package.extras]
+hiredis = ["hiredis"]
+
+[[package]]
 category = "dev"
 description = "Atomic file writes."
 marker = "sys_platform == \"win32\""
@@ -135,7 +146,6 @@ d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 [[package]]
 category = "main"
 description = "Simple broadcast channels."
-develop = true
 name = "broadcaster"
 optional = false
 python-versions = ">=3.7"
@@ -144,12 +154,7 @@ version = "0.2.0"
 [package.extras]
 kafka = ["aiokafka"]
 postgres = ["asyncpg"]
-redis = ["aioredis"]
-
-[package.source]
-reference = ""
-type = "directory"
-url = "../../broadcaster"
+redis = ["asyncio-redis"]
 
 [[package]]
 category = "main"
@@ -982,7 +987,7 @@ python-versions = ">=3.6.1"
 version = "8.1"
 
 [metadata]
-content-hash = "b7519312f7534c2087913fd013676489ce60282cc80b4b087b0bd8e9b18c106c"
+content-hash = "106e575de8f2c0f34833ec5bf7c88cfdbbc5366f8e7c765df94410eee6b9d5ba"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -1024,6 +1029,10 @@ async-timeout = [
     {file = "async-timeout-3.0.1.tar.gz", hash = "sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f"},
     {file = "async_timeout-3.0.1-py3-none-any.whl", hash = "sha256:4291ca197d287d274d0b6cb5d6f8f8f82d434ed288f962539ff18cc9012f9ea3"},
 ]
+asyncio-redis = [
+    {file = "asyncio_redis-0.15.1-py3-none-any.whl", hash = "sha256:f49e2c6626f3fcfddb478ee1d01f0335e22b6656add274e8a88fcdec9bd78745"},
+    {file = "asyncio_redis-0.15.1.tar.gz", hash = "sha256:067dbc251ab84d6e53ef8b33dbfd8afd62987ab08f72ca922f6870c96be53b54"},
+]
 atomicwrites = [
     {file = "atomicwrites-1.3.0-py2.py3-none-any.whl", hash = "sha256:03472c30eb2c5d1ba9227e4c2ca66ab8287fbfbbda3888aa93dc2e28fc6811b4"},
     {file = "atomicwrites-1.3.0.tar.gz", hash = "sha256:75a9445bac02d8d058d5e1fe689654ba5a6556a1dfd8ce6ec55a0ed79866cfa6"},
@@ -1036,7 +1045,10 @@ black = [
     {file = "black-19.10b0-py36-none-any.whl", hash = "sha256:1b30e59be925fafc1ee4565e5e08abef6b03fe455102883820fe5ee2e4734e0b"},
     {file = "black-19.10b0.tar.gz", hash = "sha256:c2edb73a08e9e0e6f65a0e6af18b059b8b1cdd5bef997d7a0b181df93dc81539"},
 ]
-broadcaster = []
+broadcaster = [
+    {file = "broadcaster-0.2.0-py3-none-any.whl", hash = "sha256:50f93d1af7e9097a87ef3b2da269b4b4c5630ec080dc5c7f941ef314291937b1"},
+    {file = "broadcaster-0.2.0.tar.gz", hash = "sha256:72056f9b77b091dd4bbad4d7484bd0e6835c3443d4564d0bbf41190c29c606c6"},
+]
 certifi = [
     {file = "certifi-2019.11.28-py2.py3-none-any.whl", hash = "sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3"},
     {file = "certifi-2019.11.28.tar.gz", hash = "sha256:25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"},

@@ -1,11 +1,5 @@
-// import LiveFeatureSessionInteracting from "@/components/LiveFeatureSessionInteracting.vue";
-// import LiveFeatureSessionWaiting from "@/components/LiveFeatureSessionWaiting.vue";
-import Error404PageNotFound from "@/views/errors/Error404PageNotFound.vue";
-// import ErrorMessage from "@/views/errors/ErrorMessage.vue";
-// import LiveFeature from "@/views/LiveFeature.vue";
 import Vue from "vue";
 import VueRouter from "vue-router";
-// import AccountApp from "./views/AccountApp.vue";
 
 Vue.use(VueRouter);
 
@@ -38,17 +32,17 @@ const router = new VueRouter({
           props: true,
           children: [
             {
-              path: "waiting",
+              path: "lobby",
               component: () =>
                 import(
-                  /* webpackChunkName: "live-feature-session-waiting" */ "./views/LiveFeatureSessionWaiting.vue"
+                  /* webpackChunkName: "live-feature-session-waiting" */ "./views/LiveFeatureLobby.vue"
                 )
             },
             {
-              path: "interacting",
+              path: "interact",
               component: () =>
                 import(
-                  /* webpackChunkName: "live-feature-session-interacting" */ "./views/LiveFeatureSessionInteracting.vue"
+                  /* webpackChunkName: "live-feature-session-interacting" */ "./views/LiveFeatureInteract.vue"
                 )
             }
           ]
@@ -56,18 +50,29 @@ const router = new VueRouter({
         {
           path: "*",
           name: "not-found",
-          component: Error404PageNotFound
+          component: () =>
+            import(
+              /* webpackChunkName: "live-feature-session-interacting" */ "./views/errors/Error404PageNotFound.vue"
+            )
+        },
+        {
+          path: "*",
+          name: "error-message",
+          component: () =>
+            import(
+              /* webpackChunkName: "live-feature-session-interacting" */ "./views/errors/Error404PageNotFound.vue"
+            )
         }
       ]
     }
   ]
 });
 
-// router.onError((err) => {
+// router.onError(err => {
 //   router.push({
-//     name: "not-found",
-//     component: ErrorMessage,
-//     params: { message: err.message, heading: "ERROR" },
+//     name: "error-message",
+//     // component: ErrorMessage,
+//     params: { message: err.message, heading: "ERROR" }
 //   });
 // });
 

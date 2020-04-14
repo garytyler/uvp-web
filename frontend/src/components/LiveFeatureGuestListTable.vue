@@ -50,7 +50,7 @@
                   <v-btn text color="accent" @click="dialog = false">
                     Cancel
                   </v-btn>
-                  <v-btn text color="primary" @click="handleSubmit">
+                  <v-btn text color="primary" @click="handleSubmit()">
                     Save
                   </v-btn>
                 </v-flex>
@@ -124,12 +124,12 @@
 </template>
 
 <script>
-import { dispatchGetFeature, dispatchUpdateGuest } from "../store/live/actions";
+import {
+  dispatchUpdateGuest,
+  dispatchDeleteGuest
+} from "../store/live/actions";
 import { readFeature, readGuest } from "../store/live/getters";
-// import { dispatchDeleteGuest } from "@/store/live";
-import { dispatchDeleteGuest } from "../store/live/actions";
 import Sortable from "sortablejs";
-// import { mapGetters } from "vuex";
 
 export default {
   props: {
@@ -210,7 +210,10 @@ export default {
       }
     },
     async handleSubmit() {
-      await dispatchUpdateGuest(this.$store, this.editedItem);
+      await dispatchUpdateGuest(this.$store, {
+        guestId: this.editedItem.id,
+        guest: this.editedItem
+      });
       this.dialog = this.currentGuest
         ? Boolean(this.currentGuest.name == this.editedItem.name)
         : false;

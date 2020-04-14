@@ -27,3 +27,5 @@ class Guest(TimestampMixin, CustomTortoiseBase):
             "modified_at",
             "feature",
         )
+        allow_cycles = True
+        max_recursion = 1

@@ -6,7 +6,7 @@ from tests._utils.guests import create_random_guest, create_random_guest_name
 
 @pytest.mark.asyncio
 async def test_http_endpoint_create_current_guest(app):
-    path = "/api/features/{feature_id}/guests/current"
+    path = "/api/guests/current"
     async with TestClient(app, use_cookies=True) as client:
         assert not bool(client.cookie_jar.get("session"))
         feature = await create_random_feature()
@@ -35,13 +35,16 @@ async def test_http_endpoint_get_current_guest(app):
     async with TestClient(app) as client:
         feature_id = (await create_random_feature()).id
         response = await client.post(
-            "/api/features/{feature_id}/guest".format(feature_id=feature_id),
+            path.format(feature_id=feature_id),
             json={"name": create_random_guest_name(), "feature_id": str(feature_id)},
         )
         created_guest = response.json()
         response = await client.get(path)
         gotten_guest = response.json()
         assert gotten_guest == created_guest
+        assert gotten_guest["id"] == created_guest["id"]
+        assert gotten_guest["name"] == created_guest["name"]
+        assert gotten_guest["feature_id"] == created_guest["feature_id"]
 
 
 @pytest.mark.asyncio

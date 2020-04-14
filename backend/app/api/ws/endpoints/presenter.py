@@ -27,8 +27,11 @@ async def on_connect(websocket: WebSocket, background_tasks: BackgroundTasks) ->
     await websocket.accept()
 
     feature_out = await FeatureOut.from_tortoise_orm(feature)
-    data = {"action": "receiveFeature", "feature": jsonable_encoder(feature_out)}
-    await websocket.send_json(json.dumps(data))
+    data = {
+        "action": "receiveFeature",
+        "feature": jsonable_encoder(feature_out),
+    }
+    await websocket.send_text(json.dumps(data))
 
     await run_loops(
         websocket=websocket,

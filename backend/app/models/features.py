@@ -30,3 +30,5 @@ class Feature(TimestampMixin, CustomTortoiseBase):
 
     class PydanticMeta:
         exclude = ("created_at", "modified_at")
+        allow_cycles = True
+        max_recursion = 1

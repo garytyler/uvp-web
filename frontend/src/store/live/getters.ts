@@ -8,7 +8,7 @@ export const getters = {
   isFeaturePresenterOnline: (state: LiveState) =>
     state.feature &&
     state.feature.presenters &&
-    state.feature.presenters.length,
+    state.feature.presenters.length > 0,
   isCurrentGuestInteractingGuest: (state: LiveState) =>
     state.guest &&
     state.feature &&

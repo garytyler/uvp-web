@@ -1,6 +1,6 @@
 import uuid
 
-from app.api.dependencies.publish import publish_feature_by_id
+from app.api.dependencies.publish import publish_feature
 from app.crud.guests import crud_guests
 from app.models.guests import Guest
 from app.schemas.guests import GuestCreate, GuestOut, GuestUpdate
@@ -19,7 +19,7 @@ async def post_current_guest(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Guest already exists",
         )
     guest = await crud_guests.create(obj_in=guest_in)
-    background_tasks.add_task(publish_feature_by_id, id=guest.feature_id)
+    background_tasks.add_task(publish_feature, id=guest.feature_id)
     request.session["guest_id"] = str(guest.id)
     return guest
 
@@ -34,7 +34,7 @@ async def update_current_guest(
     count_updated = await crud_guests.update(id=guest_id, obj_in=guest_in)
     if not count_updated:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-    background_tasks.add_task(publish_feature_by_id, id=guest_in.feature_id)
+    background_tasks.add_task(publish_feature, id=guest_in.feature_id)
     return await crud_guests.get(id=guest_id)
 
 
@@ -46,7 +46,6 @@ async def get_current_guest(request: Request):
     guest = await crud_guests.get(id=guest_id)
     if not guest:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    # print(guest)
     await guest.fetch_related("feature")
     return guest
 
@@ -72,5 +71,5 @@ async def delete_guest(
     deleted_count = await guest.delete()
     if str(guest_id) == request.session.get("guest_id"):
         del request.session["guest_id"]
-    background_tasks.add_task(publish_feature_by_id, id=feature_id)
+    background_tasks.add_task(publish_feature, id=feature_id)
     return deleted_count

@@ -24,5 +24,5 @@ class Presenter(TimestampMixin, CustomTortoiseBase):
         exclude = (
             "created_at",
             "modified_at",
-            # "feature",
+            "feature",
         )

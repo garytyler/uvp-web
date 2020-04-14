@@ -16,7 +16,7 @@ async def publish_feature_by_obj(obj: Feature) -> None:
     await broadcast.publish(channel=str(obj.guest_channel), message=json.dumps(data))
 
 
-async def publish_feature_by_id(id: uuid.UUID) -> None:
+async def publish_feature(id: uuid.UUID) -> None:
     feature_obj = await crud_features.get(id=id)
     if not feature_obj:
         print("Feature not found")  # TODO: Raise 404

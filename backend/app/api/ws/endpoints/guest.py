@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from app.api.dependencies.publish import publish_feature_by_obj
+from app.api.dependencies.publish import publish_feature
 from app.crud.features import crud_features
 from app.services.broadcasting import broadcast
 from fastapi import APIRouter, WebSocket, status
@@ -16,16 +16,14 @@ async def on_connect(websocket: WebSocket) -> None:
     feature = await crud_features.get_by_slug(slug=feature_slug)
     if not feature:
         return await websocket.close(code=status.HTTP_404_NOT_FOUND)
-
     await websocket.accept()
+    feature_id = feature.id
+    await publish_feature(id=feature_id)
 
-    await publish_feature_by_obj(obj=feature)
+    guest_channel = str(feature.guest_channel)
 
-    await run_loops(websocket=websocket, guest_channel=str(feature.guest_channel))
-    await disconnect(websocket)
+    await run_loops(websocket=websocket, guest_channel=guest_channel)
 
-
-async def disconnect(websocket):
     await websocket.close()
 
 

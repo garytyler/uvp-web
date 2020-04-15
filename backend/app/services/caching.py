@@ -1,5 +1,5 @@
 import aioredis
-from app.core import settings
+from app.core.config import settings
 
 
 class Redis:

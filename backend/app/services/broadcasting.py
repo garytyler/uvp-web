@@ -1,4 +1,4 @@
-from app.core import settings
+from app.core.config import settings
 from broadcaster import Broadcast
 
 broadcast = Broadcast(settings.REDIS_URL)

@@ -1,5 +1,6 @@
+import os
+
 import pytest
-from starlette.config import environ as app_environ
 
 from ._utils.ports import get_unused_tcp_port
 from ._utils.servers import UvicornTestServerProcess, UvicornTestServerThread
@@ -8,7 +9,7 @@ from ._utils.servers import UvicornTestServerProcess, UvicornTestServerThread
 def pytest_configure():
     """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_configure
     """
-    app_environ["DATABASE_URL"] = "sqlite://:memory:"
+    os.environ["DATABASE_URL"] = "sqlite://:memory:"
 
 
 def pytest_addoption(parser):

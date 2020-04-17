@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: Set[str]
 
     # Database
-    DATABASE_URL: AnyUrl
+    DATABASE_URL: str
 
     # Caching
     REDIS_URL: AnyUrl

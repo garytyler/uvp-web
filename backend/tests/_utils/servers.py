@@ -100,8 +100,18 @@ class BaseTestServer:
         else:
             return None
 
+    @property
+    def http_addr(self) -> typing.Optional[str]:
+        if self.is_alive():
+            scheme = "https://" if self.is_ssl else "http://"
+            host = self.params["host"]
+            port = self.params["port"]
+            return f"{scheme}{host}:{port}"
+        else:
+            return None
 
-class UvicornTestServerProcess(BaseTestServer):
+
+class PytestUvicornXServer(BaseTestServer):
     """Depends on pytest-xprocess."""
 
     default_params: dict = {

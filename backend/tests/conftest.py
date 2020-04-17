@@ -1,15 +1,18 @@
 import os
 
 import pytest
+from asgi_lifespan import LifespanManager
 
+from ._utils.clients import PytestAsgiXClient
 from ._utils.ports import get_unused_tcp_port
-from ._utils.servers import UvicornTestServerProcess, UvicornTestServerThread
+from ._utils.servers import PytestUvicornXServer, UvicornTestServerThread
 
 
 def pytest_configure():
     """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_configure
     """
-    os.environ["DATABASE_URL"] = "sqlite://:memory:"
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.environ["DATABASE_URL"] = f"sqlite://{BASE_DIR}/test_db.sqlite3"
 
 
 def pytest_addoption(parser):
@@ -58,18 +61,28 @@ def server_thread(server_thread_factory):
 
 
 @pytest.fixture
-def server_proc(xprocess, request):
-    yield UvicornTestServerProcess(
-        xprocess_instance=xprocess,
-        app="app.main:app",
-        host="127.0.0.1",
-        port=get_unused_tcp_port(),
-        env={
-            "PYTHONPATH": request.config.rootdir,
-            "SECRET_KEY": "not_secret_test_key",
-            "ALLOWED_HOSTS": "localhost,127.0.0.1",
-            "DATABASE_URL": "sqlite:///db.sqlite3",
-            "REDIS_URL": "redis://localhost:6379",
-            "PYTHONDONTWRITEBYTECODE": "1",
-        },
-    )
+@pytest.mark.asyncio
+async def server_proc(xprocess, request, app):
+    async with LifespanManager(app):
+        yield PytestUvicornXServer(
+            xprocess_instance=xprocess,
+            app="app.main:app",
+            host="127.0.0.1",
+            port=get_unused_tcp_port(),
+            env={
+                "PYTHONPATH": request.config.rootdir,
+                "SECRET_KEY": os.environ["SECRET_KEY"],
+                "ALLOWED_HOSTS": os.environ["ALLOWED_HOSTS"],
+                "DATABASE_URL": os.environ["DATABASE_URL"],
+                "REDIS_URL": os.environ["REDIS_URL"],
+                "BACKEND_CORS_ORIGINS": os.environ["BACKEND_CORS_ORIGINS"],
+                "PYTHONDONTWRITEBYTECODE": "1",
+            },
+        )
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def xclient(server_proc, app):
+    async with LifespanManager(app):
+        yield PytestAsgiXClient(server_process=server_proc)

@@ -81,9 +81,7 @@ export default Vue.extend({
       return readFeature(this.$store);
     },
     isFeaturePresenterOnline() {
-      const x = readIsFeaturePresenterOnline(this.$store);
-      console.log(x);
-      return x;
+      return readIsFeaturePresenterOnline(this.$store);
     }
   },
   async beforeCreate() {

@@ -17,15 +17,9 @@
         <v-card-text>
           <v-container>
             <v-row justify="center" class="text--secondary">
-              <v-icon color="darker-5" v-for="n in numFeatureGuests" :key="n">
-                person
-              </v-icon>
-              <p v-if="numFeatureGuests === 1">
-                There is 1 guest ahead of you.
-              </p>
-              <p v-else>
-                There are {{ numFeatureGuests }} guests ahead of you.
-              </p>
+              <v-icon color="darker-5" v-for="n in numFeatureGuests" :key="n">person</v-icon>
+              <p v-if="numFeatureGuests === 1">There is 1 guest ahead of you.</p>
+              <p v-else>There are {{ numFeatureGuests }} guests ahead of you.</p>
             </v-row>
           </v-container>
           <v-container>
@@ -38,8 +32,7 @@
                 placeholder="What's your name?"
                 v-model="editedItem.name"
                 @keyup.native.enter="handleSignUpSubmit()"
-              >
-              </v-text-field>
+              ></v-text-field>
             </v-flex>
           </v-container>
         </v-card-text>
@@ -47,9 +40,7 @@
         <v-card-actions>
           <v-container>
             <v-flex text-center>
-              <v-btn color="primary" large @click="handleSignUpSubmit()">
-                Join
-              </v-btn>
+              <v-btn color="primary" large @click="handleSignUpSubmit()">Join</v-btn>
             </v-flex>
           </v-container>
         </v-card-actions>

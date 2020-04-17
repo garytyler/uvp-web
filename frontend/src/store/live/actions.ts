@@ -86,7 +86,7 @@ export const actions = {
   }
 };
 
-const { dispatch } = getStoreAccessors<LiveState | any, State>("live");
+const { dispatch } = getStoreAccessors<LiveState, State>("live");
 
 export const dispatchGetFeature = dispatch(actions.actionGetFeature);
 export const dispatchGetCurrentGuest = dispatch(actions.actionGetCurrentGuest);

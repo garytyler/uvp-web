@@ -5,27 +5,29 @@ const fs = require("fs");
 module.exports = {
   assetsDir: "static",
   outputDir: "./dist/",
-  configureWebpack: config => {
+  configureWebpack: (config) => {
     preserveFunctionNamesWithTerser(config);
     config.devtool = "source-map";
+    const useSsl = ["SSL_KEY_FILE", "SSL_CERT_FILE"].every(
+      (v) => process.env[v] !== "null"
+    );
     config.devServer = {
-      disableHostCheck: true,
-      // https: {
-      //   key: fs.readFileSync(process.env.SSL_KEYFILE),
-      //   cert: fs.readFileSync(process.env.SSL_CERTFILE)
-      // },
-      public: `${process.env.PUBLIC_URL_BASENAME}/`,
+      public: process.env.PUBLIC_HOSTNAME,
       proxy: {
         "/api/*": {
-          target: `https://${process.env.BACKEND_URL_BASENAME}/`,
-          changeOrigin: true
+          target: `${useSsl ? "https" : "http"}://${process.env.API_HOSTNAME}`,
         },
         "/ws/*": {
-          target: `wss://${process.env.BACKEND_URL_BASENAME}/`,
-          changeOrigin: true,
-          ws: true
-        }
-      }
+          target: `${useSsl ? "wss" : "ws"}://${process.env.API_HOSTNAME}/`,
+          ws: true,
+        },
+      },
     };
-  }
+    if (useSsl) {
+      config.devServer.https = {
+        key: fs.readFileSync(process.env.SSL_KEY_FILE),
+        cert: fs.readFileSync(process.env.SSL_CERT_FILE),
+      };
+    }
+  },
 };

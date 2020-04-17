@@ -20,10 +20,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self, *, id: uuid.UUID, fetch_related: list = []
     ) -> Optional[ModelType]:
         obj = await self.model.filter(id=id).first()
-        # print(obj)
-        # await obj.fetch_related("feature")
-        # if fetch_related:
-        # await obj.fetch_related(*fetch_related)
+        if obj and fetch_related:
+            await obj.fetch_related(*fetch_related)
         return obj
 
     async def create(self, *, obj_in: CreateSchemaType) -> ModelType:

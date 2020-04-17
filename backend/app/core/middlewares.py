@@ -1,5 +1,4 @@
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -16,5 +15,3 @@ def add_middlewares(app):
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    if settings.HTTPS_REDIRECT is True:
-        app.add_middleware(HTTPSRedirectMiddleware)

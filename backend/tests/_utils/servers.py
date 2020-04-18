@@ -1,129 +1,44 @@
 from __future__ import annotations
 
+import contextlib
 import inspect
+import json
 import logging
+import os
+import socket
 import sys
+import tempfile
 import threading
 import time
-import typing
+from typing import Any, Dict, Optional, Sequence
 
 import uvicorn
-import xprocess
+from xprocess import ProcessStarter, XProcess
 
 log = logging.getLogger(__name__)
 
 
-class BaseTestServer:
-    default_params: dict = {
-        "loop": "asyncio",
-        "host": "127.0.0.1",
-        "lifespan": "on",
-        # TODO: Give an appropriate default port
-    }
-
-    def __init__(self, *args, **kwargs) -> None:
-        self.params: dict = self.default_params.copy()
-        self.update_params(*args, **kwargs)
-
-    def __call__(self, *args, **kwargs) -> BaseTestServer:
-        self.update_params(*args, **kwargs)
-        return self
-
-    def __enter__(self) -> BaseTestServer:
-        self.start()
-        return self
-
-    def __exit__(self, *args, **kwargs) -> None:
-        self.stop()
-
-    def update_params(self, *args, **kwargs) -> None:
-        config_param_keys = tuple(inspect.signature(uvicorn.Config).parameters.keys())
-        if args:
-            for index, value in enumerate(args):
-                key = config_param_keys[index]
-                self.update_config_param(key, value)
-        for key, value in kwargs.items():
-            if key in config_param_keys:
-                self.update_config_param(key, value)
-            else:
-                raise TypeError(
-                    f"{self.__class__} got an unexpected keyword argument '{key}'.",
-                    f"{self.__class__} accepts the same kwargs",
-                    "as {uvicorn.Config.__class__}.",
-                )
-
-    def update_config_param(self, key, value) -> None:
-        if key == "lifespan":
-            value = "off" if value is False else "on" if value is True else value
-        self.params[key] = value
-
-    def start(self) -> None:
-        raise NotImplementedError
-
-    def stop(self) -> None:
-        raise NotImplementedError
-
-    def is_alive(self) -> bool:
-        raise NotImplementedError
-
-    @property
-    def host(self) -> str:
-        return self.params["host"]
-
-    @property
-    def port(self) -> int:
-        return self.params["port"]
-
-    @property
-    def is_ssl(self) -> bool:
-        keyfile = self.params.get("ssl_keyfile")
-        certfile = self.params.get("ssl_certfile")
-        return bool(keyfile or certfile)
-
-    @property
-    def addr(self) -> typing.Optional[str]:
-        if self.is_alive():
-            scheme = "https://" if self.is_ssl else "http://"
-            host = self.params["host"]
-            port = self.params["port"]
-            return f"{scheme}{host}:{port}"
-        else:
-            return None
-
-    @property
-    def ws_addr(self) -> typing.Optional[str]:
-        if self.is_alive():
-            scheme = "wss://" if self.is_ssl else "ws://"
-            host = self.params["host"]
-            port = self.params["port"]
-            return f"{scheme}{host}:{port}"
-        else:
-            return None
-
-    @property
-    def http_addr(self) -> typing.Optional[str]:
-        if self.is_alive():
-            scheme = "https://" if self.is_ssl else "http://"
-            host = self.params["host"]
-            port = self.params["port"]
-            return f"{scheme}{host}:{port}"
-        else:
-            return None
+def get_unused_tcp_port():
+    """Return an unused TCP port."""
+    with contextlib.closing(socket.socket()) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
 
 
-class PytestUvicornXServer(BaseTestServer):
-    """Depends on pytest-xprocess."""
-
-    default_params: dict = {
-        "loop": "asyncio",
-        "host": "127.0.0.1",
-        "lifespan": "on",
-    }
-
-    def __init__(self, xprocess_instance, app: str, env: dict, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.xprocess = xprocess_instance
-        self.app = app
+class PytestXProcessWrapper:
+    def __init__(
+        self,
+        *,
+        xprocess: XProcess,
+        pattern: str,
+        args: Sequence[str],
+        env: dict,
+        name="test-server-process",
+    ):
+        self.xprocess = xprocess
+        self.name = name
+        self.pattern = pattern
+        self.args = args
         self.env = env
 
     def start(self) -> None:
@@ -134,24 +49,13 @@ class PytestUvicornXServer(BaseTestServer):
             )
         else:
 
-            class Starter(xprocess.ProcessStarter):
-                pattern = "Uvicorn running on *"
-                args = [
-                    sys.executable,
-                    "-m",
-                    "uvicorn",
-                    f"--host={self.params['host']}",
-                    f"--port={self.params['port']}",
-                    # Because an output pattern is used by pytest-xprocess to determine
-                    # ready status, uvicorn log level must be >'info', so either 'info',
-                    # 'debug', or 'trace'.
-                    "--log-level=info",
-                    self.app,
-                ]
+            class Starter(ProcessStarter):
+                pattern = self.pattern
+                args = self.args
                 env = self.env
 
-            self.xprocess.ensure("uvicorn-test-server-process", Starter)
-            self.xprocess_info = self.xprocess.getinfo("uvicorn-test-server-process")
+            self.xprocess.ensure(self.name, Starter)
+            self.xprocess_info = self.xprocess.getinfo(self.name)
         if not self.is_alive():
             time.sleep(0.1)
 
@@ -167,7 +71,182 @@ class PytestUvicornXServer(BaseTestServer):
             return False
 
 
-class UvicornTestServerThread(BaseTestServer):
+class BaseUvicornTestServerFacade:
+    default_values: dict = {
+        "loop": "asyncio",
+        "host": "127.0.0.1",
+        "lifespan": "on",
+        # TODO: Give an appropriate default port
+    }
+
+    def __init__(self, **kwargs) -> None:
+        self.kwargs: dict = self.default_values
+        self._update_kwargs(**kwargs)
+
+    def __call__(self, **kwargs) -> BaseUvicornTestServerFacade:
+        self._update_kwargs(**kwargs)
+        return self
+
+    def __enter__(self) -> BaseUvicornTestServerFacade:
+        self.start()
+        return self
+
+    def __exit__(self, *args) -> None:
+        self.stop()
+
+    def _update_kwargs(self, **kwargs) -> None:
+        config_param_keys = tuple(inspect.signature(uvicorn.Config).parameters.keys())
+        for key, value in kwargs.items():
+            if key in config_param_keys:
+                self._update_config_param(key, value)
+            else:
+                raise TypeError(
+                    f"{self.__class__} got an unexpected keyword argument '{key}'.",
+                    f"{self.__class__} accepts the same kwargs",
+                    "as {uvicorn.Config.__class__}.",
+                )
+
+    def _update_config_param(self, key, value) -> None:
+        if key == "lifespan":
+            value = "off" if value is False else "on" if value is True else value
+        self.kwargs[key] = value
+
+    def start(self) -> None:
+        raise NotImplementedError
+
+    def stop(self) -> None:
+        raise NotImplementedError
+
+    def is_alive(self) -> bool:
+        raise NotImplementedError
+
+    @property
+    def host(self) -> str:
+        return self.kwargs["host"]
+
+    @property
+    def port(self) -> int:
+        return self.kwargs["port"]
+
+    @property
+    def is_ssl(self) -> bool:
+        keyfile = self.kwargs.get("ssl_keyfile")
+        certfile = self.kwargs.get("ssl_certfile")
+        return bool(keyfile or certfile)
+
+    @property
+    def ws_base_url(self) -> Optional[str]:
+        if self.is_alive():
+            scheme = "wss://" if self.is_ssl else "ws://"
+            host = self.kwargs["host"]
+            port = self.kwargs["port"]
+            return f"{scheme}{host}:{port}"
+        else:
+            return None
+
+    @property
+    def http_base_url(self) -> Optional[str]:
+        if self.is_alive():
+            scheme = "https://" if self.is_ssl else "http://"
+            host = self.kwargs["host"]
+            port = self.kwargs["port"]
+            return f"{scheme}{host}:{port}"
+        else:
+            return None
+
+
+class PytestUvicornXServer(BaseUvicornTestServerFacade):
+    """'appstr' must be in format '<module>:<attribute>'"""
+
+    pattern = "Uvicorn running on *"
+    run_script = """
+import asyncio
+import json
+import sys
+
+import uvicorn
+
+
+def main():
+    params = json.loads(sys.argv[1])
+    appstr = params["appstr"]
+    kwargs = params["kwargs"]
+    app = uvicorn.importer.import_from_string(appstr)
+    config = uvicorn.Config(app, **kwargs)
+    server = uvicorn.Server(config)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(server.serve())
+
+
+if __name__ == "__main__":
+    main()
+"""
+
+    def __init__(
+        self,
+        *,
+        pytestconfig,
+        xprocess: XProcess,
+        appstr: str,
+        name: str = "test-server-process",
+        env: Dict[str, Any] = {},
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.xprocess = xprocess
+        self.name = name
+        self.appstr = appstr
+        self.env = env
+        self.project_rootdir = os.path.abspath(pytestconfig.rootdir)
+        self.script_path = tempfile.mkstemp()[1]
+        self.server_process = PytestXProcessWrapper(
+            xprocess=self.xprocess,
+            name=self.name,
+            pattern=self.pattern,
+            args=self._get_process_args(),
+            env=self._get_process_env(),
+        )
+
+    def _get_process_env(self) -> dict:
+        pypath = set(sys.path)
+        pypath.union({self.env.setdefault("PYTHONPATH", "")})
+        pypath.union({os.path.dirname(self.script_path)})
+        self.env["PYTHONPATH"] = ":".join(pypath)
+        return self.env
+
+    def _get_process_args(self) -> Sequence[str]:
+        port = get_unused_tcp_port()
+        self.kwargs.setdefault("port", port)
+        script_params = {
+            "appstr": self.appstr,
+            "rootdir": self.project_rootdir,
+            "kwargs": self.kwargs,
+        }
+        return [
+            sys.executable,
+            self.script_path,
+            json.dumps(script_params),
+        ]
+
+    def start(self) -> None:
+        if not self.server_process.is_alive():
+            with open(self.script_path, "w") as f:
+                f.write(self.run_script)
+        self.server_process.start()
+
+    def stop(self) -> None:
+        self.server_process.stop()
+        if os.path.exists(self.script_path):
+            os.remove(self.script_path)
+
+    def is_alive(self) -> bool:
+        return self.server_process.is_alive()
+
+    def __exit__(self, *args) -> None:
+        self.stop()
+
+
+class UvicornTestServerThread(BaseUvicornTestServerFacade):
     """Manages a background uvicorn application server for that runs in a parallel
     thread for i/o testing.
 
@@ -176,7 +255,7 @@ class UvicornTestServerThread(BaseTestServer):
         - Can run outside of pytest, becuase it doesn't depend on pytest-xprocess
         - The ability to run multiple servers at a time.
 
-    Other limitations of the :
+    The limitations are:
         - Cannot run lifetime events.
         - Requires setting 'limit_max_requests' to terminate the thread.
 
@@ -184,15 +263,15 @@ class UvicornTestServerThread(BaseTestServer):
     https://github.com/encode/uvicorn/blob/9d9f8820a8155e36dcb5e4d4023f470e51aa4e03/uvicorn/main.py#L369
     """
 
-    def __init__(self, app, *args, **kwargs) -> None:
+    def __init__(self, app, loop, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.params["app"] = app
-        self.params["lifespan"] = False
+        self.kwargs["app"] = app
+        self.kwargs["lifespan"] = False
 
     def start(self) -> None:
         thread = getattr(self, "thread", None)
         if not thread:
-            if "limit_max_requests" not in self.params.keys():
+            if "limit_max_requests" not in self.kwargs.keys():
                 raise RuntimeError(
                     f"{self.__class__.__name__} requires a value for",
                     "parameter 'limit_max_requests' to determine when to",
@@ -205,8 +284,7 @@ class UvicornTestServerThread(BaseTestServer):
                 pass
 
             uvicorn.Server.install_signal_handlers = install_signal_handlers_monkeypatch
-            self.uvicorn = uvicorn.Server(config=uvicorn.Config(**self.params))
-            # self.uvicorn = _CustomUvicornServer(config=uvicorn.Config(**self.params))
+            self.uvicorn = uvicorn.Server(config=uvicorn.Config(**self.kwargs))
             self.thread = threading.Thread(target=self.uvicorn.run, daemon=True)
             self.thread.start()
             while not self.uvicorn.started:

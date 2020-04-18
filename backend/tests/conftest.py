@@ -1,11 +1,18 @@
 import os
+import sys
 
+import async_asgi_testclient
 import pytest
 from asgi_lifespan import LifespanManager
+from xprocess import ProcessStarter
 
 from ._utils.clients import PytestAsgiXClient
 from ._utils.ports import get_unused_tcp_port
-from ._utils.servers import PytestUvicornXServer, UvicornTestServerThread
+from ._utils.servers import (
+    PytestUvicornXServer,
+    PytestXProcessWrapper,
+    UvicornTestServerThread,
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
@@ -43,12 +50,15 @@ def app():
 
 
 @pytest.fixture
-def server_thread_factory(app):
+@pytest.mark.asyncio
+async def server_thread_factory(app, event_loop):
     server_threads = []
 
     def _server_thread_factory(*args, **kwargs):
         nonlocal server_threads
-        server_thread = UvicornTestServerThread(app=app, port=get_unused_tcp_port())
+        server_thread = UvicornTestServerThread(
+            app=app, port=get_unused_tcp_port(), loop=event_loop
+        )
         server_thread(*args, **kwargs)
         server_threads.append(server_thread)
         return server_thread
@@ -68,12 +78,20 @@ def server_thread(server_thread_factory):
 @pytest.mark.asyncio
 async def server_proc(xprocess, request, app):
     async with LifespanManager(app):
-        yield PytestUvicornXServer(
-            xprocess_instance=xprocess,
-            app="app.main:app",
-            host="127.0.0.1",
-            port=get_unused_tcp_port(),
-            env={
+        host = "0.0.0.0"
+        port = get_unused_tcp_port()
+
+        class ServerProcessStarter(ProcessStarter):
+            pattern = "Uvicorn running on *"
+            args = [
+                sys.executable,
+                "-m",
+                "run",
+                host,
+                port,
+                # self.app,
+            ]
+            env = {
                 "PYTHONPATH": request.config.rootdir,
                 "SECRET_KEY": os.environ["SECRET_KEY"],
                 "ALLOWED_HOSTS": os.environ["ALLOWED_HOSTS"],
@@ -81,12 +99,63 @@ async def server_proc(xprocess, request, app):
                 "REDIS_URL": os.environ["REDIS_URL"],
                 "BACKEND_CORS_ORIGINS": os.environ["BACKEND_CORS_ORIGINS"],
                 "PYTHONDONTWRITEBYTECODE": "1",
-            },
+            }
+
+        return PytestXProcessWrapper(
+            xprocess_instance=xprocess, starter_class=ServerProcessStarter
         )
+
+
+# @pytest.fixture
+# @pytest.mark.asyncio
+# async def xclient(server_proc, app):
+#     async with LifespanManager(app):
+#         yield PytestAsgiXClient(server_process=server_proc)
 
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def xclient(server_proc, app):
+async def testclient(app):
+    def _testclient(*args, **kwargs):
+        return async_asgi_testclient.TestClient(app, *args, **kwargs)
+
+    yield _testclient
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def asgixserver(xprocess, pytestconfig):
+    def _asgixserver(appstr: str, *, name: str, env: dict = {}, **kwargs):
+        return PytestUvicornXServer(
+            pytestconfig=pytestconfig,
+            xprocess=xprocess,
+            appstr="app.main:app",
+            env=env,
+            **kwargs,
+        )
+
+    yield _asgixserver
+
+
+@pytest.fixture
+def xserver(xprocess, pytestconfig):
+    return PytestUvicornXServer(
+        pytestconfig=pytestconfig,
+        xprocess=xprocess,
+        appstr="app.main:app",
+        env={
+            "SECRET_KEY": os.environ["SECRET_KEY"],
+            "ALLOWED_HOSTS": os.environ["ALLOWED_HOSTS"],
+            "DATABASE_URL": os.environ["DATABASE_URL"],
+            "REDIS_URL": os.environ["REDIS_URL"],
+            "BACKEND_CORS_ORIGINS": os.environ["BACKEND_CORS_ORIGINS"],
+            "PYTHONDONTWRITEBYTECODE": "1",
+        },
+    )
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def xclient(xserver, app):
     async with LifespanManager(app):
-        yield PytestAsgiXClient(server_process=server_proc)
+        yield PytestAsgiXClient(xserver=xserver)

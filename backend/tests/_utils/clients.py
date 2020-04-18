@@ -7,13 +7,13 @@ from .servers import PytestUvicornXServer
 
 
 class PytestAsgiXClient(httpx.AsyncClient):
-    def __init__(self, server_process: PytestUvicornXServer):
-        self.server_process = server_process
+    def __init__(self, xserver: PytestUvicornXServer):
+        self.xserver = xserver
         self.__instantiated = False
 
     def __call__(self, *args, **kwargs) -> PytestAsgiXClient:
-        self.server_process.start()
-        base_url = self.server_process.http_addr
+        self.xserver.start()
+        base_url = self.xserver.http_base_url
         super().__init__(base_url=base_url, *args, **kwargs)
         self.__instantiated = True
         return self
@@ -26,17 +26,17 @@ class PytestAsgiXClient(httpx.AsyncClient):
 
     async def __aexit__(self, *args) -> None:
         await super().__aexit__()
-        self.server_process.stop()
+        self.xserver.stop()
 
     def __exit__(self, *args):
-        self.server_process.stop()
+        self.xserver.stop()
 
     def websocket_connect(self, uri: str, *args, **kwargs):
-        if not self.server_process.ws_addr:
+        if not self.xserver.ws_base_url:
             raise RuntimeError(
                 f"{self.__class__.__name__} must be instantiated or "
                 "wrapped in an asynchronous context manager before"
                 "calling 'connect_websocket"
             )
-        address = self.server_process.ws_addr + uri
+        address = self.xserver.ws_base_url + uri
         return websockets.connect(address)

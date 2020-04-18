@@ -7,17 +7,21 @@ from ._utils.clients import PytestAsgiXClient
 from ._utils.ports import get_unused_tcp_port
 from ._utils.servers import PytestUvicornXServer, UvicornTestServerThread
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
+TEST_DB_URL = f"sqlite://{TEST_DB_FILE_PATH}"
+
 
 def pytest_configure():
-    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_configure
-    """
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    os.environ["DATABASE_URL"] = f"sqlite://{BASE_DIR}/test_db.sqlite3"
+    os.environ["DATABASE_URL"] = TEST_DB_URL
+
+
+def pytest_runtest_teardown(item, nextitem):
+    if os.path.exists(TEST_DB_FILE_PATH):
+        os.remove(TEST_DB_FILE_PATH)
 
 
 def pytest_addoption(parser):
-    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_addoption
-    """
     # Set host/port for multiprocessing test server with command line options
     parser.addoption("--server-port", action="store", type=int)
     parser.addoption("--server-host", action="store", type=int)

@@ -13,9 +13,7 @@
               isSending ? stopSendingDeviceMotion() : startSendingDeviceMotion()
             "
           >
-            <span class="headline">
-              {{ isSending ? "Stop" : "Start" }}
-            </span>
+            <span class="headline">{{ isSending ? "Stop" : "Start" }}</span>
           </v-btn>
         </v-row>
       </v-col>
@@ -29,21 +27,19 @@
             align="stretch"
             color="accent darken-4"
             @click="stopSendingDeviceMotion()"
-          >
-            Exit
-          </v-btn>
+          >Exit</v-btn>
         </v-row>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script>
-import { readIsFeaturePresenterOnline } from "../store/live/getters";
+<script lang="ts">
 import Vue from "vue";
+import { readIsFeaturePresenterOnline } from "../store/live/getters";
 import device from "@/services/device.js";
 
-export default {
+export default Vue.extend({
   data() {
     return {
       isSending: false,
@@ -68,7 +64,7 @@ export default {
       alert(message);
     }
   }
-};
+});
 </script>
 
 <style scoped>

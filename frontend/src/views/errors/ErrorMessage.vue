@@ -2,7 +2,7 @@
   <div>
     <v-container fluid>
       <div id="error-message" class="error--text">
-        <h1>{{ heading }}</h1>
+        <h1>{{ code }}</h1>
         <h4>{{ message }}</h4>
         <br />
         <p>{{ url }}</p>
@@ -11,14 +11,13 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "base-error-message",
+<script lang="ts">
+import Vue from "vue";
+export default Vue.extend({
   props: {
-    heading: {
-      type: String,
-      required: false,
-      default: "Error"
+    code: {
+      type: Number,
+      required: true
     },
     message: {
       type: String,
@@ -30,5 +29,5 @@ export default {
       default: ""
     }
   }
-};
+});
 </script>

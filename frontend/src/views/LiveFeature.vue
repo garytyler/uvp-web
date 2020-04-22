@@ -1,22 +1,9 @@
 <template>
   <div>
-    <!-- <v-system-bar v-show="systemBarVisible" app dark>
-      {{ featureTitle }}
-      <v-spacer></v-spacer>
-      <v-container>
-        <div v-if="isFeaturePresenterOnline">
-          <v-icon dense color="success" text>lens</v-icon>
-        </div>
-        <div v-else>
-          <v-icon dense color="error" text>error_outline</v-icon>
-        </div>
-      </v-container>
-    </v-system-bar> -->
-
     <v-sheet>
       <div class="text-center">
         <div class="pt-3">
-          <p class="display-1 teal--text">{{ currentFeature.title }}</p>
+          <p class="display-1 teal--text">{{ currentFeatureTitle }}</p>
         </div>
         <v-row justify="center">
           <div v-if="isFeaturePresenterOnline">
@@ -34,7 +21,7 @@
     </v-sheet>
 
     <v-content>
-      <router-view> </router-view>
+      <router-view></router-view>
     </v-content>
   </div>
 </template>
@@ -54,29 +41,12 @@ import {
   readIsCurrentGuestInteractingGuest
 } from "../store/live/getters";
 
-const beforeRouteEnterRoutine = async (to, from, next) => {
-  await dispatchGetFeature(store, { slugOrId: to.params.featureSlug });
-  await dispatchGetCurrentGuest(store);
-
-  const feature = readFeature(store);
-  const guest = readGuest(store);
-
-  if (!feature) {
-    console.error("NO FEATURE!"); // TODO
-  } else {
-    const sessionPhase =
-      !guest || !readIsCurrentGuestInteractingGuest(store)
-        ? "lobby"
-        : "interact";
-    next(() => {
-      const targetPath = `/live/${to.params.featureSlug}/${sessionPhase}`;
-      if (targetPath !== to.path) next(targetPath);
-    });
-  }
-};
-
 export default Vue.extend({
   computed: {
+    currentFeatureTitle() {
+      const feature = readFeature(this.$store);
+      return feature ? feature.title : "";
+    },
     currentFeature() {
       return readFeature(this.$store);
     },
@@ -102,7 +72,25 @@ export default Vue.extend({
     }
   },
   async beforeRouteEnter(to, from, next) {
-    await beforeRouteEnterRoutine(to, from, next);
+    await dispatchGetFeature(store, { slugOrId: to.params.featureSlug });
+    await dispatchGetCurrentGuest(store);
+
+    const feature = readFeature(store);
+    const guest = readGuest(store);
+
+    next(() => {
+      let targetChild = {};
+      if (!feature) {
+        targetChild = {
+          path: `/live/${to.params.featureSlug}/not-found`
+        };
+      } else if (guest && readIsCurrentGuestInteractingGuest(store)) {
+        targetChild = { path: `/live/${to.params.featureSlug}/interact` };
+      } else {
+        targetChild = { path: `/live/${to.params.featureSlug}/lobby` };
+      }
+      if (targetChild["path"] !== to.path) next(targetChild);
+    });
   }
 });
 </script>

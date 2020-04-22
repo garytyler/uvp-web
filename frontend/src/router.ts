@@ -9,71 +9,50 @@ const router = new VueRouter({
   routes: [
     {
       path: "/",
-      component: () =>
-        import(/* webpackChunkName: "start" */ "./views/Start.vue"),
+      component: () => import("./views/Start.vue"),
       children: [
         {
-          path: "/account",
-          name: "user",
-          // component: AccountApp,
-          component: () =>
-            import(
-              /* webpackChunkName: "account-app" */ "./views/AccountApp.vue"
-            ),
-
-          props: true
+          path: "home",
+          component: () => import("./views/Home.vue"),
+          props: true,
         },
         {
-          path: "/live/:featureSlug/",
-          component: () =>
-            import(
-              /* webpackChunkName: "live-feature" */ "./views/LiveFeature.vue"
-            ),
-          props: true,
+          path: "account",
+          component: () => import("./views/Account.vue"),
+        },
+        {
+          path: "live",
+          component: () => import("./views/Live.vue"),
           children: [
             {
-              path: "lobby",
-              component: () =>
-                import(
-                  /* webpackChunkName: "live-feature-session-waiting" */ "./views/LiveFeatureLobby.vue"
-                )
+              path: ":featureSlug",
+              component: () => import("./views/LiveFeature.vue"),
+              children: [
+                {
+                  path: "lobby",
+                  component: () => import("./views/LiveFeatureLobby.vue"),
+                },
+                {
+                  path: "interact",
+                  component: () => import("./views/LiveFeatureInteract.vue"),
+                },
+                {
+                  path: "not-found",
+                  props: { code: 404, message: "Feature not found." },
+                  component: () => import("./views/errors/ErrorMessage.vue"),
+                },
+              ],
             },
-            {
-              path: "interact",
-              component: () =>
-                import(
-                  /* webpackChunkName: "live-feature-session-interacting" */ "./views/LiveFeatureInteract.vue"
-                )
-            }
-          ]
+          ],
         },
-        {
-          path: "*",
-          name: "not-found",
-          component: () =>
-            import(
-              /* webpackChunkName: "live-feature-session-interacting" */ "./views/errors/Error404PageNotFound.vue"
-            )
-        },
-        {
-          path: "*",
-          name: "error-message",
-          component: () =>
-            import(
-              /* webpackChunkName: "live-feature-session-interacting" */ "./views/errors/Error404PageNotFound.vue"
-            )
-        }
-      ]
-    }
-  ]
+      ],
+    },
+    {
+      path: "/*",
+      // redirect: "/", // Consider for deployment
+      component: () => import("./views/errors/Error404PageNotFound.vue"),
+    },
+  ],
 });
-
-// router.onError(err => {
-//   router.push({
-//     name: "error-message",
-//     // component: ErrorMessage,
-//     params: { message: err.message, heading: "ERROR" }
-//   });
-// });
 
 export default router;

@@ -1,15 +1,14 @@
 <template>
-  <error-message
-    heading="404"
-    message="Page not found."
-    :url="url ? url : $route.fullPath"
-  />
+  <div>
+    <error-message :code="code" message="Page not found." :url="url ? url : $route.fullPath" />
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import ErrorMessage from "@/views/errors/ErrorMessage.vue";
 
-export default {
+export default Vue.extend({
   name: "Error404PageNotFound",
   components: { ErrorMessage },
   props: {
@@ -18,8 +17,13 @@ export default {
       required: false,
       default: null
     }
+  },
+  data() {
+    return {
+      code: 404
+    };
   }
-};
+});
 </script>
 
 <style scoped>

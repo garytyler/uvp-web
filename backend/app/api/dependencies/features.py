@@ -1,5 +1,5 @@
 from app.schemas.features import FeatureCreate
-from app.services.features import feature_with_slug_exists, generate_unique_feature_slug
+from app.utils.features import feature_with_slug_exists, generate_unique_feature_slug
 
 
 async def validate_feature_slug(feature_in: FeatureCreate) -> FeatureCreate:

@@ -1,24 +1,23 @@
-import json
 import uuid
+from typing import Optional
 
+from app.core.redis import redis
 from app.crud.features import crud_features
 from app.models.features import Feature
 from app.schemas.features import FeatureOut
-from app.services.broadcasting import broadcast
 from fastapi.encoders import jsonable_encoder
 
 
-async def publish_feature_by_obj(obj: Feature) -> None:
-    await obj.fetch_related("guests", "presenters")
-    feature_out = await FeatureOut.from_tortoise_orm(obj)
-    feature_out_json = jsonable_encoder(feature_out)
-    data = {"action": "receiveFeature", "feature": feature_out_json}
-    await broadcast.publish(channel=str(obj.guest_channel), message=json.dumps(data))
+async def publish_feature_by_obj(feature_obj: Feature) -> int:
+    await feature_obj.fetch_related("guests", "presenters")
+    feature_out = await FeatureOut.from_tortoise_orm(feature_obj)
+    data = {"action": "receiveFeature", "feature": jsonable_encoder(feature_out)}
+    return await redis.publish_json(feature_obj.slug, data)
 
 
-async def publish_feature(id: uuid.UUID) -> None:
+async def publish_feature(id: uuid.UUID) -> Optional[int]:
     feature_obj = await crud_features.get(id=id)
     if not feature_obj:
         print("Feature not found")  # TODO: Raise 404
-    else:
-        await publish_feature_by_obj(obj=feature_obj)
+        return None
+    return await publish_feature_by_obj(feature_obj=feature_obj)

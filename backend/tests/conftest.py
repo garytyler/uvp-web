@@ -4,15 +4,15 @@ import sys
 import async_asgi_testclient
 import pytest
 from asgi_lifespan import LifespanManager
-from xprocess import ProcessStarter
-
-from ._utils.clients import PytestAsgiXClient
-from ._utils.ports import get_unused_tcp_port
-from ._utils.servers import (
+from pytest_asgi_xclient.clients import PytestAsgiXClient
+from pytest_asgi_xclient.servers import (
     PytestUvicornXServer,
     PytestXProcessWrapper,
     UvicornTestServerThread,
 )
+from xprocess import ProcessStarter
+
+from ._utils.ports import get_unused_tcp_port
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")

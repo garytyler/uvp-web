@@ -1,6 +1,6 @@
 import pytest
 
-from ..strings import create_random_string
+from .strings import create_random_string
 
 
 @pytest.mark.parametrize(

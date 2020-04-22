@@ -3,46 +3,37 @@ import logging
 from typing import Any
 
 from app.api.dependencies.publish import publish_feature
+from app.core.redis import ChannelReader, redis
 from app.crud.features import crud_features
-from app.services.broadcasting import broadcast
+from app.utils.endpoints import APIWebSocketEndpoint
 from fastapi import APIRouter, WebSocket, status
-from starlette.endpoints import WebSocketEndpoint
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.websocket_route("/guest/{slug}")
-class WebsocketConsumer(WebSocketEndpoint):
-    async def on_connect(self, websocket: WebSocket) -> None:
+@router.websocket("/guest/{slug}")
+class GuestWebSocket(APIWebSocketEndpoint):
+    async def on_connect(self, ws: WebSocket) -> None:
         # TODO Pass both feature id and guest id in route path and handle adding
         # guest to feature guest list here, and use another endpoint for non-guest
         # visitors.
-
-        feature_slug = websocket.scope["path_params"].get("slug")
+        feature_slug = ws.scope["path_params"].get("slug")
         feature = await crud_features.get_by_slug(slug=feature_slug)
         if not feature:
-            return await websocket.close(code=status.HTTP_404_NOT_FOUND)
-        await websocket.accept()
-        feature_id = feature.id
-        await publish_feature(id=feature_id)
+            return await ws.close(code=status.HTTP_404_NOT_FOUND)
+        await ws.accept()
+        self.feature_ch = (await redis.subscribe(feature_slug))[0]
+        await publish_feature(id=feature.id)
+        self.worker_task = asyncio.create_task(self.forward_channel_to_client(ws))
 
-        self.guest_channel = str(feature.guest_channel)
+    async def forward_channel_to_client(self, ws):
+        async for msg in ChannelReader(self.feature_ch):
+            await ws.send_text(msg.decode())
 
-        self.guest_channel_subscriber_task = asyncio.create_task(
-            self.loop_send_guest_channel_to_client(websocket=websocket)
-        )
+    async def on_receive(self, ws: WebSocket, data: Any) -> None:
+        await redis.publish_text(self.feature_ch, data)
 
-    async def loop_send_guest_channel_to_client(self, websocket):
-        async with broadcast.subscribe(channel=self.guest_channel) as subscriber:
-            async for event in subscriber:
-                await asyncio.sleep(0.01)
-                await websocket.send_text(event.message)
-            await asyncio.sleep(0.01)
-
-    async def on_receive(self, websocket: WebSocket, data: Any) -> None:
-        await broadcast.publish(channel=self.guest_channel, message=data)
-
-    async def on_disconnect(self, websocket: WebSocket, close_code: int) -> None:
-        for task in getattr(self, "tasks", []):
-            task.cancel()
+    async def on_disconnect(self, ws: WebSocket, close_code: int) -> None:
+        self.worker_task.cancel()
+        await redis.unsubscribe(self.feature_ch)

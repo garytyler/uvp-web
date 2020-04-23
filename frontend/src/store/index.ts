@@ -1,12 +1,10 @@
 import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { socketModule } from "./socket";
-import { SocketState } from "./socket/state";
 import { liveModule } from "./live";
 import { State } from "./state";
 import createLogger from "vuex/dist/logger";
 import VueNativeSock from "vue-native-websocket";
-import { urlPathToWsUrl } from "../services/urls.js";
 
 const debug = process.env.NODE_ENV !== "production";
 
@@ -15,10 +13,10 @@ Vue.use(Vuex);
 const storeOptions: StoreOptions<State> = {
   modules: {
     live: liveModule,
-    socket: socketModule
+    socket: socketModule,
   },
   strict: debug,
-  plugins: debug ? [createLogger()] : []
+  plugins: debug ? [createLogger()] : [],
 };
 
 export const store = new Vuex.Store<State>(storeOptions);
@@ -30,8 +28,8 @@ if (module.hot) {
     store.hotUpdate({
       modules: {
         live: newLiveModule,
-        socket: newSocketModule
-      }
+        socket: newSocketModule,
+      },
     });
   });
 }
@@ -40,7 +38,7 @@ if (module.hot) {
 Vue.use(VueNativeSock, "ws://example.com", {
   connectManually: true,
   store: store,
-  format: "json"
+  format: "json",
 });
 
 export default store;

@@ -5,7 +5,7 @@ import { State } from "../state";
 import {
   commitSetFeature,
   commitSetGuest,
-  commitDeleteGuest
+  commitDeleteGuest,
 } from "./mutations";
 import { IGuestCreate, IGuestUpdate, IFeature } from "@/interfaces";
 
@@ -33,7 +33,8 @@ export const actions = {
         commitSetGuest(context, response.data);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      console.log("Couldn't get current guest");
     }
   },
   async actionCreateCurrentGuest(context: MainContext, payload: IGuestCreate) {
@@ -46,7 +47,7 @@ export const actions = {
           commitSetGuest(context, response.data);
         }
       } catch (error) {
-        console.error(error);
+        console.log(error);
       }
     }
   },
@@ -60,12 +61,12 @@ export const actions = {
         commitSetGuest(context, response.data);
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   },
   async actionDeleteGuest(context: MainContext, payload: { guestId: string }) {
     if (!context.state.feature) {
-      console.error("API ERROR"); // TODO
+      console.log("API ERROR"); // TODO
     } else {
       try {
         const response = await api.deleteGuest(
@@ -83,7 +84,7 @@ export const actions = {
   async actionReceiveFeature(context: MainContext, payload: IFeature) {
     const feature: IFeature = payload;
     await commitSetFeature(context, feature);
-  }
+  },
 };
 
 const { dispatch } = getStoreAccessors<LiveState, State>("live");

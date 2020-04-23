@@ -9,6 +9,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@ridi/object-case-converter": "^2.0.4",
     "axios-case-converter": "^0.5.0",
     "core-js": "^3.6.4",
     "material-design-icons-iconfont": "^5.0.1",

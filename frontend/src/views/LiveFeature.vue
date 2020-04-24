@@ -59,11 +59,13 @@ export default Vue.extend({
       () => readIsCurrentGuestInteractingGuest(store),
       () => {
         const basePath = `/live/${this.$route.params.featureSlug}`;
+        let targetPath;
         if (readIsCurrentGuestInteractingGuest(store)) {
-          this.$router.push(basePath + "/interact");
+          targetPath = basePath + "/interact";
         } else {
-          this.$router.push(basePath + "/lobby");
+          targetPath = basePath + "/lobby";
         }
+        this.$router.push(targetPath);
       }
     );
     if (!this.$store.state.socket.isConnected) {

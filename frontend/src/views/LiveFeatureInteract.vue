@@ -22,12 +22,7 @@
     <v-row justify="center" class="mt-12">
       <v-col cols="6">
         <v-row>
-          <v-btn
-            block
-            align="stretch"
-            color="accent darken-4"
-            @click="stopSendingDeviceMotion()"
-          >Exit</v-btn>
+          <v-btn block align="stretch" color="accent darken-4" @click="onExitButtonPressed()">Exit</v-btn>
         </v-row>
       </v-col>
     </v-row>
@@ -36,7 +31,9 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { readIsFeaturePresenterOnline } from "../store/live/getters";
+import { store } from "../store";
+import { readIsFeaturePresenterOnline, readGuest } from "../store/live/getters";
+import { dispatchDeleteGuest } from "../store/live/actions";
 import device from "@/services/device.js";
 
 export default Vue.extend({
@@ -53,7 +50,7 @@ export default Vue.extend({
   },
   methods: {
     startSendingDeviceMotion() {
-      device.motionSender.start(Vue.prototype.$socket, 30, true);
+      device.motionSender.start(Vue.prototype.$socket, 30);
       this.isSending = device.motionSender.isSending;
     },
     stopSendingDeviceMotion() {
@@ -62,6 +59,13 @@ export default Vue.extend({
     },
     handleDeviceError(message) {
       alert(message);
+    },
+    onExitButtonPressed() {
+      const guest = readGuest(store);
+      if (guest) {
+        dispatchDeleteGuest(store, { guestId: guest.id });
+      }
+      this.stopSendingDeviceMotion();
     }
   }
 });

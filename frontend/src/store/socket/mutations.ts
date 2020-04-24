@@ -24,7 +24,7 @@ export const mutations = {
   },
   SOCKET_RECONNECT_ERROR(state: SocketState) {
     state.reconnectError = true;
-  }
+  },
 };
 
 const { commit } = getStoreAccessors<SocketState | any, State>("socket");

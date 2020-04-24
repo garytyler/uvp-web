@@ -33,8 +33,7 @@ export const actions = {
         commitSetGuest(context, response.data);
       }
     } catch (error) {
-      // console.log(error);
-      console.log("Couldn't get current guest");
+      console.log(error);
     }
   },
   async actionCreateCurrentGuest(context: MainContext, payload: IGuestCreate) {

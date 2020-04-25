@@ -31,7 +31,7 @@ import Vue from "vue";
 import { store } from "../store";
 import { urlPathToWsUrl } from "../services/urls.js";
 import {
-  dispatchGetFeature,
+  dispatchGetCurrentFeature,
   dispatchGetCurrentGuest
 } from "../store/live/actions";
 import {
@@ -74,7 +74,7 @@ export default Vue.extend({
     }
   },
   async beforeRouteEnter(to, from, next) {
-    await dispatchGetFeature(store, { slugOrId: to.params.featureSlug });
+    await dispatchGetCurrentFeature(store, { slugOrId: to.params.featureSlug });
     await dispatchGetCurrentGuest(store);
 
     const feature = readFeature(store);

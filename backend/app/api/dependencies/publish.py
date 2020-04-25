@@ -11,7 +11,7 @@ from fastapi.encoders import jsonable_encoder
 async def publish_feature_by_obj(feature_obj: Feature) -> int:
     await feature_obj.fetch_related("guests", "presenters")
     feature_out = await FeatureOut.from_tortoise_orm(feature_obj)
-    data = {"action": "receiveFeature", "feature": jsonable_encoder(feature_out)}
+    data = {"action": "receiveCurrentFeature", "feature": jsonable_encoder(feature_out)}
     return await redis.publish_json(feature_obj.slug, data)
 
 

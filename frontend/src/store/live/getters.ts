@@ -3,24 +3,24 @@ import { getStoreAccessors } from "typesafe-vuex";
 import { State } from "../state";
 
 export const getters = {
-  feature: (state: LiveState) => state.feature,
-  guest: (state: LiveState) => state.guest,
+  currentFeature: (state: LiveState) => state.currentFeature,
+  currentGuest: (state: LiveState) => state.currentGuest,
   isFeaturePresenterOnline: (state: LiveState) =>
-    state.feature &&
-    state.feature.presenters &&
-    state.feature.presenters.length > 0,
+    state.currentFeature &&
+    state.currentFeature.presenters &&
+    state.currentFeature.presenters.length > 0,
   isCurrentGuestInteractingGuest: (state: LiveState) =>
-    state.guest &&
-    state.feature &&
-    state.feature.guests &&
-    state.feature.guests.length > 0 &&
-    state.feature.guests[0].id === state.guest.id
+    state.currentGuest &&
+    state.currentFeature &&
+    state.currentFeature.guests &&
+    state.currentFeature.guests.length > 0 &&
+    state.currentFeature.guests[0].id === state.currentGuest.id,
 };
 
 const { read } = getStoreAccessors<LiveState, State>("live");
 
-export const readFeature = read(getters.feature);
-export const readGuest = read(getters.guest);
+export const readFeature = read(getters.currentFeature);
+export const readGuest = read(getters.currentGuest);
 export const readIsFeaturePresenterOnline = read(
   getters.isFeaturePresenterOnline
 );

@@ -3,8 +3,8 @@ import { getStoreAccessors } from "typesafe-vuex";
 import { ActionContext } from "vuex";
 import { State } from "../state";
 import {
-  commitSetFeature,
-  commitSetGuest,
+  commitSetCurrentFeature,
+  commitSetCurrentGuest,
   commitDeleteGuest,
 } from "./mutations";
 import { IGuestCreate, IGuestUpdate, IFeature } from "@/interfaces";
@@ -14,13 +14,15 @@ import { LiveState } from "./state";
 type MainContext = ActionContext<LiveState, State>;
 
 export const actions = {
-  async actionGetFeature(context: MainContext, payload: { slugOrId: string }) {
+  async actionGetCurrentFeature(
+    context: MainContext,
+    payload: { slugOrId: string }
+  ) {
     try {
-      // const response = await api.getFeature(payload.slugOrId);
       const response = await api.getFeature(payload.slugOrId);
 
       if (response.data) {
-        commitSetFeature(context, response.data);
+        commitSetCurrentFeature(context, response.data);
       }
     } catch (error) {
       console.log(error);
@@ -30,46 +32,46 @@ export const actions = {
     try {
       const response = await api.getCurrentGuest();
       if (response.data) {
-        commitSetGuest(context, response.data);
+        commitSetCurrentGuest(context, response.data);
       }
     } catch (error) {
       console.log(error);
     }
   },
   async actionCreateCurrentGuest(context: MainContext, payload: IGuestCreate) {
-    if (!context.state.feature) {
+    if (!context.state.currentFeature) {
       console.error("API ERROR"); // TODO
     } else {
       try {
         const response = await api.createCurrentGuest(payload);
         if (response.data) {
-          commitSetGuest(context, response.data);
+          commitSetCurrentGuest(context, response.data);
         }
       } catch (error) {
         console.log(error);
       }
     }
   },
-  async actionUpdateGuest(
+  async actionUpdateCurrentGuest(
     context: MainContext,
     payload: { guestId: string; guest: IGuestUpdate }
   ) {
     try {
       const response = await api.updateGuest(payload.guestId, payload.guest);
       if (response.data) {
-        commitSetGuest(context, response.data);
+        commitSetCurrentGuest(context, response.data);
       }
     } catch (error) {
       console.log(error);
     }
   },
   async actionDeleteGuest(context: MainContext, payload: { guestId: string }) {
-    if (!context.state.feature) {
+    if (!context.state.currentFeature) {
       console.log("API ERROR"); // TODO
     } else {
       try {
         const response = await api.deleteGuest(
-          context.state.feature.id,
+          context.state.currentFeature.id,
           payload.guestId
         );
         if (response.data) {
@@ -82,17 +84,17 @@ export const actions = {
   },
   async actionReceiveFeature(context: MainContext, payload: IFeature) {
     const feature: IFeature = payload;
-    await commitSetFeature(context, feature);
+    await commitSetCurrentFeature(context, feature);
   },
 };
 
 const { dispatch } = getStoreAccessors<LiveState, State>("live");
-
-export const dispatchGetFeature = dispatch(actions.actionGetFeature);
+export const dispatchGetCurrentFeature = dispatch(
+  actions.actionGetCurrentFeature
+);
 export const dispatchGetCurrentGuest = dispatch(actions.actionGetCurrentGuest);
 export const dispatchCreateCurrentGuest = dispatch(
   actions.actionCreateCurrentGuest
 );
-export const dispatchUpdateGuest = dispatch(actions.actionUpdateGuest);
-
+export const dispatchUpdateGuest = dispatch(actions.actionUpdateCurrentGuest);
 export const dispatchDeleteGuest = dispatch(actions.actionDeleteGuest);

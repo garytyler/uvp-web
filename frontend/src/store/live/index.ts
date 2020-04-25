@@ -4,8 +4,8 @@ import { actions } from "./actions";
 import { LiveState } from "./state";
 
 const defaultState: LiveState = {
-  feature: null,
-  guest: null
+  currentFeature: null,
+  currentGuest: null,
 };
 
 export const liveModule = {
@@ -13,5 +13,5 @@ export const liveModule = {
   state: defaultState,
   mutations,
   actions,
-  getters
+  getters,
 };

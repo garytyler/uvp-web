@@ -12,7 +12,7 @@ const router = new VueRouter({
       component: () => import("./views/Start.vue"),
       children: [
         {
-          path: "home",
+          path: "",
           component: () => import("./views/Home.vue"),
           props: true,
         },

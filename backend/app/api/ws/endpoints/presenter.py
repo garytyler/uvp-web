@@ -12,7 +12,7 @@ from fastapi import APIRouter, WebSocket, status
 router = APIRouter()
 
 
-@router.websocket("/guest/{slug}")
+@router.websocket("/presenter/{slug}")
 class PresenterWebSocket(APIWebSocketEndpoint):
     async def on_connect(self, ws: WebSocket) -> None:
         feature_slug = ws.scope["path_params"].get("slug")
@@ -24,18 +24,22 @@ class PresenterWebSocket(APIWebSocketEndpoint):
         )
         await presenter.save()
         await ws.accept()
-        self.presenter_ch = (await redis.subscribe(feature_slug))[0]
-        await publish_feature(id=presenter.id)
+        self.presenter_ch_name = str(feature.presenter_channel_name)
+        self.presenter_ch = (
+            await redis.subscribe(str(feature.presenter_channel_name))
+        )[0]
+        await publish_feature(id=feature.id)
         self.worker_tasks = [asyncio.create_task(self.forward_channel_to_client(ws=ws))]
 
     async def forward_channel_to_client(self, ws):
         async for msg in ChannelReader(self.presenter_ch):
-            await ws.send_text(msg)
+            await ws.send_bytes(msg)
 
+    # # Unused
     async def on_receive(self, ws: WebSocket, data: Any) -> None:
-        await redis.publish_text(self.feature_ch, data)
+        await redis.publish(self.presenter_ch.name, data)
 
     async def on_disconnect(self, ws: WebSocket, close_code: int) -> None:
         for task in self.worker_tasks:
             task.cancel()
-        await redis.unsubscribe(self.feature_ch)
+        await redis.unsubscribe(self.presenter_ch)

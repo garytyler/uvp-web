@@ -23,17 +23,20 @@ class GuestWebSocket(APIWebSocketEndpoint):
         if not feature:
             return await ws.close(code=status.HTTP_404_NOT_FOUND)
         await ws.accept()
-        self.feature_ch = (await redis.subscribe(feature_slug))[0]
+        self.presenter_ch_name = str(feature.presenter_channel_name)
+        self.interactor_ch = (
+            await redis.subscribe(str(feature.interactor_channel_name))
+        )[0]
         await publish_feature(id=feature.id)
         self.worker_task = asyncio.create_task(self.forward_channel_to_client(ws))
 
     async def forward_channel_to_client(self, ws):
-        async for msg in ChannelReader(self.feature_ch):
+        async for msg in ChannelReader(self.interactor_ch):
             await ws.send_text(msg.decode())
 
     async def on_receive(self, ws: WebSocket, data: Any) -> None:
-        await redis.publish_text(self.feature_ch, data)
+        await redis.publish(self.presenter_ch_name, data)
 
     async def on_disconnect(self, ws: WebSocket, close_code: int) -> None:
         self.worker_task.cancel()
-        await redis.unsubscribe(self.feature_ch)
+        await redis.unsubscribe(self.interactor_ch)

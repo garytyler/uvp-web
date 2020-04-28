@@ -12,7 +12,7 @@ async def publish_feature_by_obj(feature_obj: Feature) -> int:
     await feature_obj.fetch_related("guests", "presenters")
     feature_out = await FeatureOut.from_tortoise_orm(feature_obj)
     data = {"action": "receiveCurrentFeature", "feature": jsonable_encoder(feature_out)}
-    return await redis.publish_json(feature_obj.slug, data)
+    return await redis.publish_json(str(feature_obj.interactor_channel_name), data)
 
 
 async def publish_feature(id: uuid.UUID) -> Optional[int]:

@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-true}
+        # SSL_KEYFILE: ${SSL_CERTFILE}
+        # SSL_CERTFILE: ${SSL_CERTFILE}
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - .env
+    environment:
+      - "REDIS_URL=redis://redis:6379/0"
+    links:
+      - redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./backend:/app"
+
+  db:
+    container_name: db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    image: postgres
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+
+  redis:
+    image: "redis:5-alpine"
+
+  frontend:
+    build:
+      context: ./frontend
+    env_file:
+      - .env
+
+volumes:
+  db-data: null
+  redis-data: null

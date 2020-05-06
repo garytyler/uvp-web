@@ -3,6 +3,10 @@ version: "3.8"
 secrets:
   dns_api_token:
     file: "./secrets/dns_api_token.secret"
+  pgadmin_default_email:
+    file: "./secrets/pgadmin_default_email.secret"
+  pgadmin_default_password:
+    file: "./secrets/pgadmin_default_password.secret"
 
 services:
   proxy:
@@ -61,7 +65,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - SERVER_NAME=${DOMAIN}
-      - SERVER_HOST=http://${DOMAIN}
+      - SERVER_HOST=https://${DOMAIN}
     links:
       - redis
     volumes:
@@ -81,7 +85,7 @@ services:
     container_name: postgres
     image: postgres:12
     volumes:
-      - "db-data:/var/lib/postgresql/data"
+      - "postgres-data:/var/lib/postgresql/data"
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
 
@@ -89,7 +93,7 @@ services:
     container_name: pgadmin
     image: dpage/pgadmin4
     depends_on:
-      - db
+      - postgres
     environment:
       - PGADMIN_LISTEN_PORT=5050
     labels:

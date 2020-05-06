@@ -7,9 +7,9 @@ services:
       - --entrypoints.web.address=:80
 
   frontend:
+    command: npm run serve --port=8080
     build:
       target: build-stage
-    command: npm run serve --port=8080
     ports:
       - 8080:8080
     volumes:

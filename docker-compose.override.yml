@@ -20,14 +20,21 @@ services:
     tty: true
     environment:
       CHOKIDAR_USEPOLLING: "true"
+    labels:
+      - traefik.http.routers.traefik.rule=Host(`${DOMAIN_PROD}`)
 
-  api:
+  backend:
     command: ["/start-reload.sh"]
     build:
       args:
         - INSTALL_DEV=true
     environment:
-      - DEBUG=True
-      - DOMAIN=localhost
+      - DEBUG=true
+      - SERVER_NAME=${DOMAIN_DEV}
+      - SERVER_HOST=http://${DOMAIN_DEV}
     ports:
       - 8000:8000
+
+  pgadmin:
+    labels:
+      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_PROD}`)

@@ -374,6 +374,14 @@ yarn-error.log*
 # PostgreSQL
 *.pgpass
 
+# Docker secrets
+.secret
+.secrets
+secret
+secrets
+**/*.secret
+**/*.secrets
+
 # Project
 /dist
 migrations
@@ -384,13 +392,4 @@ frontend/webpack-stats.json
 *.sqlite*
 
 # Traefik
-traefik/certs/*
-!traefik/certs/.gitkeep
-
-# Let's Encrypt
 letsencrypt*
-
-# Docker secrets
-**/*.secret
-.secrets/*
-!.secrets/.gitkeep

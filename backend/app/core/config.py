@@ -6,40 +6,43 @@ import logging
 log = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
+    # Project
     PROJECT_TITLE: str
+    PROJECT_DESCRIPTION: str
+
+    # DNS
     SERVER_NAME: str
     SERVER_HOST: AnyHttpUrl
-
-    # Mode
-    DEBUG: bool = False
 
     # Security
     SECRET_KEY: SecretStr
     ALLOWED_HOSTS: Set[str]
-    HTTPS_REDIRECT: bool = True
     BACKEND_CORS_ORIGINS: Set[str]
 
-    DATABASE_URL: str
+    # Mode
+    DEBUG: bool = False
 
-    # POSTGRES_SERVER: str
-    # POSTGRES_USER: str
-    # POSTGRES_PASSWORD: str
-    # POSTGRES_DB: str
+    # Database
+    DATABASE_URL=sqlite://db.sqlite # Temporary
     # DATABASE_URL: Optional[PostgresDsn] = None
+    POSTGRES_HOST: str
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
 
-    # @validator("DATABASE_URL", pre=True)
-    # def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-    #     if isinstance(v, str):
-    #         return v
-    #     return PostgresDsn.build(
-    #         scheme="postgres",
-    #         user=values.get("POSTGRES_USER"),
-    #         password=values.get("POSTGRES_PASSWORD"),
-    #         host=values.get("POSTGRES_SERVER"),
-    #         path=f"/{values.get('POSTGRES_DB') or ''}",
-    #     )
+    @validator("DATABASE_URL", pre=True)
+    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+        if isinstance(v, str):
+            return v
+        return PostgresDsn.build(
+            scheme="postgres",
+            user=values.get("POSTGRES_USER"),
+            password=values.get("POSTGRES_PASS"),
+            host=values.get("POSTGRES_HOST"),
+            path=f"/{values.get('POSTGRES_PATH', "").stripleft("/")}",
+        )
 
-    # Caching
+    # Redis
     REDIS_URL: AnyUrl
 
     # Tortoise

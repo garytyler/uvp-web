@@ -33,7 +33,7 @@ services:
       - 8888:8888
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`traefik.$DOMAIN`)
+      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_PROD}`)
       - traefik.http.routers.dashboard.entrypoints=websecure
       - traefik.http.routers.dashboard.tls=true
       - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
@@ -50,29 +50,33 @@ services:
       context: ./frontend
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik.rule=Host(`$DOMAIN`)
+      - traefik.http.routers.traefik.rule=Host(`${DOMAIN_PROD}`)
       - traefik.http.routers.traefik.entrypoints=websecure
       - traefik.http.routers.traefik.tls=true
       - traefik.http.routers.traefik.tls.certresolver=letsencrypt
 
-  api:
-    container_name: api
+  backend:
+    container_name: backend
     build:
       context: ./backend
+      args:
+        - INSTALL_DEV=${INSTALL_DEV-false}
     depends_on:
       - postgres
       - redis
     environment:
+      - DEBUG=${DEBUG-false}
+      - SERVER_NAME=${DOMAIN_PROD}
+      - SERVER_HOST=https://${DOMAIN_PROD}
+      - POSTGRES_HOST=postgres
       - REDIS_URL=redis://redis:6379/0
-      - SERVER_NAME=${DOMAIN}
-      - SERVER_HOST=https://${DOMAIN}
     links:
       - redis
     volumes:
       - ./backend:/app
     labels:
       - traefik.enable=true
-      - traefik.http.routers.api.rule=Host(`$DOMAIN`) && PathPrefix(`/api`,`/ws`,`/docs`,`/redoc`)
+      - traefik.http.routers.api.rule=Host(`${DOMAIN_PROD}`) && PathPrefix(`/api`,`/ws`,`/docs`,`/redoc`)
       - traefik.http.routers.api.entrypoints=websecure
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=letsencrypt
@@ -83,11 +87,12 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:12
+    image: postgres:alpine
     volumes:
-      - "postgres-data:/var/lib/postgresql/data"
+      - postgres-data:/var/lib/postgresql/data
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_DB=${POSTGRES_USER-postgres}
 
   pgadmin:
     container_name: pgadmin
@@ -98,11 +103,11 @@ services:
       - PGADMIN_LISTEN_PORT=5050
     labels:
       - traefik.enable=true
-      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.$DOMAIN`)
+      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_PROD}`)
       - traefik.http.routers.pgadmin.entrypoints=websecure
       - traefik.http.routers.pgadmin.tls=true
       - traefik.http.routers.pgadmin.tls.certresolver=letsencrypt
-      - traefik.http.routers.pgadmin.service=pgadmin
+      # - traefik.http.routers.pgadmin.service=pgadmin
       - traefik.http.services.pgadmin.loadbalancer.server.port=5050
 
 volumes:

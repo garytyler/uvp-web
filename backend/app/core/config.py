@@ -23,23 +23,23 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL=sqlite://db.sqlite # Temporary
-    # DATABASE_URL: Optional[PostgresDsn] = None
     POSTGRES_HOST: str
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
+    DATABASE_URL: Optional[PostgresDsn] = None
 
     @validator("DATABASE_URL", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v
+        log.critical(values)
         return PostgresDsn.build(
             scheme="postgres",
-            user=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASS"),
-            host=values.get("POSTGRES_HOST"),
-            path=f"/{values.get('POSTGRES_PATH', "").stripleft("/")}",
+            user=values.get("POSTGRES_USER", ''),
+            password=values.get("POSTGRES_PASSWORD", ''),
+            host=values.get("POSTGRES_HOST", ''),
+            path=f"/{values.get('POSTGRES_DB', '').lstrip('/')}",
         )
 
     # Redis

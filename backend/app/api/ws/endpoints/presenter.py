@@ -43,6 +43,6 @@ class PresenterWebSocket(APIWebSocketEndpoint):
     async def on_disconnect(self, websockets: WebSocket, close_code: int) -> None:
         for task in getattr(self, "worker_tasks", []):
             task.cancel()
-        presenter_ch = getattr(self, "worker_tasks", [])
+        presenter_ch = getattr(self, "presenter_ch")
         if presenter_ch:
             await redis.unsubscribe(presenter_ch)

@@ -1,0 +1,5 @@
+# Dynamic configuration
+
+[[tls.certificates]]
+  certFile = "/etc/selfsigned/localhost.cert"
+  keyFile = "/etc/selfsigned/localhost.key"

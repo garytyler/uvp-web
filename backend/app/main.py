@@ -19,7 +19,7 @@ app = FastAPI(
     debug=settings.DEBUG,
     title=settings.PROJECT_TITLE,
     # Required to load deployed api docs. Result of bug expected to be fixed soon.
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
 )
 app.include_router(api_router)
 app.add_event_handler("startup", on_startup_event)

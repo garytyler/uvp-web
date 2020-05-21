@@ -4,7 +4,19 @@ services:
   proxy:
     command:
       - --api.insecure=true
+      - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.traefik.address=:8888
+      - --providers.file.directory=/etc/traefik/
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
+    volumes:
+      - ./selfsigned:/etc/selfsigned/:ro
+      - type: bind
+        source: ./traefik
+        target: /etc/traefik/
+    labels:
+      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_DEV}`)
 
   frontend:
     command: npm run serve --port=8080
@@ -21,7 +33,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
     labels:
-      - traefik.http.routers.traefik.rule=Host(`${DOMAIN_PROD}`)
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN_DEV}`)
 
   backend:
     command: ["/start-reload.sh"]
@@ -29,14 +41,16 @@ services:
       args:
         - INSTALL_DEV=${INSTALL_DEV-true}
     volumes:
-      - ./backend:/app
+      - type: bind
+        source: ./backend
+        target: /app/
     environment:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}
-      - SERVER_HOST=http://${DOMAIN_DEV}
-    ports:
-      - 8000:8000
+      - SERVER_HOST=https://${DOMAIN_DEV}
+    labels:
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/api`,`/ws`,`/docs`,`/redoc`)
 
   pgadmin:
     labels:
-      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_PROD}`)
+      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_DEV}`)

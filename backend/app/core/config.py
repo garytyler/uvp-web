@@ -1,9 +1,7 @@
-from typing import Set
-from typing import Optional, Dict, Any
-from pydantic import AnyUrl, BaseSettings, SecretStr, AnyHttpUrl, PostgresDsn, validator
-import logging
+from typing import Any, Dict, Optional, Set
 
-log = logging.getLogger(__name__)
+from pydantic import AnyHttpUrl, AnyUrl, BaseSettings, PostgresDsn, SecretStr, validator
+
 
 class Settings(BaseSettings):
     # Project
@@ -30,15 +28,15 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[PostgresDsn] = None
 
     @validator("DATABASE_URL", pre=True)
+    @classmethod
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v
-        log.critical(values)
         return PostgresDsn.build(
             scheme="postgres",
-            user=values.get("POSTGRES_USER", ''),
-            password=values.get("POSTGRES_PASSWORD", ''),
-            host=values.get("POSTGRES_HOST", ''),
+            user=values.get("POSTGRES_USER", ""),
+            password=values.get("POSTGRES_PASSWORD", ""),
+            host=values.get("POSTGRES_HOST", ""),
             path=f"/{values.get('POSTGRES_DB', '').lstrip('/')}",
         )
 
@@ -54,5 +52,6 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
+
 
 settings = Settings()

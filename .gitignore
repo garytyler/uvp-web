@@ -355,6 +355,7 @@ yarn-error.log
 *.njsproj
 *.sln
 *.sw?
+**/*.devcontainer
 
 # local env files
 .env.local
@@ -392,4 +393,8 @@ frontend/webpack-stats.json
 *.sqlite*
 
 # Traefik
+selfsigned*
+self-signed*
 letsencrypt*
+lets-encrypt*
+traefik/certs/**

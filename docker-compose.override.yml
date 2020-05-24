@@ -25,9 +25,7 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - type: bind
-        source: ./frontend
-        target: /app/
+      - ./frontend:/app/
     stdin_open: true
     tty: true
     environment:
@@ -39,11 +37,9 @@ services:
     command: ["/start-reload.sh"]
     build:
       args:
-        - INSTALL_DEV=${INSTALL_DEV-true}
+        - INSTALL_DEV=true
     volumes:
-      - type: bind
-        source: ./backend
-        target: /app/
+      - ./backend:/app/
     environment:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}

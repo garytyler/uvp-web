@@ -509,6 +509,22 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xm
 
 [[package]]
 category = "dev"
+description = "Convenient ASGI client/server fixtures for Pytest"
+name = "pytest-asgi-server"
+optional = false
+python-versions = ">=3.6"
+version = "0.2.0"
+
+[package.dependencies]
+asgi-lifespan = ">=1.0.0,<2.0.0"
+httpx = ">=0.12.1,<0.13.0"
+pytest = ">=5.4.1,<6.0.0"
+pytest-asyncio = ">=0.10.0,<0.11.0"
+pytest-xprocess = ">=0.13.1,<0.14.0"
+uvicorn = ">=0.11.3,<0.12.0"
+
+[[package]]
+category = "dev"
 description = "Pytest support for asyncio."
 name = "pytest-asyncio"
 optional = false
@@ -734,7 +750,7 @@ python-versions = ">=3.6.1"
 version = "8.1"
 
 [metadata]
-content-hash = "45792ba3d644a2300050db85eb4e25699ebf4342df8df42f313235251708d65b"
+content-hash = "99e4f59043d4d1dc41c46856c8ae2d7768b66a8a15cb99f174bc69c47638c911"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -1044,6 +1060,10 @@ pypika = [
 pytest = [
     {file = "pytest-5.4.1-py3-none-any.whl", hash = "sha256:0e5b30f5cb04e887b91b1ee519fa3d89049595f428c1db76e73bd7f17b09b172"},
     {file = "pytest-5.4.1.tar.gz", hash = "sha256:84dde37075b8805f3d1f392cc47e38a0e59518fb46a431cfdaf7cf1ce805f970"},
+]
+pytest-asgi-server = [
+    {file = "pytest-asgi-server-0.2.0.tar.gz", hash = "sha256:f32bfff84b0b3dc489690124862ab2bd640a7e7d0faf39d730fc6daefcd2f160"},
+    {file = "pytest_asgi_server-0.2.0-py3-none-any.whl", hash = "sha256:dbf36cb950db550c2efba26f2ef69a8bbefdb86f9f0cb5435465c34ec7e2c02d"},
 ]
 pytest-asyncio = [
     {file = "pytest-asyncio-0.10.0.tar.gz", hash = "sha256:9fac5100fd716cbecf6ef89233e8590a4ad61d729d1732e0a96b84182df1daaf"},

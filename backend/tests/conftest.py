@@ -4,8 +4,8 @@ import sys
 import async_asgi_testclient
 import pytest
 from asgi_lifespan import LifespanManager
-from pytest_asgi_xclient.clients import PytestAsgiXClient
-from pytest_asgi_xclient.servers import (
+from pytest_asgi_server.clients import PytestAsgiXClient
+from pytest_asgi_server.servers import (
     PytestUvicornXServer,
     PytestXProcessWrapper,
     UvicornTestServerThread,
@@ -17,10 +17,6 @@ from ._utils.ports import get_unused_tcp_port
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
 TEST_DB_URL = f"sqlite://{TEST_DB_FILE_PATH}"
-
-
-def pytest_configure():
-    os.environ["DATABASE_URL"] = TEST_DB_URL
 
 
 def pytest_runtest_teardown(item, nextitem):

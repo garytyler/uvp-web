@@ -20,7 +20,9 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - ./frontend:/app/
+      - .:/app:ro
+      - ./.git:/app/.git:rw
+      - ./frontend:/app/frontend:rw
     stdin_open: true
     tty: true
     environment:
@@ -34,7 +36,9 @@ services:
       args:
         - INSTALL_DEV=true
     volumes:
-      - ./backend:/app/
+      - .:/app:ro
+      - ./.git:/app/.git:rw
+      - ./backend:/app/backend:rw
     environment:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}

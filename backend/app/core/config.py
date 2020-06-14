@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    DATABASE_URL: Optional[PostgresDsn] = None
+    DATABASE_URL: Optional[str] = None
 
     @validator("DATABASE_URL", pre=True)
     @classmethod

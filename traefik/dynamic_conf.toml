@@ -1,5 +1,5 @@
 # Dynamic configuration
 
 [[tls.certificates]]
-  certFile = "/etc/selfsigned/localhost.cert"
-  keyFile = "/etc/selfsigned/localhost.key"
+  certFile = "/etc/traefik/self-signed/localhost.cert"
+  keyFile = "/etc/traefik/self-signed/localhost.key"

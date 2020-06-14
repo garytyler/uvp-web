@@ -8,7 +8,7 @@ fi
 
 SCRIPTS_DIR=$(dirname $(realpath -s $0))
 PROJECT_DIR=$(dirname $SCRIPTS_DIR)
-SELFSIGNED_DIR=$PROJECT_DIR/selfsigned
+SELFSIGNED_DIR=$PROJECT_DIR/traefik/self-signed
 
 rm -rf "$SELFSIGNED_DIR"
 mkdir --parents "$SELFSIGNED_DIR"

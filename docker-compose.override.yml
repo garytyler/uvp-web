@@ -10,11 +10,6 @@ services:
       - --entrypoints.traefik.address=:8888
       - --providers.file.directory=/etc/traefik/
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
-    volumes:
-      - ./selfsigned:/etc/selfsigned/:ro
-      - type: bind
-        source: ./traefik
-        target: /etc/traefik/
     labels:
       - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_DEV}`)
 

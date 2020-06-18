@@ -1,36 +1,62 @@
-FROM tiangolo/uvicorn-gunicorn:python3.8
-
-ENV PYTHON_PROJECT_DIR=/app/backend/
-
-WORKDIR $PYTHON_PROJECT_DIR
-
-# Install Poetry
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-    | POETRY_HOME=/opt/poetry python \
-    && cd /usr/local/bin \
-    && chmod 755 /opt/poetry/bin/poetry \
-    && ln -s /opt/poetry/bin/poetry \
-    && poetry config virtualenvs.create false
+# FROM tiangolo/uvicorn-gunicorn:python3.8 AS prod-stage
+FROM python:3.8-buster AS prod-stage
 
 # Create non-root user
-ARG USERNAME=backend
+ARG USERNAME=backend-user
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
-# Configure poetry for non-root user
+# Use non-root user
 USER $USERNAME
-RUN poetry config virtualenvs.create false
-USER root
 
-# Copy poetry.lock* in case it doesn't exist in the repo
-COPY ./pyproject.toml ./poetry.lock* $PYTHON_PROJECT_DIR
+# Set service base dir
+ARG BASEDIR=/app/backend
 
-# Allow installing dev dependencies to run tests
-ARG INSTALL_DEV=false
-RUN bash -c "if [ \"$INSTALL_DEV\" == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
+# Set working dir
+WORKDIR $BASEDIR
 
-COPY ./ $PYTHON_PROJECT_DIR
-ENV PYTHONPATH=$PYTHON_PROJECT_DIR
+# Set home dir
+ARG HOMEDIR=/home/$USERNAME
+
+# Set local bin dir
+ARG LOCALBIN=$HOMEDIR/.local/bin
+RUN mkdir -p $LOCALBIN
+ENV PATH=$LOCALBIN:${PATH}
+
+# Install poetry
+ENV POETRY_HOME=$HOMEDIR/.poetry
+RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
+    | POETRY_HOME=$POETRY_HOME python \
+    && ln -s $POETRY_HOME/bin/poetry $LOCALBIN/poetry
+
+# Install prod dependencies
+COPY ./pyproject.toml ./poetry.lock* $BASEDIR/
+RUN poetry install --no-root --no-dev
+
+# Copy app files
+COPY ./ $BASEDIR/
+ENV PYTHONPATH=$BASEDIR
+
+# Configure server
 ENV APP_MODULE="app.main:app"
+ENV GUNICORN_CONF="./gunicorn_conf.py"
+ENV WORKER_CLASS="uvicorn.workers.UvicornWorker"
+ENV HOST="0.0.0.0"
+ENV PORT="8000"
+
+# Start production server
+CMD ["/bin/bash", "-c", "$(poetry env info -p)/bin/gunicorn -k $WORKER_CLASS -c $GUNICORN_CONF $APP_MODULE"]
+
+FROM prod-stage AS dev-stage
+
+# Install development dependencies
+RUN poetry install --no-root
+
+# Start development server
+CMD ["/bin/bash", "-c", "$(poetry env info -p)/bin/uvicorn --reload --host=$HOST --port=$PORT app.main:app"]

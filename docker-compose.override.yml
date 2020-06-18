@@ -7,7 +7,7 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - --entrypoints.traefik.address=:8888
+      - --entrypoints.traefik.address=:7777
       - --providers.file.directory=/etc/traefik/
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
     labels:
@@ -31,10 +31,8 @@ services:
       - traefik.http.routers.frontend.rule=Host(`${DOMAIN_DEV}`)
 
   backend:
-    command: ["/start-reload.sh"]
     build:
-      args:
-        - INSTALL_DEV=true
+      target: dev-stage
     volumes:
       - .:/app:ro
       - ./.git:/app/.git:rw

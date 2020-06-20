@@ -7,18 +7,17 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - --entrypoints.traefik.address=:7777
+      - --entrypoints.traefik.address=:8888
       - --providers.file.directory=/etc/traefik/
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
     labels:
       - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_DEV}`)
 
   frontend:
-    command: npm run serve --port=8080
     build:
-      target: build-stage
+      target: dev-stage
     ports:
-      - 8080:8080
+      - 8080
     volumes:
       - .:/app:ro
       - ./.git:/app/.git:rw

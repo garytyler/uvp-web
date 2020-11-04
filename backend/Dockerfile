@@ -1,4 +1,7 @@
-FROM python:3.8-buster AS base-stage
+FROM python:3.8-buster AS prod-stage
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 # Use non-root user
 ARG USERNAME=backenduser
@@ -9,11 +12,14 @@ ARG USER_GID=$USER_UID
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
+# If poetry installs dependencies from a git repo, it will
+# store them in /usr/local/src, so let it.
+RUN chown $USERNAME:root /usr/local/src
+
 # Set as non-root user
 USER $USERNAME
 
 # Set locations
-ARG WORKDIR=/app/backend
 ARG HOMEDIR=/home/$USERNAME
 ARG LOCALBIN=$HOMEDIR/.local/bin
 
@@ -22,10 +28,10 @@ RUN mkdir -p $LOCALBIN
 ENV PATH=$LOCALBIN:${PATH}
 
 # Set working dir
-WORKDIR $WORKDIR
+WORKDIR /code
 
 # Copy dependency configuration
-COPY ./pyproject.toml ./poetry.lock* $WORKDIR
+COPY --chown=$USERNAME:$USERNAME ./pyproject.toml ./poetry.lock* ./
 
 # Install poetry and poetry dependencies
 ENV POETRY_HOME=$HOMEDIR/.poetry
@@ -35,26 +41,16 @@ RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get
     && poetry config virtualenvs.create false \
     && poetry install --no-root --no-dev
 
-# Configure server
-ENV HOST="0.0.0.0"
-ENV PORT="8000"
-ENV APP_MODULE="app.main:app"
-
-FROM base-stage AS prod-stage
-
 # Copy project files
-COPY ./ $WORKDIR
+COPY --chown=$USERNAME:$USERNAME ./ ./
 
-# Start production server
-CMD ["/bin/bash", "-c", "gunicorn -k uvicorn.workers.UvicornWorker -c ./gunicorn_conf.py $APP_MODULE"]
-
-FROM base-stage AS dev-stage
-
-# Use non-root user for everything else
-USER $USERNAME
+FROM prod-stage AS dev-stage
 
 # Install dev dependencies
+USER $USERNAME
 RUN poetry install --no-root
+# ARG SKIP_DEV_DEPS
+# RUN bash -c "if [[ $SKIP_DEV_DEPS != 'true' ]] ; then poetry install --no-root ; fi"
 
 # Use root user to install sudo and make non-root user a sudoer
 USER root
@@ -68,6 +64,3 @@ USER $USERNAME
 
 # Install git
 RUN sudo apt-get install git -y
-
-# Start development server
-CMD ["/bin/bash", "-c", "uvicorn --reload --host=$HOST --port=$PORT app.main:app"]

@@ -57,6 +57,7 @@ services:
     build:
       context: ./backend
       target: prod-stage
+    command: /bin/bash -c "gunicorn -k uvicorn.workers.UvicornWorker -c ./gunicorn_conf.py app.main:app
     depends_on:
       - postgres
       - redis

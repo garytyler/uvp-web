@@ -1,7 +1,6 @@
 import pytest
-from async_asgi_testclient import TestClient
-
 from app.schemas.features import FeatureOut
+from async_asgi_testclient import TestClient
 
 
 @pytest.mark.asyncio

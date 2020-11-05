@@ -1,16 +1,13 @@
 from random import randint
 
 import pytest
-from async_asgi_testclient import TestClient
-
 from app.models.features import Feature
+from async_asgi_testclient import TestClient
 
 
 @pytest.mark.asyncio
 async def test_features_http_post_with_custom_slug(
-    app,
-    create_random_feature_slug,
-    create_random_feature_title,
+    app, create_random_feature_slug, create_random_feature_title,
 ):
     path = "/api/features"
     async with TestClient(app) as client:

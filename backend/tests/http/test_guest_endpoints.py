@@ -4,49 +4,49 @@ from async_asgi_testclient import TestClient
 
 @pytest.mark.asyncio
 async def test_http_endpoint_create_current_guest(
-    app, create_random_feature_obj, create_random_guest_name
+    app, create_random_feature_obj, faker
 ):
-    path = "/api/guests/current"
+    url_path = "/api/guests/current"
     async with TestClient(app, use_cookies=True) as client:
         assert not bool(client.cookie_jar.get("session"))
         feature = await create_random_feature_obj()
-        data = {
-            "name": create_random_guest_name(),
-            "feature_id": str(feature.id),
-        }
-        response = await client.post(
-            path.format(feature_id=data["feature_id"]), json=data
-        )
-        assert response.status_code == 200
-        assert response.json()["id"]
-        assert response.json()["name"] == data["name"]
-        assert response.json()["feature_id"] == data["feature_id"]
+        guest_data = {"name": faker.name(), "feature_id": str(feature.id)}
+        r = await client.post(url_path, json=guest_data)
+        assert r.ok
+        assert r.json()["id"]
+        assert r.json()["name"] == guest_data["name"]
+        assert r.json()["feature_id"] == guest_data["feature_id"]
         assert bool(client.cookie_jar.get("session"))
         # Confirm guest_id is saved in session by attempting to create again
-        response = await client.post(
-            path.format(feature_id=data["feature_id"]), json=data
-        )
-        assert response.status_code == 400
+        r = await client.post(url_path, json=guest_data)
+        assert r.status_code == 400
 
 
 @pytest.mark.asyncio
-async def test_http_endpoint_get_current_guest(
-    app, create_random_feature_obj, create_random_guest_name
-):
+async def test_http_endpoint_get_current_guest(app, create_random_feature_obj, faker):
     path = "/api/guests/current"
     async with TestClient(app) as client:
         feature_id = (await create_random_feature_obj()).id
-        response = await client.post(
-            path.format(feature_id=feature_id),
-            json={"name": create_random_guest_name(), "feature_id": str(feature_id)},
+        r = await client.post(
+            path,
+            # path.format(feature_id=feature_id),
+            json={"name": faker.name(), "feature_id": str(feature_id)},
         )
-        created_guest = response.json()
-        response = await client.get(path)
-        gotten_guest = response.json()
-        assert gotten_guest == created_guest
-        assert gotten_guest["id"] == created_guest["id"]
-        assert gotten_guest["name"] == created_guest["name"]
-        assert gotten_guest["feature_id"] == created_guest["feature_id"]
+        assert r.ok
+        created_guest = r.json()
+        r = await client.get(path)
+        print(created_guest)
+        assert r.ok
+        retrieved_guest = r.json()
+        print(retrieved_guest)
+        assert retrieved_guest["id"]
+        assert retrieved_guest["name"]
+        assert retrieved_guest["feature_id"]
+        assert retrieved_guest == created_guest
+        # assert retrieved_guest["id"] == created_guest["id"]
+        assert retrieved_guest["name"] == created_guest["name"]
+        assert retrieved_guest["feature_id"] == created_guest["feature_id"]
+        assert retrieved_guest["feature_id"] == str(feature_id)
 
 
 @pytest.mark.asyncio

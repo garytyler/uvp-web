@@ -11,7 +11,10 @@ from randstr_plus import randstr
 from app.models.features import Feature
 from app.models.guests import Guest
 
-pytest_plugins = "pytest_asgi_server"
+# from tortoise.contrib.test import finalizer, initializer
+
+
+# pytest_plugins = "pytest_asgi_server"
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
@@ -50,15 +53,15 @@ def app():
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def testclient(app):
-    def _testclient(*args, **kwargs):
+async def async_client(app):
+    def _client(*args, **kwargs):
         return async_asgi_testclient.TestClient(app, *args, **kwargs)
 
-    yield _testclient
+    yield _client
 
 
 @pytest.fixture
-async def procclient(xclient, app, request):
+async def xclient(xclient, app, request):
     yield await xclient(
         app,
         appstr="app.main:app",
@@ -95,28 +98,9 @@ def create_random_euler_rotation():
 
 
 @pytest.fixture
-def create_random_guest_name():
-    def _create_random_guest_name() -> str:
-        return randstr(
-            uppercase_letters=True,
-            lowercase_letters=True,
-            numbers=False,
-            punctuation=True,
-            min_length=3,
-            max_length=9,
-            min_tokens=2,
-            max_tokens=3,
-        )
-
-    return _create_random_guest_name
-
-
-@pytest.fixture
-def create_random_guest_obj(create_random_guest_name):
+def create_random_guest_obj(faker):
     async def _create_random_guest_obj(feature: Feature) -> Guest:
-        return await Guest.create(
-            name=create_random_guest_name(), feature_id=feature.id
-        )
+        return await Guest.create(name=faker.name(), feature_id=feature.id)
 
     return _create_random_guest_obj
 

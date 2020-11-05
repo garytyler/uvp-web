@@ -15,17 +15,13 @@ class Guest(TimestampMixin, CustomTortoiseBase):
     class Meta:
         table = "guests"
 
+    class PydanticMeta:
+        allow_cycles = True
+        max_recursion = 1
+        orm_mode = True
+
     def __repr__(self):
         return f"<{self.__class__.__name__}: {str(self.id)} name='{self.name}'>"
 
     def __str__(self):
         return self.__repr__()
-
-    class PydanticMeta:
-        exclude = (
-            "created_at",
-            "modified_at",
-            "feature",
-        )
-        allow_cycles = True
-        max_recursion = 1

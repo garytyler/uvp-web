@@ -638,6 +638,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "randstr-plus"
+version = "0.0.1"
+description = "A more flexible string generator"
+category = "dev"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[[package]]
 name = "regex"
 version = "2020.10.28"
 description = "Alternative regular expression module, to replace re."
@@ -835,7 +843,7 @@ python-versions = ">=3.6.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "1cda59bdd248728a8f56a245991a91f2479c7b279cbda29ef7e600beb92fbb4a"
+content-hash = "93db35961854a22394d41e965b3ed7c5eb43ecf4d9f816a6edda21f19f1a30c4"
 
 [metadata.files]
 aerich = [
@@ -1210,6 +1218,10 @@ pyyaml = [
     {file = "PyYAML-5.3.1-cp38-cp38-win32.whl", hash = "sha256:06a0d7ba600ce0b2d2fe2e78453a470b5a6e000a985dd4a4e54e436cc36b0e97"},
     {file = "PyYAML-5.3.1-cp38-cp38-win_amd64.whl", hash = "sha256:95f71d2af0ff4227885f7a6605c37fd53d3a106fcab511b8860ecca9fcf400ee"},
     {file = "PyYAML-5.3.1.tar.gz", hash = "sha256:b8eac752c5e14d3eca0e6dd9199cd627518cb5ec06add0de9d32baeee6fe645d"},
+]
+randstr-plus = [
+    {file = "randstr-plus-0.0.1.tar.gz", hash = "sha256:dc294b89dbcf3935e82527e98b6c5098ecfb9b8588d277f0ce496266efb17bb9"},
+    {file = "randstr_plus-0.0.1-py3-none-any.whl", hash = "sha256:bb1722e458fc15445aedcee957a9f187cd75134c6c15859d0f3d7e33914f34a4"},
 ]
 regex = [
     {file = "regex-2020.10.28-cp27-cp27m-win32.whl", hash = "sha256:4b5a9bcb56cc146c3932c648603b24514447eafa6ce9295234767bf92f69b504"},

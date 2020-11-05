@@ -1,7 +1,15 @@
+import contextlib
 import os
+import random
+import socket
+from typing import List
 
 import async_asgi_testclient
 import pytest
+from randstr_plus import randstr
+
+from app.models.features import Feature
+from app.models.guests import Guest
 
 pytest_plugins = "pytest_asgi_server"
 
@@ -27,8 +35,7 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_generate_tests
-    """
+    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_generate_tests"""
     if "server_port" in metafunc.fixturenames:
         metafunc.parametrize("server_port", [metafunc.config.getoption("server_port")])
         metafunc.parametrize("server_host", [metafunc.config.getoption("server_host")])
@@ -61,3 +68,115 @@ async def procclient(xclient, app, request):
             "PYTHONDONTWRITEBYTECODE": "1",
         },
     )
+
+
+@pytest.fixture
+def create_random_fake_session_key() -> str:
+    def _create_random_fake_session_key():
+        return randstr(
+            min_length=32,
+            max_length=32,
+            min_tokens=1,
+            max_tokens=1,
+            uppercase_letters=True,
+            lowercase_letters=True,
+            numbers=True,
+        )
+
+    return _create_random_fake_session_key
+
+
+@pytest.fixture
+def create_random_euler_rotation():
+    def _create_random_euler_rotation() -> List[int]:
+        return [random.uniform(0, 360) for i in range(3)]
+
+    return _create_random_euler_rotation
+
+
+@pytest.fixture
+def create_random_guest_name():
+    def _create_random_guest_name() -> str:
+        return randstr(
+            uppercase_letters=True,
+            lowercase_letters=True,
+            numbers=False,
+            punctuation=True,
+            min_length=3,
+            max_length=9,
+            min_tokens=2,
+            max_tokens=3,
+        )
+
+    return _create_random_guest_name
+
+
+@pytest.fixture
+def create_random_guest_obj(create_random_guest_name):
+    async def _create_random_guest_obj(feature: Feature) -> Guest:
+        return await Guest.create(
+            name=create_random_guest_name(), feature_id=feature.id
+        )
+
+    return _create_random_guest_obj
+
+
+@pytest.fixture
+def create_random_feature_title():
+    def _create_random_feature_title() -> str:
+        return randstr(
+            min_length=10,
+            max_length=25,
+            min_tokens=2,
+            max_tokens=6,
+            uppercase_letters=True,
+            lowercase_letters=True,
+            punctuation=True,
+            numbers=True,
+        )
+
+    return _create_random_feature_title
+
+
+@pytest.fixture
+def create_random_feature_slug():
+    def _create_random_feature_slug() -> str:
+        string = randstr(
+            min_length=10,
+            max_length=50,
+            min_tokens=3,
+            max_tokens=6,
+            uppercase_letters=True,
+            lowercase_letters=True,
+            punctuation=False,
+            numbers=True,
+        )
+        return "-".join(string.split()).lower()
+
+    return _create_random_feature_slug
+
+
+@pytest.fixture
+def create_random_feature_obj(
+    create_random_feature_title, create_random_feature_slug
+) -> Feature:
+    async def _create_random_feature_obj():
+        return await Feature.create(
+            title=create_random_feature_title(),
+            slug=create_random_feature_slug(),
+            turn_duration=random.randint(1, 99),
+        )
+
+    return _create_random_feature_obj
+
+
+def _get_unused_tcp_port():
+    """Find an unused localhost TCP port from 1024-65535 and return it."""
+    with contextlib.closing(socket.socket()) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+@pytest.fixture
+def get_unused_tcp_port():
+    return _get_unused_tcp_port

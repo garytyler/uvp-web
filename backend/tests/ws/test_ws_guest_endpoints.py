@@ -10,7 +10,7 @@ async def test_guest_ws_broadcasts_feature_to_guests_on_connect(
     async with LifespanManager(app):
         random_feature = await create_random_feature_obj()
         await create_random_guest_obj(feature=random_feature)
-    async with TestClient(app, f"/ws/guest/{random_feature.slug}") as tc:
+    async with TestClient(app) as tc:
         async with tc.websocket_connect(f"/ws/guest/{random_feature.slug}") as ws:
             received_json = await ws.receive_json()
             assert received_json["feature"]["id"] == str(random_feature.id)

@@ -1,13 +1,14 @@
 import asyncio
 from typing import Any
 
+from fastapi import APIRouter, WebSocket, status
+
 from app.api.dependencies.publish import publish_feature
 from app.core.redis import ChannelReader, redis
-from app.crud.features import crud_features
 from app.crud.presenters import crud_presenters
+from app.models.features import Feature
 from app.schemas.presenters import PresenterCreate
 from app.utils.endpoints import APIWebSocketEndpoint
-from fastapi import APIRouter, WebSocket, status
 
 router = APIRouter()
 
@@ -16,8 +17,7 @@ router = APIRouter()
 class PresenterWebSocket(APIWebSocketEndpoint):
     async def on_connect(self, websockets: WebSocket) -> None:
         feature_slug = websockets.scope["path_params"].get("slug")
-        feature = await crud_features.get_by_slug(slug=feature_slug)
-        if not feature:
+        if not (feature := await Feature.get_or_none(slug=feature_slug)):
             return await websockets.close(code=status.HTTP_404_NOT_FOUND)
         presenter = await crud_presenters.create(
             obj_in=PresenterCreate(feature_id=feature.id)

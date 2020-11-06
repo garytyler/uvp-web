@@ -1,11 +1,11 @@
 import uuid
 from typing import Optional
 
+from fastapi.encoders import jsonable_encoder
+
 from app.core.redis import redis
-from app.crud.features import crud_features
 from app.models.features import Feature
 from app.schemas.features import FeatureOut
-from fastapi.encoders import jsonable_encoder
 
 
 async def publish_feature_by_obj(feature_obj: Feature) -> int:
@@ -16,8 +16,7 @@ async def publish_feature_by_obj(feature_obj: Feature) -> int:
 
 
 async def publish_feature(id: uuid.UUID) -> Optional[int]:
-    feature_obj = await crud_features.get(id=id)
-    if not feature_obj:
-        print("Feature not found")  # TODO: Raise 404
+    if not (feature_obj := await Feature.get_or_none(id=id)):
+        # TODO: use an exception handler to log a 404 Feature not found
         return None
     return await publish_feature_by_obj(feature_obj=feature_obj)

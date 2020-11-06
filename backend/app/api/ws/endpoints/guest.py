@@ -2,11 +2,12 @@ import asyncio
 import logging
 from typing import Any
 
+from fastapi import APIRouter, WebSocket, status
+
 from app.api.dependencies.publish import publish_feature
 from app.core.redis import ChannelReader, redis
-from app.crud.features import crud_features
+from app.models.features import Feature
 from app.utils.endpoints import APIWebSocketEndpoint
-from fastapi import APIRouter, WebSocket, status
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -19,8 +20,7 @@ class GuestWebSocket(APIWebSocketEndpoint):
         # guest to feature guest list here, and use another endpoint for non-guest
         # visitors.
         feature_slug = ws.scope["path_params"].get("slug")
-        feature = await crud_features.get_by_slug(slug=feature_slug)
-        if not feature:
+        if not (feature := await Feature.get(slug=feature_slug)):
             return await ws.close(code=status.HTTP_404_NOT_FOUND)
         await ws.accept()
         self.presenter_ch_name = str(feature.presenter_channel_name)

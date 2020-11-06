@@ -1,51 +1,53 @@
 import uuid
 from typing import List
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from tortoise.transactions import in_transaction
+
 from app.api.dependencies.features import validate_feature_slug
-from app.crud.features import crud_features
+from app.models.features import Feature
 from app.schemas.features import FeatureCreate, FeatureOut
-from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter()
 
 
 @router.post("/features", response_model=FeatureOut)
 async def create_feature(feature_in: FeatureCreate = Depends(validate_feature_slug)):
-    feature = await crud_features.create(obj_in=feature_in)
-    if feature:
-        await feature.fetch_related("guests", "presenters")
+    if feature_obj := await Feature.create(**feature_in.dict()):
+        await feature_obj.fetch_related("guests", "presenters")
     else:
-        raise HTTPException(status_code=404, detail="Could not create item")
-    return feature
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    return feature_obj
 
 
 @router.get("/features/{id_or_slug}", response_model=FeatureOut)
 async def get_feature(id_or_slug: str):
     try:
-        feature_uuid: uuid.UUID = uuid.UUID(id_or_slug, version=4)
+        feature_id: uuid.UUID = uuid.UUID(id_or_slug, version=4)
     except ValueError:
-        feature = await crud_features.get_by_slug(slug=id_or_slug)  # type: ignore
+        feature_obj = await Feature.get_or_none(slug=id_or_slug)
     else:
-        feature = await crud_features.get(id=feature_uuid)  # type: ignore
+        feature_obj = await Feature.get_or_none(id=feature_id)
 
-    if feature:
-        await feature.fetch_related("guests", "presenters")
+    if feature_obj:
+        await feature_obj.fetch_related("guests", "presenters")
     else:
-        raise HTTPException(status_code=404, detail="Could not create item")
-    return feature
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return feature_obj
 
 
 @router.get("/features", response_model=List[FeatureOut])
 async def get_all_features():
-    features = await crud_features.get_all()
-    for i in features:
-        await i.fetch_related("guests", "presenters")
+    async with in_transaction():
+        features = await Feature.all()
+        for i in features:
+            await i.fetch_related("guests", "presenters")
     return features
 
 
 @router.delete("/features/{id}", response_model=int)
 async def delete_feature(id: uuid.UUID):
-    deleted_count = await crud_features.delete(id=id)
+    deleted_count = await Feature.filter(id=id).delete()
     if not deleted_count:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return deleted_count

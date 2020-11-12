@@ -16,12 +16,16 @@ services:
   frontend:
     build:
       target: dev-stage
+    command: /bin/bash -c "npm run serve"
     ports:
       - 8080
     volumes:
       - .:/app:ro
       - ./.git:/app/.git:rw
       - ./frontend:/app/frontend:rw
+      - exclude:/app/frontend/node_modules/
+    environment:
+      - NODE_ENV=development
     stdin_open: true
     tty: true
     environment:
@@ -32,6 +36,8 @@ services:
   backend:
     build:
       target: dev-stage
+      args:
+        - USERNAME=devuser
     command: /bin/bash -c "uvicorn --reload --host=0.0.0.0 --port=8000 app.main:app"
     volumes:
       - .:/app:ro
@@ -48,3 +54,6 @@ services:
   pgadmin:
     labels:
       - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_DEV}`)
+
+volumes:
+  exclude:

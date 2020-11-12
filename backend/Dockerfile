@@ -1,15 +1,17 @@
+
+
 FROM python:3.8-buster AS prod-stage
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Use non-root user
-ARG USERNAME=backenduser
+# define username
+ARG USERNAME=${USERNAME:-productionuser}
 
 # Create non-root user
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-RUN groupadd --gid $USER_GID $USERNAME \
+RUN groupadd --gid $USER_GID ${USERNAME} \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
 # If poetry installs dependencies from a git repo, it will
@@ -28,7 +30,7 @@ RUN mkdir -p $LOCALBIN
 ENV PATH=$LOCALBIN:${PATH}
 
 # Set working dir
-WORKDIR /code
+WORKDIR /app/backend/
 
 # Copy dependency configuration
 COPY --chown=$USERNAME:$USERNAME ./pyproject.toml ./poetry.lock* ./
@@ -46,11 +48,12 @@ COPY --chown=$USERNAME:$USERNAME ./ ./
 
 FROM prod-stage AS dev-stage
 
+# define username
+ARG USERNAME=${USERNAME}
+
 # Install dev dependencies
 USER $USERNAME
 RUN poetry install --no-root
-# ARG SKIP_DEV_DEPS
-# RUN bash -c "if [[ $SKIP_DEV_DEPS != 'true' ]] ; then poetry install --no-root ; fi"
 
 # Use root user to install sudo and make non-root user a sudoer
 USER root

@@ -1,8 +1,9 @@
 from typing import Optional
 
-from app.models.features import Feature
 from tortoise import Tortoise
 from tortoise.contrib.pydantic import pydantic_model_creator
+
+from app.models.features import Feature
 
 from .base import CustomPydanticBase
 

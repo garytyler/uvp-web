@@ -3,6 +3,7 @@ from weakref import WeakKeyDictionary, WeakSet
 
 import aioredis
 from aioredis import Channel
+
 from app.core.config import settings
 
 

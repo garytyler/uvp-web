@@ -1,5 +1,6 @@
-from app.models.features import Feature
 from slugify import slugify  # type: ignore
+
+from app.models.features import Feature
 
 
 async def feature_with_slug_exists(slug: str) -> bool:

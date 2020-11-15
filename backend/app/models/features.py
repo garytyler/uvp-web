@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import uuid
 
+from tortoise import fields
+
 from app.models.guests import Guest
 from app.models.presenters import Presenter
-from tortoise import fields
 
 from .base import CustomTortoiseBase, TimestampMixin
 

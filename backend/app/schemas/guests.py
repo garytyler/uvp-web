@@ -14,7 +14,7 @@ class GuestUpdate(CustomPydanticBase):
     feature_id: Optional[UUID4]
 
 
-# Tortoise.init_models(["app.models.guests"], "models")
+Tortoise.init_models(["app.models.guests"], "models")
 
 GuestCreate = pydantic_model_creator(
     Guest,

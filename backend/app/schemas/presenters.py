@@ -1,7 +1,8 @@
-from app.models.presenters import Presenter
 from pydantic import UUID4
 from tortoise import Tortoise
 from tortoise.contrib.pydantic.creator import pydantic_model_creator
+
+from app.models.presenters import Presenter
 
 from .base import CustomPydanticBase
 

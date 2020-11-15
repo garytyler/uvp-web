@@ -2,7 +2,7 @@ import contextlib
 import os
 import random
 import socket
-from typing import List
+from typing import Callable, List
 
 import async_asgi_testclient
 import pytest
@@ -74,7 +74,7 @@ async def xclient(xclient, app, request):
 
 
 @pytest.fixture
-def create_random_fake_session_key() -> str:
+def create_random_fake_session_key() -> Callable:
     def _create_random_fake_session_key():
         return randstr(
             min_length=32,
@@ -91,7 +91,7 @@ def create_random_fake_session_key() -> str:
 
 @pytest.fixture
 def create_random_euler_rotation():
-    def _create_random_euler_rotation() -> List[int]:
+    def _create_random_euler_rotation() -> List[float]:
         return [random.uniform(0, 360) for i in range(3)]
 
     return _create_random_euler_rotation
@@ -106,7 +106,7 @@ def create_random_guest_obj(faker):
 
 
 @pytest.fixture
-def create_random_feature_title():
+def create_random_feature_title() -> Callable:
     def _create_random_feature_title() -> str:
         return randstr(
             min_length=10,
@@ -123,7 +123,7 @@ def create_random_feature_title():
 
 
 @pytest.fixture
-def create_random_feature_slug():
+def create_random_feature_slug() -> Callable:
     def _create_random_feature_slug() -> str:
         string = randstr(
             min_length=10,
@@ -143,8 +143,8 @@ def create_random_feature_slug():
 @pytest.fixture
 def create_random_feature_obj(
     create_random_feature_title, create_random_feature_slug
-) -> Feature:
-    async def _create_random_feature_obj():
+) -> Callable:
+    async def _create_random_feature_obj() -> Feature:
         return await Feature.create(
             title=create_random_feature_title(),
             slug=create_random_feature_slug(),

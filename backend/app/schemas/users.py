@@ -1,3 +1,5 @@
+from typing import Optional
+
 from tortoise import Tortoise
 from tortoise.contrib.pydantic.creator import pydantic_model_creator
 
@@ -18,9 +20,9 @@ class UserCreate(CustomPydanticBase):
 
 
 class UserUpdate(CustomPydanticBase):
-    email: str
-    hashed_password: str
-    is_active: bool
+    email: Optional[str]
+    hashed_password: Optional[str]
+    is_active: Optional[bool]
 
 
 Tortoise.init_models(["app.models.users"], "models")
@@ -28,4 +30,5 @@ UserOut = pydantic_model_creator(
     User,
     name="models.User",
     exclude_readonly=True,
+    exclude=("hashed_password",),
 )

@@ -8,7 +8,7 @@ from app.models.features import Feature
 
 
 @pytest.mark.asyncio
-async def test_features_http_post_with_custom_slug(
+async def test_rest_features_post_with_custom_slug(
     app,
     create_random_feature_slug,
     create_random_feature_title,
@@ -35,7 +35,7 @@ async def test_features_http_post_with_custom_slug(
 
 
 @pytest.mark.asyncio
-async def test_features_http_post_without_custom_slug(app, create_random_feature_title):
+async def test_rest_features_post_without_custom_slug(app, create_random_feature_title):
     path = "/api/features"
     async with AsyncClient(app=app, base_url="http://test") as client:
         data = {"title": create_random_feature_title(), "turn_duration": randint(0, 99)}
@@ -53,7 +53,7 @@ async def test_features_http_post_without_custom_slug(app, create_random_feature
 
 
 @pytest.mark.asyncio
-async def test_features_http_get_by_id(
+async def test_rest_features_get_by_id(
     app, create_random_feature_obj, create_random_guest_obj
 ):
     path = "/api/features/{id}"
@@ -70,7 +70,7 @@ async def test_features_http_get_by_id(
 
 
 @pytest.mark.asyncio
-async def test_features_http_get_by_slug(
+async def test_rest_features_get_by_slug(
     app, create_random_feature_obj, create_random_guest_obj
 ):
     path = "/api/features/{slug}"

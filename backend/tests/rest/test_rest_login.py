@@ -13,7 +13,7 @@ async def test_hash_password(create_random_password):
 
 
 @pytest.mark.asyncio
-async def test_get_access_token_succeeds(
+async def test_rest_login_get_access_token_succeeds(
     app, create_random_user, create_random_password
 ) -> None:
     user_password = create_random_password()
@@ -27,7 +27,9 @@ async def test_get_access_token_succeeds(
 
 
 @pytest.mark.asyncio
-async def test_create_user_and_login(app, faker, create_random_password) -> None:
+async def test_rest_login_create_user_and_login(
+    app, faker, create_random_password
+) -> None:
     user_password = create_random_password()
 
     # create user
@@ -37,6 +39,7 @@ async def test_create_user_and_login(app, faker, create_random_password) -> None
         assert r.status_code == 200
         assert r.json()["email"] == user_in.email
 
+    # login user
     async with AsyncClient(app=app, base_url="http://test") as ac:
         payload = {"username": r.json()["email"], "password": user_password}
         r = await ac.post("/api/token", data=payload)

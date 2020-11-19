@@ -19,7 +19,7 @@ async def create_current_guest(
     if guest_id := request.session.get("guest_id"):
         if guest_obj := Guest.get_or_none(id=guest_id):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Guest already exists",
             )
     guest_obj = await Guest.create(**guest_in.dict(exclude_unset=True))  # type: ignore
@@ -30,8 +30,7 @@ async def create_current_guest(
 
 @router.get("/guests/current", response_model=GuestOut)
 async def get_current_guest(request: Request):
-    guest_id = request.session.get("guest_id")
-    if not guest_id:
+    if not (guest_id := request.session.get("guest_id")):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     if not (guest_obj := await Guest.get_or_none(id=guest_id)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
@@ -39,26 +38,26 @@ async def get_current_guest(request: Request):
     return guest_obj
 
 
-@router.patch("/guests/{guest_id}", response_model=GuestOut)
+@router.get("/guests/{id}", response_model=GuestOut)
+async def get_guest_by_id(id: str):
+    if not (guest_obj := await Guest.get_or_none(id=id)):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return guest_obj
+
+
+@router.patch("/guests/{id}", response_model=GuestOut)
 async def update_guest(
     background_tasks: BackgroundTasks,
-    guest_id: uuid.UUID,
+    id: uuid.UUID,
     guest_in: GuestUpdate,
 ):
     async with in_transaction():
-        if not (guest_obj := await Guest.get_or_none(pk=guest_id)):
+        if not (guest_obj := await Guest.get_or_none(pk=id)):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
         guest_in_data = guest_in.dict(exclude_unset=True)
         await guest_obj.update_from_dict(guest_in_data)
         await guest_obj.save(update_fields=guest_in_data.keys())
     background_tasks.add_task(publish_feature, id=guest_in.feature_id)
-    return guest_obj
-
-
-@router.get("/guests/{guest_id}", response_model=GuestOut)
-async def get_guest(guest_id: str):
-    if not (guest_obj := await Guest.get_or_none(id=uuid.UUID(guest_id))):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return guest_obj
 
 

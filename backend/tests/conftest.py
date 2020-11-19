@@ -2,33 +2,36 @@ import contextlib
 import os
 import random
 import socket
+from functools import lru_cache
 from typing import Callable, List
 
-import async_asgi_testclient
 import pytest
+from asgi_lifespan import LifespanManager
 from randstr_plus import randstr
 
+from app.core import config
+from app.core.security import get_password_hash
 from app.models.features import Feature
 from app.models.guests import Guest
-
-# from tortoise.contrib.test import finalizer, initializer
-
-
-# pytest_plugins = "pytest_asgi_server"
+from app.models.users import User
+from app.schemas.users import UserCreate
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
 TEST_DB_URL = f"sqlite://{TEST_DB_FILE_PATH}"
 
 
+@lru_cache
+def get_settings_override():
+    return config.Settings(DATABASE_URL=TEST_DB_URL)
+
+
+config.get_settings = get_settings_override  # noqa
+
+
 def pytest_runtest_teardown(item, nextitem):
     if os.path.exists(TEST_DB_FILE_PATH):
         os.remove(TEST_DB_FILE_PATH)
-
-
-@pytest.fixture(autouse=True)
-def use_sqlite_memory_db(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", TEST_DB_URL)
 
 
 def pytest_addoption(parser):
@@ -45,19 +48,11 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.fixture
-def app():
+async def app(request):
     from app.main import app
 
-    yield app
-
-
-@pytest.fixture
-@pytest.mark.asyncio
-async def async_client(app):
-    def _client(*args, **kwargs):
-        return async_asgi_testclient.TestClient(app, *args, **kwargs)
-
-    yield _client
+    async with LifespanManager(app):
+        yield app
 
 
 @pytest.fixture
@@ -164,3 +159,34 @@ def _get_unused_tcp_port():
 @pytest.fixture
 def get_unused_tcp_port():
     return _get_unused_tcp_port
+
+
+@pytest.fixture
+def create_random_password():
+    def _create_random_password():
+        return randstr(
+            min_length=7,
+            max_length=20,
+            min_tokens=1,
+            max_tokens=1,
+            uppercase_letters=True,
+            lowercase_letters=True,
+            punctuation=False,
+            numbers=True,
+        )
+
+    return _create_random_password
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def create_random_user(faker, create_random_password):
+    async def _create_random_user(password=None):
+        user_create = UserCreate(
+            name=faker.name(),
+            hashed_password=get_password_hash(password),
+            email=faker.safe_email(),
+        )
+        return await User.create(**user_create.dict())
+
+    return _create_random_user

@@ -71,7 +71,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
     labels:
       - traefik.enable=true
-      - traefik.http.routers.backend.rule=Host(`${DOMAIN_PROD}`) && PathPrefix(`/api`,`/ws`,`/docs`,`/redoc`)
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN_PROD}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
       - traefik.http.routers.backend.entrypoints=websecure
       - traefik.http.routers.backend.tls=true
       - traefik.http.routers.backend.tls.certresolver=letsencrypt

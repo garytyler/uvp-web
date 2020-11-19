@@ -2,7 +2,7 @@ import uuid
 from random import randint
 
 import pytest
-from async_asgi_testclient import TestClient
+from httpx import AsyncClient
 
 from app.models.features import Feature
 
@@ -14,7 +14,7 @@ async def test_features_http_post_with_custom_slug(
     create_random_feature_title,
 ):
     path = "/api/features"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         data = {
             "title": create_random_feature_title(),
             "slug": create_random_feature_slug(),
@@ -37,7 +37,7 @@ async def test_features_http_post_with_custom_slug(
 @pytest.mark.asyncio
 async def test_features_http_post_without_custom_slug(app, create_random_feature_title):
     path = "/api/features"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         data = {"title": create_random_feature_title(), "turn_duration": randint(0, 99)}
         r = await client.post(path, json=data)
         assert r.status_code == 200
@@ -57,7 +57,7 @@ async def test_features_http_get_by_id(
     app, create_random_feature_obj, create_random_guest_obj
 ):
     path = "/api/features/{id}"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         random_feature = await create_random_feature_obj()
         await create_random_guest_obj(random_feature)
         await create_random_guest_obj(random_feature)
@@ -74,7 +74,7 @@ async def test_features_http_get_by_slug(
     app, create_random_feature_obj, create_random_guest_obj
 ):
     path = "/api/features/{slug}"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         random_feature = await create_random_feature_obj()
         await create_random_guest_obj(random_feature)
         await create_random_guest_obj(random_feature)
@@ -89,7 +89,7 @@ async def test_features_http_get_by_slug(
 @pytest.mark.asyncio
 async def test_features_http_get_all(app, create_random_feature_obj):
     path = "/api/features"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         features = [await create_random_feature_obj() for _ in range(5)]
         r = await client.get(path)
         assert r.status_code == 200
@@ -100,7 +100,7 @@ async def test_features_http_get_all(app, create_random_feature_obj):
 @pytest.mark.asyncio
 async def test_features_http_delete_existing_succeeds(app, create_random_feature_obj):
     path = "/api/features/{id}"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         features = [await create_random_feature_obj() for _ in range(5)]
         r = await client.delete(path.format(id=features[3].id))
         assert r.status_code == 200
@@ -109,6 +109,6 @@ async def test_features_http_delete_existing_succeeds(app, create_random_feature
 @pytest.mark.asyncio
 async def test_features_http_delete_nonexisting_raises(app, create_random_feature_obj):
     path = "/api/features/{id}"
-    async with TestClient(app) as client:
+    async with AsyncClient(app=app, base_url="http://test") as client:
         r = await client.delete(path.format(id=uuid.uuid4()))
         assert r.status_code == 404

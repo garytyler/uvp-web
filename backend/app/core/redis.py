@@ -4,7 +4,7 @@ from weakref import WeakKeyDictionary, WeakSet
 import aioredis
 from aioredis import Channel
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 
 class Redis:
@@ -24,7 +24,7 @@ class Redis:
         return getattr(self.pool, name)
 
 
-redis = Redis(settings.REDIS_URL)
+redis = Redis(get_settings().REDIS_URL)
 
 
 async def connect_redis():

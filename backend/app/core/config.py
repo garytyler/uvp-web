@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Any, Dict, Optional, Set
 
 from pydantic import AnyHttpUrl, AnyUrl, BaseSettings, PostgresDsn, SecretStr, validator
@@ -16,6 +17,8 @@ class Settings(BaseSettings):
     SECRET_KEY: SecretStr
     ALLOWED_HOSTS: Set[str]
     BACKEND_CORS_ORIGINS: Set[str]
+    HASH_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Mode
     DEBUG: bool = False
@@ -43,15 +46,10 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: AnyUrl
 
-    # Tortoise
-    TORTOISE_MODEL_MODULES: Set[str] = {
-        "app.models.features",
-        "app.models.guests",
-        "app.models.presenters",
-    }
-
     class Config:
         case_sensitive = True
 
 
-settings = Settings()
+@lru_cache
+def get_settings():
+    return Settings()

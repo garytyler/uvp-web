@@ -36,7 +36,7 @@ async def get_feature(id_or_slug: str):
     return feature_obj
 
 
-@router.get("/features", response_model=List[FeatureOut])
+@router.get("/features", response_model=List)
 async def get_all_features():
     async with in_transaction():
         features = await Feature.all()

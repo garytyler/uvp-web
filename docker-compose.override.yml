@@ -49,7 +49,7 @@ services:
       - SERVER_HOST=https://${DOMAIN_DEV}
       - PYTHONDONTWRITEBYTECODE=1
     labels:
-      - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/api`,`/ws`,`/docs`,`/redoc`)
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
 
   pgadmin:
     labels:

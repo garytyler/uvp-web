@@ -22,9 +22,9 @@ async def create_current_guest(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Guest already exists",
             )
-    guest_obj = await Guest.create(**guest_in.dict(exclude_unset=True))
-    request.session["guest_id"] = str(guest_obj.id)
-    background_tasks.add_task(publish_feature, id=guest_obj.feature_id)
+    guest_obj = await Guest.create(**guest_in.dict(exclude_unset=True))  # type: ignore
+    request.session["guest_id"] = str(guest_obj.id)  # type: ignore
+    background_tasks.add_task(publish_feature, id=guest_obj.feature_id)  # type: ignore
     return guest_obj
 
 

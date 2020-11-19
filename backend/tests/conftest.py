@@ -14,7 +14,7 @@ from app.core.security import get_password_hash
 from app.models.features import Feature
 from app.models.guests import Guest
 from app.models.users import User
-from app.schemas.users import UserCreate
+from app.schemas.users import UserDbCreate
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
@@ -182,11 +182,10 @@ def create_random_password():
 @pytest.mark.asyncio
 async def create_random_user(faker, create_random_password):
     async def _create_random_user(password=None):
-        user_create = UserCreate(
-            name=faker.name(),
-            hashed_password=get_password_hash(password),
+        user_create_db = UserDbCreate(
+            hashed_password=get_password_hash(password or create_random_password()),
             email=faker.safe_email(),
         )
-        return await User.create(**user_create.dict())
+        return await User.create(**user_create_db.dict())
 
     return _create_random_user

@@ -2,7 +2,6 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.security import get_password_hash, verify_password
-from app.schemas.users import UserIn
 
 
 @pytest.mark.asyncio
@@ -33,16 +32,16 @@ async def test_rest_login_create_user_and_login(
     user_password = create_random_password()
 
     # create user
-    user_in = UserIn(password=user_password, email=faker.email())
+    payload = dict(password=user_password, email=faker.safe_email())
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/users", data=user_in.json())  # type: ignore
-        assert r.status_code == 200
-        assert r.json()["email"] == user_in.email
+        r = await ac.post("/api/users", json=payload)  # type: ignore
+    assert r.status_code == 200
+    assert r.json()["email"] == payload["email"]
 
     # login user
+    payload = dict(username=r.json()["email"], password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        payload = {"username": r.json()["email"], "password": user_password}
         r = await ac.post("/api/token", data=payload)
-        assert r.status_code == 200
-        assert "access_token" in r.json()
-        assert r.json()["access_token"]
+    assert r.status_code == 200
+    assert "access_token" in r.json()
+    assert r.json()["access_token"]

@@ -10,7 +10,7 @@ import asyncclick as click
 from asgi_lifespan import LifespanManager
 
 from app.core.security import get_password_hash, verify_password
-from app.schemas.users import UserCreate
+from app.schemas.users import UserDbCreate
 
 
 @click.group()
@@ -58,7 +58,7 @@ async def createsuperuser(email, password, name=None):
     from app.models.users import User
 
     async with LifespanManager(app):
-        user_create = UserCreate(
+        user_create = UserDbCreate(
             name=name,
             email=email,
             hashed_password=get_password_hash(password),

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import EmailStr
 from tortoise import Tortoise
 from tortoise.contrib.pydantic.creator import pydantic_model_creator
 
@@ -9,25 +10,25 @@ from .base import CustomPydanticBase
 
 
 class UserInCreate(CustomPydanticBase):
-    email: str
+    email: EmailStr
     password: str
     is_active: bool = True
 
 
 class UserDbCreate(CustomPydanticBase):
-    email: str
+    email: EmailStr
     hashed_password: str
     is_active: bool = True
 
 
 class UserInUpdate(CustomPydanticBase):
-    email: Optional[str]
+    email: Optional[EmailStr]
     password: Optional[str]
     is_active: Optional[bool]
 
 
 class UserDbUpdate(CustomPydanticBase):
-    email: Optional[str]
+    email: Optional[EmailStr]
     hashed_password: Optional[str]
     is_active: Optional[bool]
 

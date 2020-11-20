@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
+    "test-watch:unit": "vue-cli-service test:unit --watch",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -25,6 +26,9 @@
     "vuex": "^3.5.1"
   },
   "devDependencies": {
+    "@mdi/font": "^5.8.55",
+    "@testing-library/jest-dom": "^5.11.6",
+    "@testing-library/vue": "^5.4.0",
     "@types/jest": "^24.0.19",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
@@ -42,6 +46,7 @@
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-vue": "^6.2.2",
+    "jest-mock-axios": "^4.2.1",
     "prettier": "^1.19.1",
     "sass": "^1.29.0",
     "sass-loader": "^8.0.0",

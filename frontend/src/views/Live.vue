@@ -12,9 +12,9 @@
       </v-container>
   </v-system-bar>-->
 
-  <v-content>
+  <v-main>
     <router-view></router-view>
-  </v-content>
+  </v-main>
 </template>
 
 <script lang="ts">

@@ -20,9 +20,9 @@
       </div>
     </v-sheet>
 
-    <v-content>
+    <v-main>
       <router-view></router-view>
-    </v-content>
+    </v-main>
   </div>
 </template>
 
@@ -32,13 +32,13 @@ import { store } from "../store";
 import { urlPathToWsUrl } from "../services/urls.js";
 import {
   dispatchGetCurrentFeature,
-  dispatchGetCurrentGuest
+  dispatchGetCurrentGuest,
 } from "../store/live/actions";
 import {
   readFeature,
   readGuest,
   readIsFeaturePresenterOnline,
-  readIsCurrentGuestInteractingGuest
+  readIsCurrentGuestInteractingGuest,
 } from "../store/live/getters";
 
 export default Vue.extend({
@@ -52,7 +52,7 @@ export default Vue.extend({
     },
     isFeaturePresenterOnline() {
       return readIsFeaturePresenterOnline(this.$store);
-    }
+    },
   },
   async beforeCreate() {
     this.$store.watch(
@@ -84,7 +84,7 @@ export default Vue.extend({
       let targetChild = {};
       if (!feature) {
         targetChild = {
-          path: `/live/${to.params.featureSlug}/not-found`
+          path: `/live/${to.params.featureSlug}/not-found`,
         };
       } else if (guest && readIsCurrentGuestInteractingGuest(store)) {
         targetChild = { path: `/live/${to.params.featureSlug}/interact` };
@@ -93,7 +93,7 @@ export default Vue.extend({
       }
       if (targetChild["path"] !== to.path) next(targetChild);
     });
-  }
+  },
 });
 </script>
 

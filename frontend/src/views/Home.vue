@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-content>
+    <v-main>
       <h2>[Home]</h2>
-    </v-content>
+    </v-main>
   </div>
 </template>
 

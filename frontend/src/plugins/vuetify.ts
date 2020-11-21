@@ -5,8 +5,12 @@ import "vuetify/dist/vuetify.min.css";
 
 Vue.use(Vuetify);
 
-export default new Vuetify({
-  theme: {
-    dark: true
-  }
-});
+export const createVuetify = () => {
+  return new Vuetify({
+    theme: {
+      dark: true,
+    },
+  });
+};
+
+export default createVuetify();

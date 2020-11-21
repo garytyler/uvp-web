@@ -50,8 +50,12 @@ export const routes = [
   },
 ];
 
-export const router = new VueRouter({
-  mode: "history",
-  base: process.env.BASE_URL,
-  routes: routes,
-});
+export const createRouter = () => {
+  return new VueRouter({
+    mode: "history",
+    base: process.env.BASE_URL,
+    routes: routes,
+  });
+};
+
+export default createRouter();

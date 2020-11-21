@@ -19,26 +19,30 @@ const storeOptions: StoreOptions<State> = {
   plugins: debug ? [createLogger()] : [],
 };
 
-export const store = new Vuex.Store<State>(storeOptions);
+export const createStore = () => {
+  const store = new Vuex.Store<State>(storeOptions);
 
-if (module.hot) {
-  module.hot.accept(["./live", "./socket"], () => {
-    const newLiveModule = require("./live").default;
-    const newSocketModule = require("./socket").default;
-    store.hotUpdate({
-      modules: {
-        live: newLiveModule,
-        socket: newSocketModule,
-      },
+  if (module.hot) {
+    module.hot.accept(["./live", "./socket"], () => {
+      const newLiveModule = require("./live").default;
+      const newSocketModule = require("./socket").default;
+      store.hotUpdate({
+        modules: {
+          live: newLiveModule,
+          socket: newSocketModule,
+        },
+      });
     });
+  }
+
+  // Actual url is passed to $connect call in code.
+  Vue.use(VueNativeSock, "ws://example.com", {
+    connectManually: true,
+    store: store,
+    format: "json",
   });
-}
 
-// Actual url is passed to $connect call in code.
-Vue.use(VueNativeSock, "ws://example.com", {
-  connectManually: true,
-  store: store,
-  format: "json",
-});
+  return store;
+};
 
-export default store;
+export default createStore();

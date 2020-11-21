@@ -35,7 +35,6 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "src/store/modules/live.js"
   ],
   "typeRoots": [
     "src/types/custom.d.ts"

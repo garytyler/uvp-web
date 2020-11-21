@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { store } from "../store";
+import store from "../store";
 import { urlPathToWsUrl } from "../services/urls.js";
 import {
   dispatchGetCurrentFeature,

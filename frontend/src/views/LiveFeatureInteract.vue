@@ -6,7 +6,7 @@
           <v-btn
             block
             align="stretch"
-            style="height: 100px;"
+            style="height: 100px"
             :disabled="!isFeaturePresenterOnline"
             :color="isSending ? 'accent' : 'primary'"
             @click="
@@ -22,7 +22,13 @@
     <v-row justify="center" class="mt-12">
       <v-col cols="6">
         <v-row>
-          <v-btn block align="stretch" color="accent darken-4" @click="onExitButtonPressed()">Exit</v-btn>
+          <v-btn
+            block
+            align="stretch"
+            color="accent darken-4"
+            @click="onExitButtonPressed()"
+            >Exit</v-btn
+          >
         </v-row>
       </v-col>
     </v-row>
@@ -31,7 +37,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { store } from "../store";
+import store from "../store";
 import { readIsFeaturePresenterOnline, readGuest } from "../store/live/getters";
 import { dispatchDeleteGuest } from "../store/live/actions";
 import device from "@/services/device.js";
@@ -40,13 +46,13 @@ export default Vue.extend({
   data() {
     return {
       isSending: false,
-      dialog: true
+      dialog: true,
     };
   },
   computed: {
     isFeaturePresenterOnline() {
       return readIsFeaturePresenterOnline(this.$store);
-    }
+    },
   },
   methods: {
     startSendingDeviceMotion() {
@@ -66,8 +72,8 @@ export default Vue.extend({
         dispatchDeleteGuest(store, { guestId: guest.id });
       }
       this.stopSendingDeviceMotion();
-    }
-  }
+    },
+  },
 });
 </script>
 

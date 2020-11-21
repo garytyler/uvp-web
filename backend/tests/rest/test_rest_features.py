@@ -5,6 +5,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.models.features import Feature
+from app.schemas.features import FeatureOut
 
 
 @pytest.mark.asyncio
@@ -32,6 +33,7 @@ async def test_rest_features_post_with_custom_slug(
         assert feature.title == data["title"]
         assert feature.slug == data["slug"]
         assert feature.turn_duration == data["turn_duration"]
+        assert FeatureOut(**content)
 
 
 @pytest.mark.asyncio
@@ -50,6 +52,7 @@ async def test_rest_features_post_without_custom_slug(app, create_random_feature
         assert feature
         assert feature.title == data["title"]
         assert feature.turn_duration == data["turn_duration"]
+        assert FeatureOut(**content)
 
 
 @pytest.mark.asyncio
@@ -67,6 +70,7 @@ async def test_rest_features_get_by_id(
         content = r.json()
         assert content["title"] == random_feature.title
         assert content["turn_duration"] == random_feature.turn_duration
+        assert FeatureOut(**content)
 
 
 @pytest.mark.asyncio
@@ -84,6 +88,7 @@ async def test_rest_features_get_by_slug(
         content = r.json()
         assert content["title"] == random_feature.title
         assert content["turn_duration"] == random_feature.turn_duration
+        assert FeatureOut(**content)
 
 
 @pytest.mark.asyncio
@@ -94,6 +99,9 @@ async def test_features_http_get_all(app, create_random_feature_obj):
         r = await client.get(path)
         assert r.status_code == 200
         content = r.json()
+
+        print(content[0])
+        assert [FeatureOut(**i) for i in content]
         assert [i["title"] for i in content] == [i.title for i in features]
 
 

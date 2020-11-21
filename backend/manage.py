@@ -1,16 +1,18 @@
 #!/usr/bin/env python
-
-
 import sys
 from importlib import import_module
 from inspect import getmembers, isclass
+from pathlib import Path
 
 import aioconsole
 import asyncclick as click
+import uvicorn
 from asgi_lifespan import LifespanManager
 
 from app.core.security import get_password_hash, verify_password
 from app.schemas.users import UserDbCreate
+
+BACKEND_BASE_DIR = Path(__file__).resolve(strict=True).parent
 
 
 @click.group()
@@ -46,7 +48,13 @@ async def shell():
 
 @cli.command()
 async def runserver(host: str = "0.0.0.0", port: int = 8000):
-    pass
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        use_colors=True,
+    )
 
 
 @cli.command()

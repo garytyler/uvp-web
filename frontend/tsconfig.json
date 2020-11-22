@@ -15,7 +15,9 @@
     "types": [
       "webpack-env",
       "jest",
-      "vuetify"
+      "vuetify",
+      "jest-playwright-preset",
+      "expect-playwright"
     ],
     "paths": {
       "@/*": [

@@ -10,7 +10,7 @@ export const renderRoute = async function(
   urlPath: string,
   routerRef?: VueRouter
 ): Promise<RenderResult> {
-  let result: RenderResult = render(
+  const result: RenderResult = render(
     App,
     { vuetify, routes },
     (vue, store, router) => {

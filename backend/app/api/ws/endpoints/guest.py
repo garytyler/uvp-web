@@ -20,8 +20,9 @@ class GuestWebSocket(APIWebSocketEndpoint):
         # guest to feature guest list here, and use another endpoint for non-guest
         # visitors.
         feature_slug = ws.scope["path_params"].get("slug")
-        if not (feature := await Feature.get(slug=feature_slug)):
-            return await ws.close(code=status.HTTP_404_NOT_FOUND)
+        if not (feature := await Feature.get_or_none(slug=feature_slug)):
+            await ws.close(code=status.HTTP_404_NOT_FOUND)
+            return None
         await ws.accept()
         self.presenter_ch_name = str(feature.presenter_channel_name)
         self.interactor_ch = (

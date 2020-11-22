@@ -18,7 +18,8 @@ class PresenterWebSocket(APIWebSocketEndpoint):
     async def on_connect(self, websockets: WebSocket) -> None:
         feature_slug = websockets.scope["path_params"].get("slug")
         if not (feature := await Feature.get_or_none(slug=feature_slug)):
-            return await websockets.close(code=status.HTTP_404_NOT_FOUND)
+            await websockets.close(code=status.HTTP_404_NOT_FOUND)
+            return None
         presenter = await Presenter.create(
             **PresenterCreate(feature_id=feature.id).dict()
         )

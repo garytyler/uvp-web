@@ -14,6 +14,7 @@
 */.vs
 */.vscode
 */.venv
+*/.sqlite*
 */*.*proj.user
 */*.dbmdl
 */*.jfm

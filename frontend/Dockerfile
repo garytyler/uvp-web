@@ -18,6 +18,9 @@ RUN cp -a /tmp/node_modules /srv/app/frontend/
 # Use provided node user
 USER node
 
+# Expose port
+EXPOSE 8080
+
 FROM dev-stage as build-stage
 
 # Compile build

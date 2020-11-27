@@ -11,8 +11,8 @@ async def test_create_user(app, faker, create_random_password) -> None:
     payload = dict(password=user_password, email=faker.safe_email())
     async with AsyncClient(app=app, base_url="http://test") as ac:
         r = await ac.post("/api/users", json=payload)  # type: ignore
-        assert r.status_code == 200
-        assert r.json()["email"] == payload["email"]
+    assert r.status_code == 200
+    assert r.json()["email"] == payload["email"]
     user_obj = await User.get(email=payload["email"])
     assert user_obj
     assert verify_password(user_password, user_obj.hashed_password)
@@ -26,7 +26,7 @@ async def test_get_own_user(app, create_random_password, create_random_user) -> 
     # get access token
     payload = dict(username=user_obj.email, password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/token", data=payload)
+        r = await ac.post("/api/login/access-token", data=payload)
     assert r.status_code == 200
     access_token = r.json()["access_token"]
 
@@ -52,7 +52,7 @@ async def test_update_own_user_email(
     # get access token
     payload = dict(username=old_user_obj.email, password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/token", data=payload)
+        r = await ac.post("/api/login/access-token", data=payload)
     assert r.status_code == 200
     access_token = r.json()["access_token"]
 
@@ -83,7 +83,7 @@ async def test_update_own_user_password(
     # get access token
     payload = dict(username=old_user_obj.email, password=old_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/token", data=payload)
+        r = await ac.post("/api/login/access-token", data=payload)
     assert r.status_code == 200
     access_token = r.json()["access_token"]
 

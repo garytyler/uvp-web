@@ -19,7 +19,7 @@ async def test_rest_login_get_access_token_succeeds(
     user_obj = await create_random_user(password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
         payload = {"username": user_obj.email, "password": user_password}
-        r = await ac.post("/api/token", data=payload)
+        r = await ac.post("/api/login/access-token", data=payload)
         assert r.status_code == 200
         assert "access_token" in r.json()
         assert r.json()["access_token"]
@@ -41,7 +41,7 @@ async def test_rest_login_create_user_and_login(
     # login user
     payload = dict(username=r.json()["email"], password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/token", data=payload)
+        r = await ac.post("/api/login/access-token", data=payload)
     assert r.status_code == 200
     assert "access_token" in r.json()
     assert r.json()["access_token"]

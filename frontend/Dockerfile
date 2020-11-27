@@ -1,23 +1,24 @@
 FROM node:14-buster as node
 FROM nginx:stable-alpine as nginx
 
-FROM node as dev-stage
-
-# Use non-root user
-ARG USERNAME=frontenduser
-RUN usermod -d /home/$USERNAME -l $USERNAME node
+FROM node as install-stage
 
 # Install node dependencies to cache dir
 WORKDIR /tmp
 COPY package.json package-lock.json /tmp/
 RUN npm install
 
-# Copy node dependencies to service dir
-WORKDIR /app/frontend
-COPY . /app/frontend/
-RUN cp -a /tmp/node_modules /app/frontend/
+FROM install-stage as dev-stage
 
-FROM base-stage as build-stage
+# Copy node dependencies to service dir
+WORKDIR /srv/app/frontend
+COPY . ./
+RUN cp -a /tmp/node_modules /srv/app/frontend/
+
+# Use provided node user
+USER node
+
+FROM dev-stage as build-stage
 
 # Compile build
 RUN npm run build
@@ -25,7 +26,7 @@ RUN npm run build
 FROM nginx as prod-stage
 
 # Copy build to server container
-COPY --from=build-stage /app/frontend/dist /app/
+COPY --from=build-stage /srv/app/frontend/dist /app/
 
 # Copy nginx configuration to server container
 COPY nginx.conf /etc/nginx/nginx.conf

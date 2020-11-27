@@ -20,10 +20,8 @@ services:
     ports:
       - 8080
     volumes:
-      - .:/app:ro
-      - ./.git:/app/.git:rw
-      - ./frontend:/app/frontend:rw
-      - exclude:/app/frontend/node_modules/
+      - .:/srv/app:rw
+      - ./app/backend:/srv/app/backend:ro
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
@@ -35,24 +33,17 @@ services:
   backend:
     build:
       target: dev-stage
-      args:
-        - USERNAME=devuser
     command: /bin/bash -c "uvicorn --reload --host=0.0.0.0 --port=8000 app.main:app"
     volumes:
-      - .:/app:ro
-      - ./.git:/app/.git:rw
-      - ./backend:/app/backend:rw
+      - .:/srv/app:rw
+      - ./app/frontend:/srv/app/frontend:ro
     environment:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}
       - SERVER_HOST=https://${DOMAIN_DEV}
-      - PYTHONDONTWRITEBYTECODE=1
     labels:
       - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
 
   pgadmin:
     labels:
       - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_DEV}`)
-
-volumes:
-  exclude:

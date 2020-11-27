@@ -1,12 +1,12 @@
+FROM python:3.8-buster AS python
 
-
-FROM python:3.8-buster AS prod-stage
+FROM python AS install-stage
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # define username
-ARG USERNAME=${USERNAME:-productionuser}
+ENV USERNAME=backenduser
 
 # Create non-root user
 ARG USER_UID=1000
@@ -30,40 +30,37 @@ RUN mkdir -p $LOCALBIN
 ENV PATH=$LOCALBIN:${PATH}
 
 # Set working dir
-WORKDIR /app/backend/
+WORKDIR /srv/app/backend/
 
 # Copy dependency configuration
 COPY --chown=$USERNAME:$USERNAME ./pyproject.toml ./poetry.lock* ./
 
 # Install poetry and poetry dependencies
 ENV POETRY_HOME=$HOMEDIR/.poetry
+ENV POETRY_NO_INTERACTION=1
 RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
     | POETRY_HOME=$POETRY_HOME python \
     && ln -s $POETRY_HOME/bin/poetry $LOCALBIN/poetry \
     && poetry config virtualenvs.create false \
     && poetry install --no-root --no-dev
 
-# Copy project files
-COPY --chown=$USERNAME:$USERNAME ./ ./
-
-FROM prod-stage AS dev-stage
-
-# define username
-ARG USERNAME=${USERNAME}
+FROM install-stage  AS install-dev-stage
 
 # Install dev dependencies
 USER $USERNAME
 RUN poetry install --no-root
 
+FROM install-stage AS prod-stage
+
+# Copy project files
+COPY --chown=$USERNAME:$USERNAME ./ ./
+
+FROM install-dev-stage AS dev-stage
+
 # Use root user to install sudo and make non-root user a sudoer
 USER root
 RUN apt-get update \
-    && apt-get install -y sudo \
+    && apt-get install --no-install-recommends -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
-
-# Use non-root user for everything else
 USER $USERNAME
-
-# Install git
-RUN sudo apt-get install git -y

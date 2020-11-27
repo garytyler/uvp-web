@@ -35,4 +35,8 @@ class UserDbUpdate(CustomPydanticBase):
 
 Tortoise.init_models(["app.models.users"], "models")
 
-UserOut = pydantic_model_creator(User, name="models.User", exclude=("hashed_password",))
+UserOut = pydantic_model_creator(
+    User,
+    name="models.User",
+    exclude=("hashed_password", "features"),
+)

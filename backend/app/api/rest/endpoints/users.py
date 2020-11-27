@@ -7,13 +7,7 @@ from tortoise.transactions import in_transaction
 from app.api.dependencies.users import get_current_active_user
 from app.core.security import get_password_hash
 from app.models.users import User
-from app.schemas.users import (
-    UserDbCreate,
-    UserDbUpdate,
-    UserInCreate,
-    UserInUpdate,
-    UserOut,
-)
+from app.schemas.users import UserDbUpdate, UserInCreate, UserInUpdate, UserOut
 
 router = APIRouter()
 
@@ -60,12 +54,13 @@ async def read_user_by_id(id: UUID):
 
 @router.post("/users", response_model=UserOut)
 async def create_new_user(user_in: UserInCreate):
-    user_db = UserDbCreate(
+    user_obj, created = await User.get_or_create(
         email=user_in.email,
-        hashed_password=get_password_hash(user_in.password),
-        is_active=user_in.is_active,
+        defaults=dict(
+            hashed_password=get_password_hash(user_in.password),
+            is_active=user_in.is_active,
+        ),
     )
-    user_obj, created = await User.get_or_create(**user_db.dict())
     if not created:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

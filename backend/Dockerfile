@@ -1,4 +1,4 @@
-FROM python:3.8-buster AS python
+FROM python:3.9-buster AS python
 
 FROM python AS install-stage
 

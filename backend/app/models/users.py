@@ -5,6 +5,7 @@ from .base import CustomTortoiseBase, TimestampMixin
 
 class User(TimestampMixin, CustomTortoiseBase):
     id = fields.UUIDField(pk=True, read_only=True)
+    name = fields.CharField(index=True, max_length=100, unique=True)
     email = fields.CharField(index=True, max_length=100, unique=True)
     hashed_password = fields.CharField(max_length=100)
     is_active = fields.BooleanField(default=True)

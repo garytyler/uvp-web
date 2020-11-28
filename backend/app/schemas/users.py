@@ -10,24 +10,28 @@ from .base import CustomPydanticBase
 
 
 class UserInCreate(CustomPydanticBase):
+    name: str
     email: EmailStr
     password: str
     is_active: bool = True
 
 
 class UserDbCreate(CustomPydanticBase):
+    name: str
     email: EmailStr
     hashed_password: str
     is_active: bool = True
 
 
 class UserInUpdate(CustomPydanticBase):
+    name: str
     email: Optional[EmailStr]
     password: Optional[str]
     is_active: Optional[bool]
 
 
 class UserDbUpdate(CustomPydanticBase):
+    name: str
     email: Optional[EmailStr]
     hashed_password: Optional[str]
     is_active: Optional[bool]

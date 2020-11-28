@@ -28,10 +28,12 @@ async def update_current_user(
     current_user_obj: User = Depends(get_current_active_user),
 ):
     user_db = UserDbUpdate()
-    if user_in.password is not None:
-        user_db.hashed_password = get_password_hash(user_in.password)
+    if user_in.name is not None:
+        user_db.name = user_in.name
     if user_in.email is not None:
         user_db.email = user_in.email
+    if user_in.password is not None:
+        user_db.hashed_password = get_password_hash(user_in.password)
     if user_in.is_active is not None:
         user_db.is_active = user_in.is_active
     async with in_transaction():
@@ -57,6 +59,7 @@ async def create_new_user(user_in: UserInCreate):
     user_obj, created = await User.get_or_create(
         email=user_in.email,
         defaults=dict(
+            name=user_in.name,
             hashed_password=get_password_hash(user_in.password),
             is_active=user_in.is_active,
         ),

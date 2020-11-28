@@ -99,8 +99,6 @@ async def test_features_http_get_all(app, create_random_feature_obj):
         r = await client.get(path)
         assert r.status_code == 200
         content = r.json()
-
-        print(content[0])
         assert [FeatureOut(**i) for i in content]
         assert [i["title"] for i in content] == [i.title for i in features]
 

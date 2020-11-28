@@ -21,7 +21,7 @@ services:
       - 8080
     volumes:
       - .:/srv/app:rw
-      - ./app/backend:/srv/app/backend:ro
+      - node_modules:/srv/app/frontend/node_modules
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
@@ -36,7 +36,6 @@ services:
     command: /bin/bash -c "uvicorn --reload --host=0.0.0.0 --port=8000 app.main:app"
     volumes:
       - .:/srv/app:rw
-      - ./app/frontend:/srv/app/frontend:ro
     environment:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}
@@ -47,3 +46,6 @@ services:
   pgadmin:
     labels:
       - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_DEV}`)
+
+volumes:
+  node_modules:

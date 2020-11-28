@@ -1,12 +1,11 @@
 aliases:
   - &python_settings
     types: [python]
+    files: ./backend
     exclude: >
       (?x)^(
         .+/migrations/.+|
       )$
-default_language_version:
-  python: python3.9
 repos:
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.6.4
@@ -39,11 +38,14 @@ repos:
     rev: v3.3.0
     hooks:
       - id: check-added-large-files
-      - id: check-ast
-      - id: check-builtin-literals
       - id: check-executables-have-shebangs
       - id: check-merge-conflict
       - id: check-toml
       - id: check-vcs-permalinks
-      - id: debug-statements
       - id: detect-private-key
+      - <<: *python_settings
+        id: debug-statements
+      - <<: *python_settings
+        id: check-ast
+      - <<: *python_settings
+        id: check-builtin-literals

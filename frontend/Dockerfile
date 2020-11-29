@@ -15,7 +15,11 @@ WORKDIR /srv/app/frontend
 COPY . ./
 RUN cp -a /tmp/node_modules /srv/app/frontend/
 
-# Use provided node user
+# Give sudo permissions to provided node user and change to node user
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y sudo \
+    && echo node ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/node \
+    && chmod 0440 /etc/sudoers.d/node
 USER node
 
 # Expose port

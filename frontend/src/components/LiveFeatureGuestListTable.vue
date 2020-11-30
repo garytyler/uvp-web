@@ -63,9 +63,7 @@
       <template v-slot:item.index="{ item }">
         <v-chip
           :color="
-            (currentGuest
-            ? item.id === currentGuest.id
-            : false)
+            (currentGuest ? item.id === currentGuest.id : false)
               ? 'info darken-2'
               : currentFeature.guests.indexOf(item) === 0
               ? 'success darken-2'
@@ -82,9 +80,7 @@
       <template v-slot:item.name="{ item }">
         <v-chip
           :color="
-            (currentGuest
-            ? item.id === currentGuest.id
-            : false)
+            (currentGuest ? item.id === currentGuest.id : false)
               ? 'info darken-2'
               : currentFeature.guests.indexOf(item) === 0
               ? 'success darken-2'
@@ -99,23 +95,19 @@
       <template v-slot:item.handle="{ item }">
         <div v-if="currentFeature.guests.indexOf(item) > 0">
           <div class="handle">
-            <v-icon small>
-              drag_handle
-            </v-icon>
+            <v-icon small> mdi-drag </v-icon>
           </div>
         </div>
       </template>
 
       <template v-slot:item.delete-action="{ item }">
-        <v-icon @click="deleteItem(item)">
-          delete
-        </v-icon>
+        <v-icon @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
 
       <template v-slot:item.edit-action="{ item }">
         <div v-if="featureOwner || currentGuest.id === item.id">
           <v-icon class="mr-2" @click="initEditDialog(item)">
-            edit
+            mdi-pencil
           </v-icon>
         </div>
       </template>
@@ -126,7 +118,7 @@
 <script>
 import {
   dispatchUpdateGuest,
-  dispatchDeleteGuest
+  dispatchDeleteGuest,
 } from "../store/live/actions";
 import { readFeature, readGuest } from "../store/live/getters";
 import Sortable from "sortablejs";
@@ -136,12 +128,12 @@ export default {
     featureOwner: {
       required: false,
       type: Boolean,
-      default: true // Set to false before deployment
-    }
+      default: true, // Set to false before deployment
+    },
   },
   data: () => ({
     dialog: false,
-    editedItem: {}
+    editedItem: {},
   }),
   computed: {
     headers() {
@@ -150,20 +142,20 @@ export default {
           text: "Index",
           align: "start",
           sortable: false,
-          value: "index"
+          value: "index",
         },
         {
           text: "Name",
           align: "start",
           sortable: false,
-          value: "name"
+          value: "name",
         },
         {
           text: "Edit",
           value: "edit-action",
           align: "end",
-          sortable: false
-        }
+          sortable: false,
+        },
       ];
       if (this.featureOwner === true) {
         return [
@@ -171,15 +163,15 @@ export default {
             text: "Move",
             value: "handle",
             align: "start",
-            sortable: false
+            sortable: false,
           },
           ..._headers,
           {
             text: "Delete",
             align: "end",
             sortable: false,
-            value: "delete-action"
-          }
+            value: "delete-action",
+          },
         ];
       } else {
         return _headers;
@@ -190,10 +182,10 @@ export default {
     },
     currentGuest() {
       return readGuest(this.$store);
-    }
+    },
   },
   methods: {
-    rowClick: function(item, row) {
+    rowClick: function (item, row) {
       row.select(false);
       row.deselect(item, false);
     },
@@ -212,12 +204,12 @@ export default {
     async handleSubmit() {
       await dispatchUpdateGuest(this.$store, {
         guestId: this.editedItem.id,
-        guest: this.editedItem
+        guest: this.editedItem,
       });
       this.dialog = this.currentGuest
         ? Boolean(this.currentGuest.name == this.editedItem.name)
         : false;
-    }
+    },
   },
   mounted() {
     const table = this.$refs.table.$el.querySelector("tbody");
@@ -232,9 +224,9 @@ export default {
             `Reordering not implemented. - newIndex=${newIndex} oldIndex=${oldIndex}`
           );
         }
-      }
+      },
     });
-  }
+  },
 };
 </script>
 <style scoped>

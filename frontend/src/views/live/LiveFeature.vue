@@ -28,18 +28,18 @@
 
 <script lang="ts">
 import Vue from "vue";
-import store from "../store";
-import { urlPathToWsUrl } from "../services/urls.js";
+import { store } from "@/store";
+import { urlPathToWsUrl } from "@/services/urls.js";
 import {
   dispatchGetCurrentFeature,
   dispatchGetCurrentGuest,
-} from "../store/live/actions";
+} from "@/store/live/actions";
 import {
   readFeature,
   readGuest,
   readIsFeaturePresenterOnline,
   readIsCurrentGuestInteractingGuest,
-} from "../store/live/getters";
+} from "@/store/live/getters";
 
 export default Vue.extend({
   computed: {

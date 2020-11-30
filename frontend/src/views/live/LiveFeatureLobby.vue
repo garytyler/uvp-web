@@ -11,6 +11,6 @@ import LiveFeatureGuestListTable from "@/components/LiveFeatureGuestListTable.vu
 
 export default {
   name: "live-feature-session-waiting",
-  components: { LiveFeatureJoinModal, LiveFeatureGuestListTable }
+  components: { LiveFeatureJoinModal, LiveFeatureGuestListTable },
 };
 </script>

@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import App from "@/App.vue";
-import vuetify from "@/plugins/vuetify";
+import { vuetify } from "@/plugins/vuetify";
 import { routes } from "@/router.ts";
 import "@testing-library/jest-dom";
 import { render, RenderResult } from "@testing-library/vue";

@@ -37,9 +37,9 @@
 
 <script lang="ts">
 import Vue from "vue";
-import store from "../store";
-import { readIsFeaturePresenterOnline, readGuest } from "../store/live/getters";
-import { dispatchDeleteGuest } from "../store/live/actions";
+import { store } from "@/store";
+import { readIsFeaturePresenterOnline, readGuest } from "@/store/live/getters";
+import { dispatchDeleteGuest } from "@/store/live/actions";
 import device from "@/services/device.js";
 
 export default Vue.extend({

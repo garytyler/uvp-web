@@ -5,12 +5,12 @@ import { actions } from "./actions";
 const defaultState: SocketState = {
   isConnected: false,
   message: "",
-  reconnectError: false
+  reconnectError: false,
 };
 
 export const socketModule = {
   namespaced: false,
   state: defaultState,
   mutations,
-  actions
+  actions,
 };

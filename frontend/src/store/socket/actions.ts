@@ -1,5 +1,5 @@
 import { commitSetCurrentFeature } from "@/store/live/mutations";
-import store from "@/store";
+import { store } from "@/store";
 import { IFeature } from "@/interfaces";
 import { camelize } from "@ridi/object-case-converter";
 

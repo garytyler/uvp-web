@@ -17,9 +17,15 @@
         <v-card-text>
           <v-container>
             <v-row justify="center" class="text--secondary">
-              <v-icon color="darker-5" v-for="n in numFeatureGuests" :key="n">person</v-icon>
-              <p v-if="numFeatureGuests === 1">There is 1 guest ahead of you.</p>
-              <p v-else>There are {{ numFeatureGuests }} guests ahead of you.</p>
+              <v-icon color="darker-5" v-for="n in numFeatureGuests" :key="n"
+                >mdi-account-circle</v-icon
+              >
+              <p v-if="numFeatureGuests === 1">
+                There is 1 guest ahead of you.
+              </p>
+              <p v-else>
+                There are {{ numFeatureGuests }} guests ahead of you.
+              </p>
             </v-row>
           </v-container>
           <v-container>
@@ -40,7 +46,9 @@
         <v-card-actions>
           <v-container>
             <v-flex text-center>
-              <v-btn color="primary" large @click="handleSignUpSubmit()">Join</v-btn>
+              <v-btn color="primary" large @click="handleSignUpSubmit()"
+                >Join</v-btn
+              >
             </v-flex>
           </v-container>
         </v-card-actions>
@@ -53,7 +61,7 @@
 import { readGuest, readFeature } from "../store/live/getters";
 import {
   dispatchCreateCurrentGuest,
-  dispatchGetCurrentGuest
+  dispatchGetCurrentGuest,
 } from "../store/live/actions";
 import device from "@/services/device.js";
 export default {
@@ -62,7 +70,7 @@ export default {
     currentGuestLoaded: false,
     editedItem: {},
     nameState: null,
-    status: "NO STATUS"
+    status: "NO STATUS",
   }),
   computed: {
     feature() {
@@ -80,26 +88,26 @@ export default {
     },
     currentGuestIsInFeatureGuests() {
       if (!this.currentGuest) return false;
-      return this.feature.guests.some(i => i.id === this.currentGuest.id);
+      return this.feature.guests.some((i) => i.id === this.currentGuest.id);
     },
     showSignupModal() {
       return !(this.currentGuest && this.currentGuestIsInFeatureGuests);
-    }
+    },
   },
   methods: {
     async handleSignUpSubmit() {
       await device.getOrientationPermissions();
       await dispatchCreateCurrentGuest(this.$store, {
         name: this.editedItem.name,
-        featureId: this.feature.id
+        featureId: this.feature.id,
       });
-    }
+    },
   },
   async beforeCreate() {
     if (!readGuest(this.$store)) {
       await dispatchGetCurrentGuest(this.$store);
     }
-  }
+  },
 };
 </script>
 

@@ -1,0 +1,92 @@
+<template>
+  <div>
+    <v-snackbar :color="currentNotificationColor" v-model="show">
+      <v-progress-circular
+        class="ma-2"
+        indeterminate
+        v-show="showProgress"
+      ></v-progress-circular
+      >{{ currentNotificationContent }}
+      <v-btn text @click.native="close">Close</v-btn>
+    </v-snackbar>
+  </div>
+</template>
+
+<script lang="ts">
+import Vue from "vue";
+import { AppNotification } from "@/store/main/state";
+import { commitRemoveNotification } from "@/store/main/mutations";
+import { readFirstNotification } from "@/store/main/getters";
+import { dispatchRemoveNotification } from "@/store/main/actions";
+
+export default Vue.extend({
+  data: () => {
+    return {
+      show: false as boolean,
+      text: "" as string,
+      showProgress: false as boolean,
+      currentNotification: false as AppNotification | false,
+    };
+  },
+  methods: {
+    async hide() {
+      this.show = false;
+      await new Promise((resolve, reject) =>
+        setTimeout(() => resolve({}), 500)
+      );
+    },
+    async close() {
+      await this.hide();
+      await this.removeCurrentNotification();
+    },
+    async removeCurrentNotification() {
+      if (this.currentNotification) {
+        commitRemoveNotification(this.$store, this.currentNotification);
+      }
+    },
+    async setNotification(notification: AppNotification | false) {
+      if (this.show) {
+        await this.hide();
+      }
+      if (notification) {
+        this.currentNotification = notification;
+        this.showProgress = notification.showProgress || false;
+        this.show = true;
+      } else {
+        this.currentNotification = false;
+      }
+    },
+  },
+  computed: {
+    firstNotification() {
+      return readFirstNotification(this.$store);
+    },
+    currentNotificationContent() {
+      return (
+        (this.currentNotification && this.currentNotification.content) || ""
+      );
+    },
+    currentNotificationColor() {
+      return (
+        (this.currentNotification && this.currentNotification.color) || "info"
+      );
+    },
+  },
+  watch: {
+    async onNotificationChange(
+      newNotification: AppNotification | false,
+      oldNotification: AppNotification | false
+    ) {
+      if (newNotification !== this.currentNotification) {
+        await this.setNotification(newNotification);
+        if (newNotification) {
+          dispatchRemoveNotification(this.$store, {
+            notification: newNotification,
+            timeout: 6500,
+          });
+        }
+      }
+    },
+  },
+});
+</script>

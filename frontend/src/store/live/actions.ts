@@ -1,4 +1,4 @@
-import api from "@/api";
+import { api } from "@/api";
 import { getStoreAccessors } from "typesafe-vuex";
 import { ActionContext } from "vuex";
 import { State } from "../state";
@@ -89,6 +89,7 @@ export const actions = {
 };
 
 const { dispatch } = getStoreAccessors<LiveState, State>("live");
+
 export const dispatchGetCurrentFeature = dispatch(
   actions.actionGetCurrentFeature
 );

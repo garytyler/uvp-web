@@ -23,7 +23,7 @@ export const routes = [
             component: () => import("@/views/Login.vue"),
           },
           {
-            path: "access/recover-password",
+            path: "access/request-password-recovery",
             component: () => import("@/views/access/RecoverPassword.vue"),
           },
           {

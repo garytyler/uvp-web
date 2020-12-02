@@ -4,9 +4,7 @@
       <v-layout align-center justify-center>
         <v-flex xs12 sm8 md4>
           <v-card elevation="12" class="ma-3 pa-3">
-            <v-toolbar>
-              <v-toolbar-title>Reset Password</v-toolbar-title>
-            </v-toolbar>
+            <v-card-title> Reset Password </v-card-title>
             <v-card-text>
               <p class="subheading">Enter your new password below</p>
               <v-form
@@ -92,7 +90,7 @@ export default Vue.extend({
             "No token provided in the URL, start a new password recovery",
           color: "error",
         });
-        this.$router.push("/access/recover-password");
+        this.$router.push("/access/request-password-recovery");
       } else {
         return token;
       }

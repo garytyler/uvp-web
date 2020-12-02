@@ -25,7 +25,7 @@ const accountsApi = {
     const params = new URLSearchParams();
     params.append("username", username);
     params.append("password", password);
-    return axios.post(`/api/login/access-token`, params);
+    return axios.post(`/api/access/token`, params);
   },
   async getCurrentUser(token: string) {
     return axios.get<IUserProfile>(`/api/users/current`, authHeaders(token));
@@ -47,10 +47,10 @@ const accountsApi = {
     return axios.post(`/api/users`, data, authHeaders(token));
   },
   async passwordRecovery(email: string) {
-    return axios.post(`/api/recover-password/${email}`);
+    return axios.post(`/api/access/request-password-recovery/${email}`);
   },
   async resetPassword(password: string, token: string) {
-    return axios.post(`/api/reset-password`, {
+    return axios.post(`/api/access/reset-password`, {
       newPassword: password,
       token,
     });

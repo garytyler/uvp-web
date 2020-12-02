@@ -35,7 +35,7 @@
                 </v-alert>
               </div>
               <v-flex class="caption text-xs-right"
-                ><router-link to="/access/recover-password"
+                ><router-link to="/access/request-password-recovery"
                   >Forgot your password?</router-link
                 ></v-flex
               >

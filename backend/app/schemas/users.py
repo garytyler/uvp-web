@@ -24,14 +24,14 @@ class UserDbCreate(CustomPydanticBase):
 
 
 class UserInUpdate(CustomPydanticBase):
-    name: str
+    name: Optional[str]
     email: Optional[EmailStr]
     password: Optional[str]
     is_active: Optional[bool]
 
 
 class UserDbUpdate(CustomPydanticBase):
-    name: str
+    name: Optional[str]
     email: Optional[EmailStr]
     hashed_password: Optional[str]
     is_active: Optional[bool]

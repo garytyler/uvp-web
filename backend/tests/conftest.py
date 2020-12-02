@@ -181,10 +181,11 @@ def create_random_password():
 @pytest.fixture
 @pytest.mark.asyncio
 async def create_random_user(faker, create_random_password):
-    async def _create_random_user(password=None):
+    async def _create_random_user(email=None, password=None, name=None):
         user_create_db = UserDbCreate(
+            name=name or faker.name(),
             hashed_password=get_password_hash(password or create_random_password()),
-            email=faker.safe_email(),
+            email=email or faker.safe_email(),
         )
         return await User.create(**user_create_db.dict())
 

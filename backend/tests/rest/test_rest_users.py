@@ -8,7 +8,7 @@ from app.models.users import User
 @pytest.mark.asyncio
 async def test_create_user(app, faker, create_random_password) -> None:
     user_password = create_random_password()
-    payload = dict(password=user_password, email=faker.safe_email())
+    payload = dict(password=user_password, email=faker.safe_email(), name=faker.name())
     async with AsyncClient(app=app, base_url="http://test") as ac:
         r = await ac.post("/api/users", json=payload)  # type: ignore
     assert r.status_code == 200
@@ -26,7 +26,7 @@ async def test_get_own_user(app, create_random_password, create_random_user) -> 
     # get access token
     payload = dict(username=user_obj.email, password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/login/access-token", data=payload)
+        r = await ac.post("/api/access/token", data=payload)
     assert r.status_code == 200
     access_token = r.json()["access_token"]
 
@@ -52,12 +52,12 @@ async def test_update_own_user_email(
     # get access token
     payload = dict(username=old_user_obj.email, password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/login/access-token", data=payload)
+        r = await ac.post("/api/access/token", data=payload)
     assert r.status_code == 200
     access_token = r.json()["access_token"]
 
     # update email
-    new_email = faker.email()
+    new_email = faker.safe_email()
     async with AsyncClient(
         app=app,
         base_url="http://test",
@@ -68,9 +68,9 @@ async def test_update_own_user_email(
             json={"email": new_email},
             headers={"Authorization": f"Bearer {access_token}"},
         )
-    assert r.status_code == 200
-    new_user_obj = await User.get(id=old_user_obj.id)
-    assert new_email == new_user_obj.email
+        assert r.status_code == 200
+        new_user_obj = await User.get(id=old_user_obj.id)
+        assert new_email == new_user_obj.email
 
 
 @pytest.mark.asyncio
@@ -81,9 +81,11 @@ async def test_update_own_user_password(
     old_user_obj = await create_random_user(password=old_password)
 
     # get access token
-    payload = dict(username=old_user_obj.email, password=old_password)
+    payload = dict(
+        username=old_user_obj.email, password=old_password, name=old_user_obj.name
+    )
     async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.post("/api/login/access-token", data=payload)
+        r = await ac.post("/api/access/token", data=payload)
     assert r.status_code == 200
     access_token = r.json()["access_token"]
 

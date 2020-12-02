@@ -13,12 +13,22 @@ router = APIRouter()
 
 
 @router.get("/users/current", response_model=UserOut)
-async def get_current_user(current_user: User = Depends(get_current_active_user)):
+async def read_current_user(current_user: User = Depends(get_current_active_user)):
     return current_user
 
 
+@router.get("/users/{id}", response_model=UserOut)
+async def read_user_by_id(id: UUID):
+    if not (user_obj := await User.get_or_none(id=id)):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="User already exists",
+        )
+    return user_obj
+
+
 @router.get("/users", response_model=List[UserOut])  # type: ignore
-async def get_users():
+async def read_users():
     return await User.all()
 
 
@@ -42,16 +52,6 @@ async def update_current_user(
             update_fields=user_db.dict(exclude_unset=True).keys()
         )
     return current_user_obj
-
-
-@router.get("/users/{id}", response_model=UserOut)
-async def read_user_by_id(id: UUID):
-    if not (user_obj := await User.get_or_none(id=id)):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="User already exists",
-        )
-    return user_obj
 
 
 @router.post("/users", response_model=UserOut)

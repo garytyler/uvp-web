@@ -17,8 +17,7 @@ async def on_shutdown_event() -> None:
 
 app = FastAPI(
     debug=get_settings().DEBUG,
-    title=get_settings().PROJECT_TITLE,
-    # Required to load deployed api docs. Result of bug expected to be fixed soon.
+    title=get_settings().PROJECT_NAME,
     openapi_url="/api/openapi.json",
 )
 

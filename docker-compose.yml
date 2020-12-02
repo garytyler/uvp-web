@@ -64,11 +64,19 @@ services:
     env_file:
       - .env
     environment:
+      - PROJECT_NAME
+      - PROJECT_DESCRIPTION
       - DEBUG=${DEBUG-false}
       - SERVER_NAME=${DOMAIN_PROD}
       - SERVER_HOST=https://${DOMAIN_PROD}
       - POSTGRES_HOST=postgres
       - REDIS_URL=redis://redis:6379/0
+      - SMTP_TLS
+      - SMTP_PORT
+      - SMTP_HOST
+      - SMTP_USER
+      - SMTP_PASSWORD
+      - EMAILS_FROM_EMAIL
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=Host(`${DOMAIN_PROD}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)

@@ -70,8 +70,9 @@ async def createsuperuser(email, password, name=None):
             name=name,
             email=email,
             hashed_password=get_password_hash(password),
+            is_active=True,
         )
-        user_obj = await User.create(**user_create.dict())
+        user_obj = await User.create(**user_create.dict(), is_superuser=True)
 
     click.echo(f"Created superuser: {user_obj}")
 

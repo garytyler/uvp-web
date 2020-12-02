@@ -3,19 +3,33 @@ FROM nginx:stable-alpine as nginx
 
 FROM node as install-stage
 
-# Install node dependencies to cache dir
+# Create target directory
+RUN mkdir --parents /srv/app/frontend && chown -R node:node /srv/app/frontend
+
+# Use node user provided by image
+USER node
+
+# Install node dependencies to a cache dir as node user
 WORKDIR /tmp
 COPY package.json package-lock.json /tmp/
 RUN npm install
 
 FROM install-stage as dev-stage
 
-# Copy node dependencies to service dir
-WORKDIR /srv/app/frontend
-COPY . ./
-RUN cp -a /tmp/node_modules /srv/app/frontend/
+# Use node user provided by image
+USER node
 
-# Give sudo permissions to provided node user and change to node user
+# Set workdir to service destination
+WORKDIR /srv/app/frontend
+
+# Copy repo contents
+COPY . ./
+
+# Copy node dependencies to service dir
+RUN rm -rf ./node_modules && cp -af /tmp/node_modules ./
+
+# Give sudo permissions to provided node user
+USER root
 RUN apt-get update \
     && apt-get install --no-install-recommends -y sudo \
     && echo node ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/node \

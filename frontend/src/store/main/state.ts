@@ -2,7 +2,7 @@ import { IUserProfile } from "@/interfaces";
 
 export interface AppNotification {
   content: string;
-  color?: string;
+  type?: "success" | "info" | "warning" | "error";
   showProgress?: boolean;
 }
 

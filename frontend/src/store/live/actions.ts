@@ -25,7 +25,7 @@ export const actions = {
         commitSetCurrentFeature(context, response.data);
       }
     } catch (error) {
-      console.log(error);
+      console.debug(error);
     }
   },
   async actionGetCurrentGuest(context: MainContext) {

@@ -63,7 +63,8 @@
 <script lang="ts">
 import Vue from "vue";
 import { IUserProfileCreate } from "@/interfaces";
-import { dispatchGetUsers, dispatchCreateUser } from "@/store/admin/actions";
+import { dispatchGetUsers } from "@/store/admin/actions";
+import { dispatchSignUp } from "@/store/main/actions";
 
 export default Vue.extend({
   data: () => {
@@ -102,8 +103,8 @@ export default Vue.extend({
         updatedProfile.isActive = this.isActive;
         updatedProfile.isSuperuser = this.isSuperuser;
         updatedProfile.password = this.password1;
-        await dispatchCreateUser(this.$store, updatedProfile);
-        this.$router.push("/account/admin/users");
+        await dispatchSignUp(this.$store, updatedProfile);
+        this.$router.push("/login");
       }
     },
   },

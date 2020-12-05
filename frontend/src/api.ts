@@ -38,7 +38,7 @@ const accountsApi = {
     );
   },
   async getUsers(token: string) {
-    return axios.get<IUserProfile[]>(`/api/users/`, authHeaders(token));
+    return axios.get<IUserProfile[]>(`/api/users`, authHeaders(token));
   },
   async updateUser(token: string, userId: number, data: IUserProfileUpdate) {
     return axios.put(`/api/users/${userId}`, data, authHeaders(token));

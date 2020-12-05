@@ -47,7 +47,7 @@ export const actions = {
       commitRemoveNotification(context, loadingNotification);
       commitAddNotification(context, {
         content: "User successfully updated",
-        color: "success",
+        type: "success",
       });
     } catch (error) {
       await dispatchCheckApiError(context, error);
@@ -69,7 +69,7 @@ export const actions = {
       commitRemoveNotification(context, loadingNotification);
       commitAddNotification(context, {
         content: "User successfully created",
-        color: "success",
+        type: "success",
       });
     } catch (error) {
       await dispatchCheckApiError(context, error);

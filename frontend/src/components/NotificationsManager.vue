@@ -1,13 +1,22 @@
 <template>
   <div>
-    <v-snackbar :color="currentNotificationColor" v-model="show">
-      <v-progress-circular
-        class="ma-2"
-        indeterminate
-        v-show="showProgress"
-      ></v-progress-circular
-      >{{ currentNotificationContent }}
-      <v-btn text @click.native="close">Close</v-btn>
+    <v-snackbar :color="currentNotificationType" v-model="show" bottom>
+      <v-row align="center" justify="center">
+        <v-progress-circular
+          size="24"
+          class="ma-5"
+          v-show="showProgress"
+          indeterminate
+        ></v-progress-circular>
+        <v-icon class="ma-5" v-show="!showProgress">
+          {{ currentNotificationIcon }}
+        </v-icon>
+        {{ currentNotificationContent }}
+        <v-spacer></v-spacer>
+        <v-btn @click.native="close" class="ma-2" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-row>
     </v-snackbar>
   </div>
 </template>
@@ -31,9 +40,7 @@ export default Vue.extend({
   methods: {
     async hide() {
       this.show = false;
-      await new Promise((resolve, reject) =>
-        setTimeout(() => resolve({}), 500)
-      );
+      await new Promise((resolve) => setTimeout(() => resolve({}), 500));
     },
     async close() {
       await this.hide();
@@ -66,19 +73,34 @@ export default Vue.extend({
         (this.currentNotification && this.currentNotification.content) || ""
       );
     },
-    currentNotificationColor() {
+    currentNotificationType() {
       return (
-        (this.currentNotification && this.currentNotification.color) || "info"
+        (this.currentNotification && this.currentNotification.type) || "info"
       );
+    },
+    currentNotificationIcon() {
+      if (!this.currentNotification) {
+        return null;
+      } else if (this.currentNotification.type === "success") {
+        return "mdi-check-circle";
+      } else if (this.currentNotification.type === "info") {
+        return "mdi-information-outline";
+      } else if (this.currentNotification.type === "warning") {
+        return "mdi-alert-outline";
+      } else if (this.currentNotification.type === "error") {
+        return "mdi-alert-octagon-outline";
+      } else {
+        return "checkbox-blank-circle";
+      }
     },
   },
   watch: {
-    async onNotificationChange(
+    firstNotification: async function (
       newNotification: AppNotification | false,
       oldNotification: AppNotification | false
     ) {
       if (newNotification !== this.currentNotification) {
-        await this.setNotification(newNotification);
+        this.setNotification(newNotification);
         if (newNotification) {
           dispatchRemoveNotification(this.$store, {
             notification: newNotification,

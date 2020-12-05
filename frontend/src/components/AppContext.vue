@@ -150,6 +150,7 @@
       <v-container fluid>
         <router-view></router-view>
       </v-container>
+      <NotificationsManager></NotificationsManager>
     </v-main>
   </v-app>
 </template>
@@ -160,6 +161,7 @@ import { appName } from "@/env";
 import { readIsLoggedIn } from "@/store/main/getters";
 import VNavigationDrawer from "../../node_modules/vuetify/types";
 import { dispatchUserLogOut } from "@/store/main/actions";
+import NotificationsManager from "./NotificationsManager.vue";
 import debounce from "debounce";
 
 interface Types {
@@ -174,6 +176,7 @@ interface Types {
 }
 
 export default (Vue as VueConstructor<Vue & Types>).extend({
+  components: { NotificationsManager },
   props: {
     dashboardMode: {
       type: Boolean,

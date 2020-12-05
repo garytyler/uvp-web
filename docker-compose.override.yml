@@ -40,6 +40,7 @@ services:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}
       - SERVER_HOST=https://${DOMAIN_DEV}
+      - DISPLAY
     labels:
       - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
 

@@ -57,10 +57,56 @@ COPY --chown=$USERNAME:$USERNAME ./ ./
 
 FROM install-dev-stage AS dev-stage
 
-# Use root user to install sudo and make non-root user a sudoer
+# Use root user for installing dev software
 USER root
+
+# Give sudo privs to non-root user
 RUN apt-get update \
     && apt-get install --no-install-recommends -y sudo \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Install broswer dependencies for testing with playwright
+# See: https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
+# WebKit dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libwoff1 \
+    libopus0 \
+    libwebp6 \
+    libwebpdemux2 \
+    libenchant1c2a \
+    libgudev-1.0-0 \
+    libsecret-1-0 \
+    libhyphen0 \
+    libgdk-pixbuf2.0-0 \
+    libegl1 \
+    libnotify4 \
+    libxslt1.1 \
+    libevent-2.1-6 \
+    libgles2 \
+    libvpx5 \
+    libxcomposite1 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libepoxy0 \
+    libgtk-3-0 \
+    libharfbuzz-icu0
+
+# Chromium dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    fonts-noto-color-emoji \
+    libxtst6
+
+# Firefox dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libdbus-glib-1-2 \
+    libxt6
+
+# Use non-root user
 USER $USERNAME
+
+# With non-root user, install browsers for testing with playwright
+RUN python -m playwright install

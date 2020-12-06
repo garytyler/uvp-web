@@ -1,23 +1,22 @@
 <template>
-  <div>
-    <v-snackbar :color="currentNotificationType" v-model="show" bottom>
-      <v-row align="center" justify="center">
-        <v-progress-circular
-          size="24"
-          class="ma-5"
-          v-show="showProgress"
-          indeterminate
-        ></v-progress-circular>
-        <v-icon class="ma-5" v-show="!showProgress">
-          {{ currentNotificationIcon }}
-        </v-icon>
+  <div class="d-flex align-center justify-center">
+    <v-alert
+      :type="currentNotificationType"
+      v-model="show"
+      :prominent="!this.$vuetify.breakpoint.mobile"
+      dismissible
+      border="left"
+      class="mx-2 mx-sm-16"
+    >
+      <template v-slot:prepend v-if="showProgress">
+        <v-progress-circular class="ma-5" indeterminate></v-progress-circular>
+      </template>
+      <v-icon class="ma-5" v-else-if="!showProgress"> mdi-close </v-icon>
+
+      <v-col class="align-self-center">
         {{ currentNotificationContent }}
-        <v-spacer></v-spacer>
-        <v-btn @click.native="close" class="ma-2" icon>
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-row>
-    </v-snackbar>
+      </v-col>
+    </v-alert>
   </div>
 </template>
 

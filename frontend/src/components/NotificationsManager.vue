@@ -22,6 +22,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { store } from "@/store";
 import { AppNotification } from "@/store/main/state";
 import { commitRemoveNotification } from "@/store/main/mutations";
 import { readFirstNotification } from "@/store/main/getters";
@@ -65,7 +66,7 @@ export default Vue.extend({
   },
   computed: {
     firstNotification() {
-      return readFirstNotification(this.$store);
+      return readFirstNotification(store);
     },
     currentNotificationContent() {
       return (

@@ -157,6 +157,7 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from "vue";
+import { store } from "@/store";
 import { appName } from "@/env";
 import { readIsLoggedIn } from "@/store/main/getters";
 import VNavigationDrawer from "../../node_modules/vuetify/types";
@@ -193,7 +194,7 @@ export default (Vue as VueConstructor<Vue & Types>).extend({
   },
   computed: {
     isLoggedIn(): boolean | null {
-      return readIsLoggedIn(this.$store);
+      return readIsLoggedIn(store);
     },
   },
   methods: {

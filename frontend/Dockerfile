@@ -6,43 +6,42 @@ FROM node as install-stage
 # Create target directory
 RUN mkdir --parents /srv/app/frontend && chown -R node:node /srv/app/frontend
 
-# Use node user provided by image
-USER node
-
-# Install node dependencies to a cache dir as node user
-WORKDIR /tmp
-COPY package.json package-lock.json /tmp/
-RUN npm install
-
-FROM install-stage as dev-stage
-
-# Use node user provided by image
+# Use node user preconfigured by node image
 USER node
 
 # Set workdir to service destination
 WORKDIR /srv/app/frontend
 
-# Copy repo contents
-COPY . ./
+# COPY package.json package-lock.json /tmp/
+COPY --chown=node:node package.json yarn.lock ./
 
-# Copy node dependencies to service dir
-RUN rm -rf ./node_modules && cp -af /tmp/node_modules ./
+# RUN npm install
+RUN yarn config set yarn-offline-mirror ~/packages-cache
+RUN yarn install
 
-# Give sudo permissions to provided node user
+FROM install-stage as dev-stage
+
+# Give sudo permissions to preconfigured node user
 USER root
 RUN apt-get update \
     && apt-get install --no-install-recommends -y sudo \
     && echo node ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/node \
     && chmod 0440 /etc/sudoers.d/node
+
+# Use node user preconfigured by node image
 USER node
 
-# Expose port
-EXPOSE 8080
+# ENTRYPOINT [ "/bin/bash", "./entrypoint.sh"]
+CMD [ "npm", "run", "serve", "--", "--host=0.0.0.0", "--port=80"]
 
-FROM dev-stage as build-stage
+FROM install-stage as build-stage
+
+COPY . .
+
+WORKDIR /srv/app/frontend
 
 # Compile build
-RUN npm run build
+CMD [ "npm", "run", "build" ]
 
 FROM nginx as prod-stage
 

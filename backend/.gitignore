@@ -371,6 +371,9 @@ yarn-error.log*
 # Splinter
 .splinter_screens
 
+# Playwright
+.playwright_screens
+
 # PostgreSQL
 *.pgpass
 

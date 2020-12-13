@@ -23,5 +23,5 @@ export const renderRoute = async function(
 
 it("Home w/ testing-library", async () => {
   const { getByText } = await renderRoute("/");
-  expect(getByText("[Home]")).toBeTruthy();
+  expect(getByText("UVP Interactive")).toBeTruthy();
 });

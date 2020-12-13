@@ -1,5 +1,4 @@
 import pytest
-from asgi_lifespan import LifespanManager
 from async_asgi_testclient import TestClient
 
 
@@ -7,9 +6,8 @@ from async_asgi_testclient import TestClient
 async def test_guest_ws_broadcasts_feature_to_guests_on_connect(
     app, create_random_feature_obj, create_random_guest_obj
 ):
-    async with LifespanManager(app):
-        random_feature = await create_random_feature_obj()
-        await create_random_guest_obj(feature=random_feature)
+    random_feature = await create_random_feature_obj()
+    await create_random_guest_obj(feature=random_feature)
     async with TestClient(app) as tc:
         async with tc.websocket_connect(f"/ws/guest/{random_feature.slug}") as ws:
             received_json = await ws.receive_json()

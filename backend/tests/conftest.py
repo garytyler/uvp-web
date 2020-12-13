@@ -1,71 +1,133 @@
 import contextlib
+import copy
 import os
 import random
 import socket
-from functools import lru_cache
+import uuid
 from typing import Callable, List
 
 import pytest
 from asgi_lifespan import LifespanManager
+from docker import DockerClient
+from docker.models.containers import Container
 from randstr_plus import randstr
+from tortoise.contrib.test import finalizer as tortoise_test_finalizer
+from tortoise.contrib.test import initializer as tortoise_test_initializer
 
 from app.core import config
+from app.core.db import get_tortoise_config
 from app.core.security import get_password_hash
+from app.main import get_app
 from app.models.features import Feature
 from app.models.guests import Guest
 from app.models.users import User
 from app.schemas.users import UserDbCreate
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEST_DB_FILE_PATH = os.path.join(BASE_DIR, "test_db.sqlite3")
-TEST_DB_URL = f"sqlite://{TEST_DB_FILE_PATH}"
+pytest_plugins = ["pytest_asgi_server"]
 
 
-@lru_cache
-def get_settings_override():
-    return config.Settings(DATABASE_URL=TEST_DB_URL)
-
-
-config.get_settings = get_settings_override  # noqa
-
-
-def pytest_runtest_teardown(item, nextitem):
-    if os.path.exists(TEST_DB_FILE_PATH):
-        os.remove(TEST_DB_FILE_PATH)
-
-
-def pytest_addoption(parser):
-    # Set host/port for multiprocessing test server with command line options
-    parser.addoption("--server-port", action="store", type=int)
-    parser.addoption("--server-host", action="store", type=int)
-
-
-def pytest_generate_tests(metafunc):
-    """https://docs.pytest.org/en/latest/reference.html#_pytest.hookspec.pytest_generate_tests"""
-    if "server_port" in metafunc.fixturenames:
-        metafunc.parametrize("server_port", [metafunc.config.getoption("server_port")])
-        metafunc.parametrize("server_host", [metafunc.config.getoption("server_host")])
+def get_base_dir():
+    return config.Settings().BASE_DIR
 
 
 @pytest.fixture
-async def app(request):
-    from app.main import app
+def settings():
+    return config.get_settings()
 
+
+@pytest.fixture(scope="session")
+def docker_client() -> DockerClient:
+    return DockerClient(base_url="unix://var/run/docker.sock")
+
+
+@pytest.fixture(autouse=True)
+def postgres_container(docker_client) -> Container:
+    os.environ["DB_SUFFIX"] = "_test"
+    label = "test-postgres-container"
+    docker_client.containers.prune(filters={"label": label})
+    tortoise_config: dict = get_tortoise_config()
+    container = docker_client.containers.run(
+        image=os.environ.get("POSTGRES_IMAGE"),
+        name=f"test-postgres-{uuid.uuid4()}",
+        detach=True,
+        environment=dict(
+            POSTGRES_HOST_AUTH_METHOD="trust",
+        ),
+        labels=[label],
+    )
+    try:
+        tortoise_test_initializer(
+            modules=tortoise_config["apps"]["models"]["models"],
+            db_url=tortoise_config["connections"]["default"],
+            app_label="models",
+        )
+        yield container
+    finally:
+        tortoise_test_finalizer()
+        container.kill()
+        container.remove()
+
+
+# @pytest.fixture(scope="session", autouse=True)
+# def session_postgres_container(docker_client: DockerClient) -> Container:
+#     label = "test_postgres_container"
+#     docker_client.containers.prune(filters={"label": label})
+
+#     container = docker_client.containers.run(
+#         image=os.environ.get("POSTGRES_IMAGE"),
+#         name=f"test-postgres-{uuid.uuid4()}",
+#         detach=True,
+#         environment=dict(POSTGRES_HOST_AUTH_METHOD="trust"),
+#         labels=[label],
+#     )
+#     try:
+#         yield container
+#     finally:
+#         container.kill()
+#         container.remove()
+
+
+# @pytest.fixture(autouse=True)
+# def postgres_container(session_postgres_container: Container) -> Container:
+#     os.environ["DB_SUFFIX"] = "_test"
+#     tortoise_config: dict = get_tortoise_config()
+#     try:
+#         tortoise_test_initializer(
+#             modules=tortoise_config["apps"]["models"]["models"],
+#             db_url=tortoise_config["connections"]["default"],
+#             app_label="models",
+#         )
+#         yield session_postgres_container
+#     finally:
+#         tortoise_test_finalizer()
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def app():
+    app = get_app()
     async with LifespanManager(app):
         yield app
 
 
 @pytest.fixture
-async def xclient(xclient, app, request):
-    yield await xclient(
-        app,
-        appstr="app.main:app",
-        env={
-            **os.environ,
-            "PYTHONPATH": os.path.abspath(request.config.rootdir.strpath),
-            "PYTHONDONTWRITEBYTECODE": "1",
-        },
+@pytest.mark.asyncio
+async def xserver(app, xserver_factory, request):
+    _environ = copy.copy(os.environ)
+    _environ.update(
+        dict(
+            PYTHONPATH=os.path.abspath(request.config.rootdir.strpath),
+            PYTHONDONTWRITEBYTECODE="1",
+        )
     )
+    with xserver_factory(
+        appstr="app.main:app",
+        env=_environ,
+        host="0.0.0.0",
+        port=80,
+        raise_if_used_port=False,
+    ) as _xserver:
+        yield _xserver
 
 
 @pytest.fixture
@@ -121,8 +183,8 @@ def create_random_feature_title() -> Callable:
 def create_random_feature_slug() -> Callable:
     def _create_random_feature_slug() -> str:
         string = randstr(
-            min_length=10,
-            max_length=50,
+            min_length=2,
+            max_length=15,
             min_tokens=3,
             max_tokens=6,
             uppercase_letters=True,
@@ -190,3 +252,26 @@ async def create_random_user(faker, create_random_password):
         return await User.create(**user_create_db.dict())
 
     return _create_random_user
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def create_random_feature(
+    create_random_user,
+    create_random_feature_title,
+    create_random_feature_slug,
+):
+    async def _create_random_feature(
+        title: str = None,
+        slug: str = None,
+        user_id: User = None,
+        turn_duration: int = None,
+    ):
+        return await Feature.create(
+            title=title or create_random_feature_title(),
+            slug=slug or create_random_feature_slug(),
+            user_id=user_id or (await create_random_user()).id,
+            turn_duration=turn_duration or 30,
+        )
+
+    return _create_random_feature

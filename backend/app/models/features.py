@@ -14,7 +14,7 @@ class Feature(TimestampMixin, CustomTortoiseBase):
     interactor_channel_name = fields.UUIDField(default=uuid.uuid4, read_only=True)
     presenter_channel_name = fields.UUIDField(default=uuid.uuid4, read_only=True)
     title = fields.CharField(max_length=100, unique=True)
-    slug = fields.CharField(index=True, required=True, unique=True, max_length=50)
+    slug = fields.CharField(index=True, required=True, unique=True, max_length=100)
     turn_duration = fields.IntField(required=True)
     guests = fields.ReverseRelation[Guest]
     presenters = fields.ReverseRelation[Presenter]

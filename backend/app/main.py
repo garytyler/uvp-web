@@ -15,15 +15,18 @@ async def on_shutdown_event() -> None:
     await disconnect_redis()
 
 
-app = FastAPI(
-    debug=get_settings().DEBUG,
-    title=get_settings().PROJECT_NAME,
-    openapi_url="/api/openapi.json",
-)
+def get_app():
+    app = FastAPI(
+        debug=get_settings().DEBUG,
+        title=get_settings().PROJECT_NAME,
+        openapi_url="/api/openapi.json",
+    )
+    app.include_router(api_router)
+    app.add_event_handler("startup", on_startup_event)
+    app.add_event_handler("shutdown", on_shutdown_event)
+    add_middlewares(app)
+    register_db(app)
+    return app
 
 
-app.include_router(api_router)
-app.add_event_handler("startup", on_startup_event)
-app.add_event_handler("shutdown", on_shutdown_event)
-add_middlewares(app)
-register_db(app)
+app = get_app()

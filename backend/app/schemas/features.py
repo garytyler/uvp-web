@@ -1,5 +1,6 @@
 from typing import Optional
 
+from pydantic import UUID4
 from tortoise import Tortoise
 from tortoise.contrib.pydantic import pydantic_model_creator
 
@@ -12,6 +13,7 @@ class FeatureCreate(CustomPydanticBase):
     title: str
     slug: Optional[str]
     turn_duration: int = 180
+    user_id: UUID4
 
 
 class FeatureUpdate(CustomPydanticBase):

@@ -10,16 +10,16 @@ from app.schemas.features import FeatureOut
 
 @pytest.mark.asyncio
 async def test_rest_features_post_with_custom_slug(
-    app,
-    create_random_feature_slug,
-    create_random_feature_title,
+    app, create_random_feature_slug, create_random_feature_title, create_random_user
 ):
+    user_obj = await create_random_user()
     path = "/api/features"
     async with AsyncClient(app=app, base_url="http://test") as client:
         data = {
             "title": create_random_feature_title(),
             "slug": create_random_feature_slug(),
             "turn_duration": randint(0, 99),
+            "user_id": str(user_obj.id),
         }
         r = await client.post(path, json=data)
         assert r.status_code == 200
@@ -27,31 +27,42 @@ async def test_rest_features_post_with_custom_slug(
         assert content["title"] == data["title"]
         assert content["slug"] == data["slug"]
         assert content["turn_duration"] == data["turn_duration"]
+        assert content["user_id"] == data["user_id"]
         assert "id" in content
         feature = await Feature.get_or_none(pk=content["id"])
         assert feature
         assert feature.title == data["title"]
         assert feature.slug == data["slug"]
         assert feature.turn_duration == data["turn_duration"]
+        assert str(feature.user_id) == data["user_id"]
         assert FeatureOut(**content)
 
 
 @pytest.mark.asyncio
-async def test_rest_features_post_without_custom_slug(app, create_random_feature_title):
+async def test_rest_features_post_without_custom_slug(
+    app, create_random_user, create_random_feature_title
+):
+    user_obj = await create_random_user()
     path = "/api/features"
     async with AsyncClient(app=app, base_url="http://test") as client:
-        data = {"title": create_random_feature_title(), "turn_duration": randint(0, 99)}
+        data = {
+            "title": create_random_feature_title(),
+            "turn_duration": randint(0, 99),
+            "user_id": str(user_obj.id),
+        }
         r = await client.post(path, json=data)
         assert r.status_code == 200
         content = r.json()
         assert content["slug"].strip()
         assert content["title"] == data["title"]
         assert content["turn_duration"] == data["turn_duration"]
+        assert content["user_id"] == data["user_id"]
         assert "id" in content
         feature = await Feature.get_or_none(pk=content["id"])
         assert feature
         assert feature.title == data["title"]
         assert feature.turn_duration == data["turn_duration"]
+        assert str(feature.user_id) == data["user_id"]
         assert FeatureOut(**content)
 
 

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   proxy:
     command:
@@ -7,18 +5,15 @@ services:
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
-      - --entrypoints.traefik.address=:8888
       - --providers.file.directory=/etc/traefik/
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
     labels:
       - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_DEV}`)
+      - traefik.http.middlewares.testheader.headers.isDevelopment=true
 
   frontend:
     build:
       target: dev-stage
-    command: /bin/bash -c "npm run serve"
-    ports:
-      - 8080
     volumes:
       - .:/srv/app:rw
       - node_modules:/srv/app/frontend/node_modules
@@ -33,14 +28,14 @@ services:
   backend:
     build:
       target: dev-stage
-    command: /bin/bash -c "uvicorn --reload --host=0.0.0.0 --port=8000 app.main:app"
     volumes:
       - .:/srv/app:rw
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DEBUG=true
       - SERVER_NAME=${DOMAIN_DEV}
       - SERVER_HOST=https://${DOMAIN_DEV}
-      - DISPLAY
+      - DISPLAY=${DISPLAY}
     labels:
       - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
 

@@ -44,18 +44,23 @@ RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get
     && poetry config virtualenvs.create false \
     && poetry install --no-root --no-dev
 
-FROM install-stage  AS install-dev-stage
-
-# Install dev dependencies
-USER $USERNAME
-RUN poetry install --no-root
+# Set entrypoint for all stages
+EXPOSE 8000
+ENTRYPOINT [ "/bin/bash", "./entrypoint.sh" ]
 
 FROM install-stage AS prod-stage
 
 # Copy project files
 COPY --chown=$USERNAME:$USERNAME ./ ./
 
-FROM install-dev-stage AS dev-stage
+# Execute production server
+CMD [ "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "./gunicorn_conf.py", "app.main:app" ]
+
+FROM install-stage  AS dev-setup-stage
+
+# Install dev dependencies
+USER $USERNAME
+RUN poetry install --no-root
 
 # Use root user for installing dev software
 USER root
@@ -66,7 +71,12 @@ RUN apt-get update \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-# Install broswer dependencies for testing with playwright
+# Install dev utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # fuser to kill processes by port
+    psmisc
+
+# Install browser dependencies for testing with playwright
 # See: https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
 # WebKit dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -92,6 +102,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgtk-3-0 \
     libharfbuzz-icu0
 
+# gstreamer and plugins to support video playback in WebKit.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgstreamer-gl1.0-0 \
+    libgstreamer-plugins-bad1.0-0 \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-libav
+
 # Chromium dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libnss3 \
@@ -105,8 +122,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdbus-glib-1-2 \
     libxt6
 
+# Add not-root user to docker group so we can use docker-py for test fixtures
+RUN groupadd docker && usermod -aG docker $USERNAME
+
 # Use non-root user
 USER $USERNAME
 
 # With non-root user, install browsers for testing with playwright
 RUN python -m playwright install
+
+FROM dev-setup-stage AS dev-stage
+
+# Copy project files
+COPY --chown=$USERNAME:$USERNAME ./ ./
+
+CMD [ "python", "manage.py", "runserver" ]

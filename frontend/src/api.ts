@@ -9,6 +9,7 @@ import {
   IGuestUpdate,
 } from "@/interfaces";
 import { IFeature } from "@/interfaces";
+import { apiUrl } from "@/env";
 
 const client = applyConverters(axios.create());
 
@@ -25,32 +26,38 @@ const accountsApi = {
     const params = new URLSearchParams();
     params.append("username", username);
     params.append("password", password);
-    return axios.post(`/api/access/token`, params);
+    return axios.post(`${apiUrl}/api/access/token`, params);
   },
   async getCurrentUser(token: string) {
-    return axios.get<IUserProfile>(`/api/users/current`, authHeaders(token));
+    return axios.get<IUserProfile>(
+      `${apiUrl}/api/users/current`,
+      authHeaders(token)
+    );
   },
   async updateCurrentUser(token: string, data: IUserProfileUpdate) {
     return axios.put<IUserProfile>(
-      `/api/users/current`,
+      `${apiUrl}/api/users/current`,
       data,
       authHeaders(token)
     );
   },
   async getUsers(token: string) {
-    return axios.get<IUserProfile[]>(`/api/users`, authHeaders(token));
+    return axios.get<IUserProfile[]>(`${apiUrl}/api/users`, authHeaders(token));
   },
   async updateUser(token: string, userId: number, data: IUserProfileUpdate) {
-    return axios.put(`/api/users/${userId}`, data, authHeaders(token));
+    return axios.put(`${apiUrl}/api/users/${userId}`, data, authHeaders(token));
   },
   async createUser(token: string, data: IUserProfileCreate) {
-    return axios.post(`/api/users`, data, authHeaders(token));
+    console.log(apiUrl);
+    return axios.post(`${apiUrl}/api/users`, data);
   },
   async passwordRecovery(email: string) {
-    return axios.post(`/api/access/request-password-recovery/${email}`);
+    return axios.post(
+      `${apiUrl}/api/access/request-password-recovery/${email}`
+    );
   },
   async resetPassword(password: string, token: string) {
-    return axios.post(`/api/access/reset-password`, {
+    return axios.post(`${apiUrl}/api/access/reset-password`, {
       newPassword: password,
       token,
     });
@@ -59,30 +66,30 @@ const accountsApi = {
 
 const guestsApi = {
   async getCurrentGuest() {
-    const path = `/api/guests/current`;
+    const path = `${apiUrl}/api/guests/current`;
     return client.get<IGuest>(path);
   },
   async getGuest(guestId: string) {
-    const path = `/api/guests/${guestId}`;
+    const path = `${apiUrl}/api/guests/${guestId}`;
     return client.get<IGuest>(path);
   },
   async createCurrentGuest(data: IGuestCreate) {
-    const path = `/api/guests/current`;
+    const path = `${apiUrl}/api/guests/current`;
     return client.post(path, data);
   },
   async updateGuest(guestId: string, data: IGuestUpdate) {
-    const path = `/api/guests/${guestId}`;
+    const path = `${apiUrl}/api/guests/${guestId}`;
     return client.patch(path, data);
   },
   async deleteGuest(featureId: string, guestId: string) {
-    const path = `/api/features/${featureId}/guests/${guestId}`;
+    const path = `${apiUrl}/api/features/${featureId}/guests/${guestId}`;
     return client.delete(path);
   },
 };
 
 const featuresApi = {
   async getFeature(slugOrId: string) {
-    const path = `/api/features/${slugOrId}`;
+    const path = `${apiUrl}/api/features/${slugOrId}`;
     return client.get<IFeature>(path);
   },
 };

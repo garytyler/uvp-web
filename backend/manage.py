@@ -22,12 +22,15 @@ def cli():
 
 @cli.command()
 async def shell():
-    from app.core.db import TORTOISE_ORM
+    # from app.core.db import TORTOISE_ORM
+    from app.core.db import get_tortoise_config
+
+    tortoise_config = get_tortoise_config()
     from app.main import app
 
     repl_locals = {}
     import_msgs = []
-    for app_dict in TORTOISE_ORM["apps"].values():
+    for app_dict in tortoise_config["apps"].values():
         for module_dotpath in app_dict["models"]:
             module_obj = import_module(module_dotpath)
             for class_name, class_obj in getmembers(module_obj, isclass):
@@ -47,13 +50,15 @@ async def shell():
 
 
 @cli.command()
-async def runserver(host: str = "0.0.0.0", port: int = 8000):
+async def runserver(
+    host: str = "0.0.0.0", port: int = 80, reload: bool = True, use_colors: bool = True
+):
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        use_colors=True,
+        host=host,
+        port=port,
+        reload=reload,
+        use_colors=use_colors,
     )
 
 

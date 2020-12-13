@@ -1,8 +1,10 @@
+import { apiHost } from "@/env.ts";
+
 function urlPathToWsUrl(urlPath) {
   let _url;
   // Use wss:// if running on https://
   const scheme = window.location.protocol === "https:" ? "wss" : "ws";
-  const baseUrl = `${scheme}://${window.location.host}`;
+  const baseUrl = `${scheme}://${apiHost}`;
   if (urlPath === undefined) {
     _url = baseUrl;
   } else {

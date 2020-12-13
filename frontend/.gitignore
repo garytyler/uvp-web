@@ -364,7 +364,6 @@ yarn-error.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
 # pytest-xprocess
 .xprocess
 
@@ -385,3 +384,6 @@ frontend/webpack-stats.json
 
 # Docker
 docker-stack.yml
+
+# Yarn 2
+.yarn

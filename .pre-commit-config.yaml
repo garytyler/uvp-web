@@ -1,11 +1,11 @@
-aliases:
-  - &python_settings
-    types: [python]
-    files: ./backend
-    exclude: >
-      (?x)^(
-        .+/migrations/.+|
-      )$
+python_settings: &python_settings
+  types: [python]
+  files: ./backend
+  exclude: >
+    (?x)^(
+      .+/migrations/.+|
+    )$
+
 repos:
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.6.4
@@ -37,7 +37,6 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.3.0
     hooks:
-      - id: check-added-large-files
       - id: check-executables-have-shebangs
       - id: check-merge-conflict
       - id: check-toml

@@ -1,5 +1,2 @@
-export const appName = "UVP Interactive";
-export const apiHost =
-  window.location.host === "frontend" ? "backend" : window.location.host;
-export const apiUrl = `${window.location.protocol}//${apiHost}`;
-console.log(apiUrl);
+export const appName = process.env.VUE_APP_TITLE;
+export const appDescription = process.env.VUE_APP_DESCRIPTION;

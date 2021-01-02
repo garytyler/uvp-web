@@ -3,6 +3,9 @@
 // See https://jestjs.io/docs/en/configuration for more information about these options
 
 module.exports = {
-  preset: "jest-playwright-preset",
   testMatch: ["**/tests/e2e/**/*.spec.(js|ts)"],
+  testTimeout: 30000,
+  transform: {
+    "^.+\\.ts$": "ts-jest",
+  },
 };

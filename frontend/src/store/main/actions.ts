@@ -27,7 +27,7 @@ export const actions = {
       const response = (
         await Promise.all([
           api.createUser(context.rootState.main.token, payload),
-          await new Promise((resolve, reject) =>
+          await new Promise<void>((resolve, reject) =>
             setTimeout(() => resolve(), 500)
           ),
         ])
@@ -87,7 +87,9 @@ export const actions = {
       const response = (
         await Promise.all([
           api.updateCurrentUser(context.state.token, payload),
-          await new Promise((resolve) => setTimeout(() => resolve(), 500)),
+          await new Promise<void>((resolve) =>
+            setTimeout(() => resolve(), 500)
+          ),
         ])
       )[0];
       commitSetUserProfile(context, response.data);
@@ -177,7 +179,7 @@ export const actions = {
       const response = (
         await Promise.all([
           api.passwordRecovery(payload.username),
-          await new Promise((resolve, reject) =>
+          await new Promise<void>((resolve, reject) =>
             setTimeout(() => resolve(), 500)
           ),
         ])
@@ -209,7 +211,7 @@ export const actions = {
       const response = (
         await Promise.all([
           api.resetPassword(payload.password, payload.token),
-          await new Promise((resolve, reject) =>
+          await new Promise<void>((resolve, reject) =>
             setTimeout(() => resolve(), 500)
           ),
         ])

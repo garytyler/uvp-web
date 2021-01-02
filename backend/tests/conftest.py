@@ -1,5 +1,4 @@
 import contextlib
-import copy
 import os
 import random
 import socket
@@ -37,7 +36,7 @@ def settings():
 
 @pytest.fixture(scope="session")
 def docker_client() -> DockerClient:
-    return DockerClient(base_url="unix://var/run/docker.sock")
+    return DockerClient(base_url="unix:///var/run/docker.sock")
 
 
 @pytest.fixture(autouse=True)
@@ -68,66 +67,12 @@ def postgres_container(docker_client) -> Container:
         container.remove()
 
 
-# @pytest.fixture(scope="session", autouse=True)
-# def session_postgres_container(docker_client: DockerClient) -> Container:
-#     label = "test_postgres_container"
-#     docker_client.containers.prune(filters={"label": label})
-
-#     container = docker_client.containers.run(
-#         image=os.environ.get("POSTGRES_IMAGE"),
-#         name=f"test-postgres-{uuid.uuid4()}",
-#         detach=True,
-#         environment=dict(POSTGRES_HOST_AUTH_METHOD="trust"),
-#         labels=[label],
-#     )
-#     try:
-#         yield container
-#     finally:
-#         container.kill()
-#         container.remove()
-
-
-# @pytest.fixture(autouse=True)
-# def postgres_container(session_postgres_container: Container) -> Container:
-#     os.environ["DB_SUFFIX"] = "_test"
-#     tortoise_config: dict = get_tortoise_config()
-#     try:
-#         tortoise_test_initializer(
-#             modules=tortoise_config["apps"]["models"]["models"],
-#             db_url=tortoise_config["connections"]["default"],
-#             app_label="models",
-#         )
-#         yield session_postgres_container
-#     finally:
-#         tortoise_test_finalizer()
-
-
 @pytest.fixture
 @pytest.mark.asyncio
-async def app():
+async def app(postgres_container):
     app = get_app()
     async with LifespanManager(app):
         yield app
-
-
-@pytest.fixture
-@pytest.mark.asyncio
-async def xserver(app, xserver_factory, request):
-    _environ = copy.copy(os.environ)
-    _environ.update(
-        dict(
-            PYTHONPATH=os.path.abspath(request.config.rootdir.strpath),
-            PYTHONDONTWRITEBYTECODE="1",
-        )
-    )
-    with xserver_factory(
-        appstr="app.main:app",
-        env=_environ,
-        host="0.0.0.0",
-        port=80,
-        raise_if_used_port=False,
-    ) as _xserver:
-        yield _xserver
 
 
 @pytest.fixture

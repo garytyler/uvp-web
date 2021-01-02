@@ -14,14 +14,10 @@
     "baseUrl": ".",
     "types": [
       "webpack-env",
-      "jest",
       "vuetify",
+      "@types/jest",
+      "jest-playwright-preset",
       "expect-playwright"
-      /*
-        Jest playwright preset throws build error when enabled.
-        Until vue-cli-unit-jest gets an update, use js for e2e test modules.
-      */
-      // "jest-playwright-preset",
     ],
     "paths": {
       "@/*": [
@@ -41,9 +37,6 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
-  "typeRoots": [
-    "src/types/custom.d.ts"
   ],
   "exclude": [
     "node_modules"

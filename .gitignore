@@ -124,9 +124,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-### dotenv ###
-.env
-
 ### Linux ###
 *~
 
@@ -205,9 +202,6 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variables file
-.env.test
 
 # parcel-bundler cache (https://parceljs.org/)
 
@@ -388,6 +382,7 @@ secrets
 migrations
 !migrations/0001_initial.py
 frontend/webpack-stats.json
+coverage-e2e
 
 # Tortoise ORM
 *.sqlite*

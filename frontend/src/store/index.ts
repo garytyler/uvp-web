@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { socketModule } from "./socket";

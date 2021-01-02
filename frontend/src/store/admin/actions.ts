@@ -38,7 +38,7 @@ export const actions = {
             payload.id,
             payload.user
           ),
-          await new Promise((resolve, reject) =>
+          await new Promise<void>((resolve, reject) =>
             setTimeout(() => resolve(), 500)
           ),
         ])
@@ -60,7 +60,7 @@ export const actions = {
       const response = (
         await Promise.all([
           api.createUser(context.rootState.main.token, payload),
-          await new Promise((resolve, reject) =>
+          await new Promise<void>((resolve, reject) =>
             setTimeout(() => resolve(), 500)
           ),
         ])

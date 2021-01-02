@@ -48,7 +48,7 @@ def send_test_email(email_to: str) -> None:
         email_to=email_to,
         subject_template=Template("{{ project_name }} - Test email"),
         html_template=get_template("test_email.html"),
-        context={"project_name": settings.PROJECT_NAME},
+        context={"project_name": settings.APP_TITLE},
     )
 
 
@@ -60,7 +60,7 @@ def send_reset_password_email(email_to: str, token: str) -> None:
         plain_template=get_template("reset_password.txt"),
         html_template=get_template("reset_password.html"),
         context={
-            "project_name": settings.PROJECT_NAME,
+            "project_name": settings.APP_TITLE,
             "action_title": "Reset Your Password",
             "action_url": f"{settings.SERVER_HOST}/access/reset-password?token={token}",
             "hours_valid": settings.EMAIL_PASSWORD_RESET_TOKEN_EXPIRE_HOURS,

@@ -60,7 +60,7 @@
         </v-dialog>
       </template>
 
-      <template v-slot:item.index="{ item }">
+      <template v-slot:[`item.index`]="{ item }">
         <v-chip
           :color="
             (currentGuest ? item.id === currentGuest.id : false)
@@ -77,7 +77,7 @@
         </v-chip>
       </template>
 
-      <template v-slot:item.name="{ item }">
+      <template v-slot:[`item.name`]="{ item }">
         <v-chip
           :color="
             (currentGuest ? item.id === currentGuest.id : false)
@@ -92,7 +92,7 @@
         </v-chip>
       </template>
 
-      <template v-slot:item.handle="{ item }">
+      <template v-slot:[`item.handle`]="{ item }">
         <div v-if="currentFeature.guests.indexOf(item) > 0">
           <div class="handle">
             <v-icon small> mdi-drag </v-icon>
@@ -100,11 +100,11 @@
         </div>
       </template>
 
-      <template v-slot:item.delete-action="{ item }">
+      <template v-slot:[`item.delete-action`]="{ item }">
         <v-icon @click="deleteItem(item)"> mdi-delete </v-icon>
       </template>
 
-      <template v-slot:item.edit-action="{ item }">
+      <template v-slot:[`item.edit-action`]="{ item }">
         <div v-if="featureOwner || currentGuest.id === item.id">
           <v-icon class="mr-2" @click="initEditDialog(item)">
             mdi-pencil

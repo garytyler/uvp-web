@@ -5,27 +5,8 @@ FROM python AS install-stage
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# define username
-ENV USERNAME=backenduser
-
-# Create non-root user
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-RUN groupadd --gid $USER_GID ${USERNAME} \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
-
-# If poetry installs dependencies from a git repo, it will
-# store them in /usr/local/src, so let it.
-RUN chown $USERNAME:root /usr/local/src
-
-# Set as non-root user
-USER $USERNAME
-
-# Set locations
-ARG HOMEDIR=/home/$USERNAME
-ARG LOCALBIN=$HOMEDIR/.local/bin
-
-# Create local bin dir and add to path
+# Create and set target locations
+ARG LOCALBIN=/home/root/.local/bin
 RUN mkdir -p $LOCALBIN
 ENV PATH=$LOCALBIN:${PATH}
 
@@ -33,25 +14,24 @@ ENV PATH=$LOCALBIN:${PATH}
 WORKDIR /srv/app/backend/
 
 # Copy dependency configuration
-COPY --chown=$USERNAME:$USERNAME ./pyproject.toml ./poetry.lock* ./
+COPY ./pyproject.toml ./poetry.lock* ./
 
 # Install poetry and poetry dependencies
-ENV POETRY_HOME=$HOMEDIR/.poetry
+ENV POETRY_HOME=/home/root/.poetry
 ENV POETRY_NO_INTERACTION=1
 RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
     | POETRY_HOME=$POETRY_HOME python \
     && ln -s $POETRY_HOME/bin/poetry $LOCALBIN/poetry \
-    && poetry config virtualenvs.create false \
     && poetry install --no-root --no-dev
 
+
 # Set entrypoint for all stages
-EXPOSE 8000
 ENTRYPOINT [ "/bin/bash", "./entrypoint.sh" ]
 
 FROM install-stage AS prod-stage
 
 # Copy project files
-COPY --chown=$USERNAME:$USERNAME ./ ./
+COPY ./ ./
 
 # Execute production server
 CMD [ "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "./gunicorn_conf.py", "app.main:app" ]
@@ -59,22 +39,7 @@ CMD [ "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "./gunicorn_conf.
 FROM install-stage  AS dev-setup-stage
 
 # Install dev dependencies
-USER $USERNAME
 RUN poetry install --no-root
-
-# Use root user for installing dev software
-USER root
-
-# Give sudo privs to non-root user
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y sudo \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
-
-# Install dev utilities
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    # fuser to kill processes by port
-    psmisc
 
 # Install browser dependencies for testing with playwright
 # See: https://github.com/microsoft/playwright/blob/master/docs/docker/Dockerfile.bionic
@@ -122,18 +87,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libdbus-glib-1-2 \
     libxt6
 
-# Add not-root user to docker group so we can use docker-py for test fixtures
-RUN groupadd docker && usermod -aG docker $USERNAME
-
-# Use non-root user
-USER $USERNAME
-
 # With non-root user, install browsers for testing with playwright
-RUN python -m playwright install
+RUN poetry run python -m playwright install
 
 FROM dev-setup-stage AS dev-stage
 
 # Copy project files
-COPY --chown=$USERNAME:$USERNAME ./ ./
+COPY ./ ./
 
 CMD [ "python", "manage.py", "runserver" ]

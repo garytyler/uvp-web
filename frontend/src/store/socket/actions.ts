@@ -1,11 +1,11 @@
 import { commitSetCurrentFeature } from "@/store/live/mutations";
 import { store } from "@/store";
 import { IFeature } from "@/interfaces";
-import { camelize } from "@ridi/object-case-converter";
+import { camelizeKeys } from "humps";
 
 export const actions = {
-  async receiveCurrentFeature({}: object, data: { feature: IFeature }) {
+  async receiveCurrentFeature({}, data: { feature: IFeature }) {
     const feature: IFeature = data.feature;
-    await commitSetCurrentFeature(store, camelize(feature));
+    await commitSetCurrentFeature(store, camelizeKeys(feature));
   },
 };

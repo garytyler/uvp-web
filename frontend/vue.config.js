@@ -8,6 +8,12 @@ module.exports = {
     }
   },
   devServer: {
-    disableHostCheck: process.env.NODE_ENV !== "production",
+    proxy: {
+      "/api": {
+        target: "http://backend:80",
+        https: true,
+        ws: true,
+      },
+    },
   },
 };

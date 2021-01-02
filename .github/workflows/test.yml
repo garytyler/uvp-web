@@ -1,0 +1,21 @@
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker-compose up --detach --build
+      - run: docker-compose exec -T backend poetry run pytest --cov=app --cov-report=xml tests/unit
+      - run: docker-compose exec -T frontend npm run coverage:unit
+      - run: docker-compose exec -T frontend npm run coverage:e2e
+
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          files: ./backend/coverage.xml,./frontend/coverage/lcov.info,./frontend/coverage-e2e/lcov.info
+          fail_ci_if_error: true
+          verbose: true

@@ -1,14 +1,32 @@
+x-shared-environment:
+  &shared-environment # Pass to build environments and containers for all services
+  APP_TITLE: &app-title "UVP Interactive"
+  APP_DESCRIPTION: &app-description "Urban Video Project Interactive's web app"
+  # images
+  POSTGRES_IMAGE: &POSTGRES_IMAGE "postgres:13.1-alpine"
+  # dns
+  DOMAIN:
+  # postgres
+  POSTGRES_HOST:
+  POSTGRES_DB:
+  POSTGRES_USER:
+  POSTGRES_PASSWORD:
+  # redis
+  REDIS_URL:
+
 services:
   proxy:
     image: traefik:v2.2
     container_name: proxy
+    environment:
+      <<: *shared-environment
     command:
       - --api.insecure=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-      - --certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.email=
       - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/lets-encrypt/acme.json
     volumes:
       - ./traefik:/etc/traefik
@@ -22,7 +40,7 @@ services:
       - backend
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_PROD}`)
+      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)
       - traefik.http.routers.dashboard.entrypoints=websecure
       - traefik.http.routers.dashboard.tls=true
       - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
@@ -34,86 +52,83 @@ services:
 
   frontend:
     container_name: frontend
+    environment:
+      <<: *shared-environment
+      NODE_ENV: production
+      VUE_APP_TITLE: *app-title
+      VUE_APP_DESCRIPTION: *app-description
     build:
       context: ./frontend
       target: prod-stage
     ports:
       - 8888:80
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=production
-      - DOMAIN_DEV
-      - DOMAIN_STAG
-      - DOMAIN_PROD
     labels:
       - traefik.enable=true
-      - traefik.http.routers.frontend.rule=Host(`${DOMAIN_PROD}`)
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.frontend.entrypoints=websecure
       - traefik.http.routers.frontend.tls=true
       - traefik.http.routers.frontend.tls.certresolver=letsencrypt
 
   backend:
     container_name: backend
+    environment:
+      <<: *shared-environment
+      # security
+      DEBUG: 0
+      SECRET_KEY:
+      ALLOWED_HOSTS:
+      BACKEND_CORS_ORIGINS:
+      # email
+      EMAILS_FROM_EMAIL: noreply@uvp.app
+      SMTP_TLS: 1
+      SMTP_PORT: 587
+      SMTP_HOST:
+      SMTP_USER:
+      SMTP_PASSWORD:
     build:
       context: ./backend
       target: prod-stage
+    command: ${BACKEND_CMD-}
     ports:
       - 8000:80
-    env_file:
-      - .env
-    environment:
-      - PROJECT_NAME
-      - PROJECT_DESCRIPTION
-      - DEBUG=${DEBUG-false}
-      - SERVER_NAME=${DOMAIN_PROD}
-      - SERVER_HOST=https://${DOMAIN_PROD}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_IMAGE=${POSTGRES_IMAGE}
-      - REDIS_URL=redis://redis:6379/0
-      - SMTP_TLS
-      - SMTP_PORT
-      - SMTP_HOST
-      - SMTP_USER
-      - SMTP_PASSWORD
-      - EMAILS_FROM_EMAIL
     depends_on:
+      - frontend
       - postgres
       - redis
     labels:
       - traefik.enable=true
-      - traefik.http.routers.backend.rule=Host(`${DOMAIN_PROD}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
       - traefik.http.routers.backend.entrypoints=websecure
       - traefik.http.routers.backend.tls=true
       - traefik.http.routers.backend.tls.certresolver=letsencrypt
 
   redis:
-    container_name: redis
     image: redis:5-alpine
-
+    container_name: redis
+    environment:
+      <<: *shared-environment
   postgres:
+    image: *POSTGRES_IMAGE
     container_name: postgres
-    image: ${POSTGRES_IMAGE}
+    environment:
+      <<: *shared-environment
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   pgadmin:
-    container_name: pgadmin
     image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      <<: *shared-environment
+      PGADMIN_LISTEN_PORT: 5050
+      PGADMIN_DEFAULT_EMAIL:
+      PGADMIN_DEFAULT_PASSWORD:
     depends_on:
       - postgres
-    environment:
-      - PGADMIN_LISTEN_PORT=5050
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_PROD}`)
+      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN}`)
       - traefik.http.routers.pgadmin.entrypoints=websecure
       - traefik.http.routers.pgadmin.tls=true
       - traefik.http.routers.pgadmin.tls.certresolver=letsencrypt

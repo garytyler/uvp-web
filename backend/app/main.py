@@ -18,7 +18,7 @@ async def on_shutdown_event() -> None:
 def get_app():
     app = FastAPI(
         debug=get_settings().DEBUG,
-        title=get_settings().PROJECT_NAME,
+        title=get_settings().APP_TITLE,
         openapi_url="/api/openapi.json",
     )
     app.include_router(api_router)

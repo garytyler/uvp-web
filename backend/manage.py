@@ -50,8 +50,15 @@ async def shell():
 
 
 @cli.command()
+@click.option("--host", expose_value=True, default="0.0.0.0")
+@click.option("--port", expose_value=True, default=80)
+@click.option("--log-level", expose_value=True, default="trace")
 async def runserver(
-    host: str = "0.0.0.0", port: int = 80, reload: bool = True, use_colors: bool = True
+    host: str,
+    port: int,
+    log_level: str,
+    reload: bool = True,
+    use_colors: bool = True,
 ):
     uvicorn.run(
         "app.main:app",
@@ -59,6 +66,7 @@ async def runserver(
         port=port,
         reload=reload,
         use_colors=use_colors,
+        log_level=log_level,
     )
 
 

@@ -20,12 +20,11 @@ class Settings(BaseSettings):
     BASE_DIR: Path = Path(__file__).parent.parent.parent
 
     # Project
-    PROJECT_NAME: str
-    PROJECT_DESCRIPTION: str
+    APP_TITLE: str = "UVP Interactive"
+    APP_DESCRIPTION: str = "Urban Video Project's interactive web app"
 
     # DNS
-    SERVER_NAME: str
-    SERVER_HOST: AnyHttpUrl
+    DOMAIN: str
 
     # Security
     SECRET_KEY: SecretStr
@@ -42,7 +41,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
-    DATABASE_URL: Optional[str] = None
+    DATABASE_URL: Optional[PostgresDsn] = None
 
     @validator("DATABASE_URL", pre=True)
     @classmethod

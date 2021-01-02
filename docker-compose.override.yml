@@ -1,5 +1,16 @@
+x-shared-environment: &shared-environment
+# postgres
+  POSTGRES_HOST: postgres
+  POSTGRES_DB: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: notsecret
+# redis
+  REDIS_URL: redis://redis:6379/0
+
 services:
   proxy:
+    environment:
+      <<: *shared-environment
     command:
       - --api.insecure=true
       - --providers.docker.exposedbydefault=false
@@ -8,7 +19,6 @@ services:
       - --providers.file.directory=/etc/traefik/
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
     labels:
-      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_DEV}`)
       - traefik.http.middlewares.testheader.headers.isDevelopment=true
 
   frontend:
@@ -18,30 +28,38 @@ services:
       - .:/srv/app:rw
       - node_modules:/srv/app/frontend/node_modules
     environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-    stdin_open: true
+      <<: *shared-environment
+      NODE_ENV: development
+      CHOKIDAR_USEPOLLING: 1
     tty: true
-    labels:
-      - traefik.http.routers.frontend.rule=Host(`${DOMAIN_DEV}`)
+    stdin_open: true
 
   backend:
+    environment:
+      <<: *shared-environment
+      DEBUG: 1
+      SECRET_KEY: notsecret
+      ALLOWED_HOSTS: '["*"]'
+      BACKEND_CORS_ORIGINS: '["*"]'
     build:
       target: dev-stage
     volumes:
       - .:/srv/app:rw
       - /var/run/docker.sock:/var/run/docker.sock
+
+  postgres:
     environment:
-      - DEBUG=true
-      - SERVER_NAME=${DOMAIN_DEV}
-      - SERVER_HOST=https://${DOMAIN_DEV}
-      - DISPLAY=${DISPLAY}
-    labels:
-      - traefik.http.routers.backend.rule=Host(`${DOMAIN_DEV}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
+      <<: *shared-environment
+
+  redis:
+    environment:
+      <<: *shared-environment
 
   pgadmin:
-    labels:
-      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN_DEV}`)
+    environment:
+      <<: *shared-environment
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: notsecret
 
 volumes:
   node_modules:

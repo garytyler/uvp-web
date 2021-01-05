@@ -13,7 +13,7 @@
     "vue": "vue"
   },
   "dependencies": {
-    "core-js": "^3.7.0",
+    "core-js": "^3.8.2",
     "debounce": "^1.2.0",
     "humps": "^2.0.1",
     "sortablejs": "^1.12.0",
@@ -32,9 +32,9 @@
     "@playwright/test": "^0.171.0",
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/vue": "^5.4.0",
-    "@types/node": "^14.14.16",
-    "@typescript-eslint/eslint-plugin": "^4.9.1",
-    "@typescript-eslint/parser": "^4.9.1",
+    "@types/node": "^14.14.20",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
     "@vue/cli-plugin-babel": "~5.0.0-alpha.0",
     "@vue/cli-plugin-eslint": "~5.0.0-alpha.0",
     "@vue/cli-plugin-router": "~5.0.0-alpha.0",
@@ -48,10 +48,10 @@
     "@vue/test-utils": "1.0.0-beta.31",
     "axios": "^0.19.2",
     "babel-plugin-istanbul": "^6.0.0",
-    "eslint": "^7.15.0",
+    "eslint": "^7.17.0",
     "eslint-plugin-jest-playwright": "^0.2.1",
-    "eslint-plugin-prettier": "^3.2.0",
-    "eslint-plugin-vue": "^7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-vue": "^7.4.1",
     "faker": "^5.1.0",
     "identity-obj-proxy": "^3.0.0",
     "nyc": "^15.1.0",
@@ -61,7 +61,6 @@
     "sass": "^1.29.0",
     "sass-loader": "^8.0.0",
     "typescript": "~4.1.2",
-    "vue-cli-plugin-vuetify": "^2.0.7",
     "vue-template-compiler": "^2.6.12"
   },
   "browserslist": [

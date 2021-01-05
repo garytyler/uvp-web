@@ -174,29 +174,23 @@ export const actions = {
       content: "Sending password recovery email",
       showProgress: true,
     };
-    try {
-      commitAddNotification(context, loadingNotification);
-      const response = (
-        await Promise.all([
-          api.passwordRecovery(payload.username),
-          await new Promise<void>((resolve, reject) =>
-            setTimeout(() => resolve(), 500)
-          ),
-        ])
-      )[0];
-      commitRemoveNotification(context, loadingNotification);
-      commitAddNotification(context, {
-        content: "Password recovery email sent",
-        type: "success",
+    commitAddNotification(context, loadingNotification);
+    api
+      .passwordRecovery(payload.username)
+      .then((response) => {
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {
+          type: "success",
+          content: response.data.msg,
+        });
+      })
+      .catch(() => {
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {
+          type: "error",
+          content: "Incorrect username or password",
+        });
       });
-      await dispatchLogOut(context);
-    } catch (error) {
-      commitRemoveNotification(context, loadingNotification);
-      commitAddNotification(context, {
-        type: "error",
-        content: "Incorrect username",
-      });
-    }
   },
   async resetPassword(
     context: MainContext,
@@ -206,32 +200,27 @@ export const actions = {
       content: "Resetting password",
       showProgress: true,
     };
-    try {
-      commitAddNotification(context, loadingNotification);
-      const response = (
-        await Promise.all([
-          api.resetPassword(payload.password, payload.token),
-          await new Promise<void>((resolve, reject) =>
-            setTimeout(() => resolve(), 500)
-          ),
-        ])
-      )[0];
-      commitRemoveNotification(context, loadingNotification);
-      commitAddNotification(context, {
-        content: "Password successfully reset",
-        type: "success",
+    commitAddNotification(context, loadingNotification);
+    api
+      .resetPassword(payload.password, payload.token)
+      .then((response) => {
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {
+          type: "success",
+          content: response.data.msg,
+        });
+      })
+      .catch((error) => {
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {
+          type: "error",
+          content: "Error resetting password",
+        });
       });
-      await dispatchLogOut(context);
-    } catch (error) {
-      commitRemoveNotification(context, loadingNotification);
-      commitAddNotification(context, {
-        type: "error",
-        content: "Error resetting password",
-      });
-    }
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { dispatch } = getStoreAccessors<MainState | any, State>("");
 
 export const dispatchCheckApiError = dispatch(actions.actionCheckApiError);

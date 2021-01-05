@@ -2,7 +2,7 @@ import App from "@/App.vue";
 import { createVuetify } from "@/plugins/vuetify";
 import { createRouter } from "@/router.ts";
 import { createStore } from "@/store";
-import Home from "@/views/Home.vue";
+import Home from "@/views/Main.vue";
 import { createLocalVue, mount } from "@vue/test-utils";
 import VueRouter from "vue-router";
 import Vuex from "vuex";

@@ -150,7 +150,7 @@
       <v-container fluid>
         <router-view></router-view>
       </v-container>
-      <NotificationsManager></NotificationsManager>
+      <notifications-manager></notifications-manager>
     </v-main>
   </v-app>
 </template>

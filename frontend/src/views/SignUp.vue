@@ -2,63 +2,78 @@
   <v-container fluid fill-height>
     <v-layout align-center justify-center>
       <v-flex xs14 sm10 md6>
-        <v-card>
-          <v-card-title> Create Account </v-card-title>
-          <v-card-text>
-            <template>
-              <v-form v-model="valid" ref="form" lazy-validation>
+        <validation-observer v-slot="{ invalid }">
+          <v-card>
+            <v-card-title> Create Account </v-card-title>
+            <v-card-text>
+              <validation-provider
+                v-slot="{ errors }"
+                name="Name"
+                rules="required|min:3|max:20"
+              >
                 <v-text-field
-                  label="Full Name"
                   v-model="name"
+                  :counter="20"
+                  :error-messages="errors"
+                  label="Name"
                   @keyup.enter="submit"
                   required
                 ></v-text-field>
+              </validation-provider>
+
+              <validation-provider
+                v-slot="{ errors }"
+                name="email"
+                rules="required|email"
+              >
                 <v-text-field
-                  label="Email"
                   type="email"
                   v-model="email"
-                  v-validate="'required|email'"
-                  data-vv-name="email"
-                  :error-messages="errors.collect('email')"
+                  :error-messages="errors"
+                  label="Email"
                   @keyup.enter="submit"
                   required
                 ></v-text-field>
-                <v-layout align-center>
-                  <v-flex>
-                    <v-text-field
-                      type="password"
-                      ref="password"
-                      label="Password"
-                      data-vv-name="password"
-                      data-vv-delay="100"
-                      v-validate="{ required: true }"
-                      v-model="password1"
-                      :error-messages="errors.first('password')"
-                      @keyup.enter="submit"
-                    >
-                    </v-text-field>
-                    <v-text-field
-                      type="password"
-                      label="Confirm Password"
-                      data-vv-name="password_confirmation"
-                      data-vv-delay="100"
-                      data-vv-as="password"
-                      v-validate="{ required: true, confirmed: 'password' }"
-                      v-model="password2"
-                      :error-messages="errors.first('password_confirmation')"
-                      @keyup.enter="submit"
-                    >
-                    </v-text-field>
-                  </v-flex>
-                </v-layout>
-              </v-form>
-            </template>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn @click="submit" :disabled="!valid"> Submit </v-btn>
-          </v-card-actions>
-        </v-card>
+              </validation-provider>
+
+              <validation-provider
+                vid="password"
+                name="password"
+                rules="required|min:8|confirmPassword:@confirmation"
+                v-slot="{ errors }"
+              >
+                <v-text-field
+                  type="password"
+                  v-model="password"
+                  :error-messages="errors"
+                  label="Password"
+                  @keyup.enter="submit"
+                  required
+                ></v-text-field>
+              </validation-provider>
+
+              <validation-provider
+                vid="confirmation"
+                name="confirmation"
+                rules="required|min:8"
+                v-slot="{ errors }"
+              >
+                <v-text-field
+                  type="password"
+                  v-model="confirmation"
+                  :error-messages="errors"
+                  label="Confirm Password"
+                  @keyup.enter="submit"
+                  required
+                ></v-text-field>
+              </validation-provider>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn @click="submit" :disabled="invalid"> Submit </v-btn>
+            </v-card-actions>
+          </v-card>
+        </validation-observer>
       </v-flex>
     </v-layout>
   </v-container>
@@ -67,56 +82,70 @@
 <script lang="ts">
 import Vue from "vue";
 import { IUserProfileCreate } from "@/interfaces";
-// import { dispatchGetUsers } from "@/store/admin/actions";
 import { dispatchSignUp } from "@/store/main/actions";
+import {
+  required,
+  digits,
+  email,
+  max,
+  min,
+  regex,
+} from "vee-validate/dist/rules";
+import { extend, ValidationObserver, ValidationProvider } from "vee-validate";
+
+extend("confirmPassword", {
+  params: ["target"],
+  validate(value, values) {
+    console.log(values);
+    return value === values["target"];
+  },
+  message: "Password confirmation does not match",
+});
 
 export default Vue.extend({
-  data: () => {
-    return {
-      valid: false,
-      name: "",
-      email: "",
-      isActive: true,
-      isSuperuser: false,
-      setPassword: false,
-      password1: "",
-      password2: "",
-    };
+  components: {
+    ValidationProvider,
+    ValidationObserver,
   },
+  data: () => ({
+    name: "",
+    email: "",
+    password: "",
+    confirmation: "",
+  }),
   methods: {
-    reset() {
-      this.password1 = "";
-      this.password2 = "";
-      this.name = "";
-      this.email = "";
-      this.isActive = true;
-      this.isSuperuser = false;
-      this.$validator.reset();
-    },
     async submit() {
-      if (await this.$validator.validateAll()) {
-        const newProfile: IUserProfileCreate = {
-          email: this.email,
-        };
-        if (this.name) {
-          newProfile.name = this.name;
-        }
-        if (this.email) {
-          newProfile.email = this.email;
-        }
-        newProfile.isActive = this.isActive;
-        newProfile.isSuperuser = this.isSuperuser;
-        newProfile.password = this.password1;
-        dispatchSignUp(this.$store, newProfile)
-          .catch()
-          .then(() => {
-            this.$router.push("/login");
-          });
-      }
+      const newProfile: IUserProfileCreate = {
+        email: this.email,
+        name: this.name,
+        password: this.password,
+      };
+      dispatchSignUp(this.$store, newProfile)
+        .catch()
+        .then(() => {
+          this.$router.push("/login");
+        });
     },
   },
-  async mounted() {
-    this.reset();
-  },
+});
+
+extend("min", {
+  ...min,
+  message: "{_field_} needs to be at least {length} digits. ({_value_})",
+});
+
+extend("required", {
+  ...required,
+  message: "{_field_} can not be empty",
+});
+
+extend("max", {
+  ...max,
+  message: "{_field_} may not be greater than {length} characters",
+});
+
+extend("email", {
+  ...email,
+  message: "Email must be valid",
 });
 </script>

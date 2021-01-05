@@ -13,9 +13,14 @@ export const routes = [
       {
         path: "",
         // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-        component: () => import("@/views/Home.vue"),
+        component: () => import("@/views/Main.vue"),
         props: true,
         children: [
+          {
+            path: "",
+            component: () => import("@/views/Landing.vue"),
+            // redirect: "/account/dashboard",
+          },
           {
             path: "signup",
             // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

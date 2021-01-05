@@ -29,7 +29,7 @@ class MotionSender {
   start(socket: WebSocket, fps: number) {
     this.socket = socket;
     this.isSending = true;
-    this.intervalometerId = setInterval(this.sendData, 1000 / fps);
+    this.intervalometerId = window.setInterval(this.sendData, 1000 / fps);
     window.addEventListener("deviceorientation", this.handleOrientationEvent);
   }
   sendData() {
@@ -45,7 +45,7 @@ class MotionSender {
     ]);
   }
   stop() {
-    clearInterval(this.intervalometerId);
+    window.clearInterval(this.intervalometerId);
     window.removeEventListener(
       "deviceorientation",
       this.handleOrientationEvent

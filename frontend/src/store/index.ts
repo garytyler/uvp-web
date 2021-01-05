@@ -3,7 +3,6 @@ import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { socketModule } from "./socket";
 import { mainModule } from "./main";
-import { adminModule } from "./admin";
 import { liveModule } from "./live";
 import { State } from "./state";
 import createLogger from "vuex/dist/logger";
@@ -16,7 +15,6 @@ Vue.use(Vuex);
 const storeOptions: StoreOptions<State> = {
   modules: {
     main: mainModule,
-    admin: adminModule,
     live: liveModule,
     socket: socketModule,
   },
@@ -24,19 +22,18 @@ const storeOptions: StoreOptions<State> = {
   plugins: debug ? [createLogger()] : [],
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const createStore = () => {
   const store = new Vuex.Store<State>(storeOptions);
 
   if (module.hot) {
-    module.hot.accept(["./main", "./admin", "./live", "./socket"], () => {
+    module.hot.accept(["./main", "./live", "./socket"], () => {
       const newMainModule = require("./main").default;
-      const newAdminModule = require("./admin").default;
       const newLiveModule = require("./live").default;
       const newSocketModule = require("./socket").default;
       store.hotUpdate({
         modules: {
           account: newMainModule,
-          admin: newAdminModule,
           live: newLiveModule,
           socket: newSocketModule,
         },

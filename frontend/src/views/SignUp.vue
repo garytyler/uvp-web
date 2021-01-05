@@ -63,7 +63,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { IUserProfileCreate } from "@/interfaces";
-import { dispatchGetUsers } from "@/store/admin/actions";
+// import { dispatchGetUsers } from "@/store/admin/actions";
 import { dispatchSignUp } from "@/store/main/actions";
 
 export default Vue.extend({
@@ -91,25 +91,25 @@ export default Vue.extend({
     },
     async submit() {
       if (await this.$validator.validateAll()) {
-        const updatedProfile: IUserProfileCreate = {
+        const newProfile: IUserProfileCreate = {
           email: this.email,
         };
         if (this.name) {
-          updatedProfile.name = this.name;
+          newProfile.name = this.name;
         }
         if (this.email) {
-          updatedProfile.email = this.email;
+          newProfile.email = this.email;
         }
-        updatedProfile.isActive = this.isActive;
-        updatedProfile.isSuperuser = this.isSuperuser;
-        updatedProfile.password = this.password1;
-        await dispatchSignUp(this.$store, updatedProfile);
+        newProfile.isActive = this.isActive;
+        newProfile.isSuperuser = this.isSuperuser;
+        newProfile.password = this.password1;
+        await dispatchSignUp(this.$store, newProfile);
         this.$router.push("/login");
       }
     },
   },
   async mounted() {
-    await dispatchGetUsers(this.$store);
+    // await dispatchGetUsers(this.$store);
     this.reset();
   },
 });

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "noImplicitAny": false,
+    "noImplicitThis": false,
     "target": "esnext",
     "module": "esnext",
     "strict": true,
@@ -15,9 +16,7 @@
     "types": [
       "webpack-env",
       "vuetify",
-      "@types/jest",
-      "jest-playwright-preset",
-      "expect-playwright"
+      "@types/jest"
     ],
     "paths": {
       "@/*": [
@@ -39,6 +38,7 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "*.js"
   ]
 }

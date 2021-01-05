@@ -31,7 +31,7 @@ client.interceptors.request.use(
     // return config;
     return decamelizeRequest(config);
   },
-  (err: any) => {
+  (err) => {
     console.log(err);
     return Promise.reject(err);
   }
@@ -42,7 +42,7 @@ client.interceptors.response.use(
     // return response;
     return camelizeResponse(response);
   },
-  (err: any) => {
+  (err) => {
     console.log(err);
     return Promise.reject(err);
   }

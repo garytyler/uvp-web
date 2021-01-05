@@ -1,15 +1,16 @@
 import { LiveState } from "./state";
 import { getStoreAccessors } from "typesafe-vuex";
 import { State } from "../state";
+import { IFeature, IGuest } from "@/interfaces";
 
 export const getters = {
-  currentFeature: (state: LiveState) => state.currentFeature,
-  currentGuest: (state: LiveState) => state.currentGuest,
-  isFeaturePresenterOnline: (state: LiveState) =>
+  currentFeature: (state: LiveState): IFeature | null => state.currentFeature,
+  currentGuest: (state: LiveState): IGuest | null => state.currentGuest,
+  isFeaturePresenterOnline: (state: LiveState): boolean | null =>
     state.currentFeature &&
     state.currentFeature.presenters &&
     state.currentFeature.presenters.length > 0,
-  isCurrentGuestInteractingGuest: (state: LiveState) =>
+  isCurrentGuestInteractingGuest: (state: LiveState): boolean | null =>
     state.currentGuest &&
     state.currentFeature &&
     state.currentFeature.guests &&

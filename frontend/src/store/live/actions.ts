@@ -17,7 +17,7 @@ export const actions = {
   async actionGetCurrentFeature(
     context: MainContext,
     payload: { slugOrId: string }
-  ) {
+  ): Promise<void> {
     try {
       const response = await api.getFeature(payload.slugOrId);
 
@@ -28,7 +28,7 @@ export const actions = {
       console.debug(error);
     }
   },
-  async actionGetCurrentGuest(context: MainContext) {
+  async actionGetCurrentGuest(context: MainContext): Promise<void> {
     try {
       const response = await api.getCurrentGuest();
       if (response.data) {
@@ -38,24 +38,25 @@ export const actions = {
       console.log(error);
     }
   },
-  async actionCreateCurrentGuest(context: MainContext, payload: IGuestCreate) {
-    if (!context.state.currentFeature) {
-      console.error("API ERROR"); // TODO
-    } else {
-      try {
-        const response = await api.createCurrentGuest(payload);
-        if (response.data) {
-          commitSetCurrentGuest(context, response.data);
+  async actionCreateCurrentGuest(
+    context: MainContext,
+    payload: IGuestCreate
+  ): Promise<void> {
+    api
+      .createCurrentGuest(payload)
+      .then((resp) => {
+        if (resp.data) {
+          commitSetCurrentGuest(context, resp.data);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   },
   async actionUpdateCurrentGuest(
     context: MainContext,
     payload: { guestId: string; guest: IGuestUpdate }
-  ) {
+  ): Promise<void> {
     try {
       const response = await api.updateGuest(payload.guestId, payload.guest);
       if (response.data) {
@@ -65,7 +66,10 @@ export const actions = {
       console.log(error);
     }
   },
-  async actionDeleteGuest(context: MainContext, payload: { guestId: string }) {
+  async actionDeleteGuest(
+    context: MainContext,
+    payload: { guestId: string }
+  ): Promise<void> {
     if (!context.state.currentFeature) {
       console.log("API ERROR"); // TODO
     } else {
@@ -82,9 +86,12 @@ export const actions = {
       }
     }
   },
-  async actionReceiveFeature(context: MainContext, payload: IFeature) {
+  async actionReceiveFeature(
+    context: MainContext,
+    payload: IFeature
+  ): Promise<void> {
     const feature: IFeature = payload;
-    await commitSetCurrentFeature(context, feature);
+    commitSetCurrentFeature(context, feature);
   },
 };
 

@@ -1,23 +1,25 @@
 import { MainState } from "./state";
 import { getStoreAccessors } from "typesafe-vuex";
 import { State } from "../state";
+import { AppNotification } from "@/store/main/state";
+import { IUserProfile } from "@/interfaces";
 
 export const getters = {
-  hasAdminAccess: (state: MainState) => {
+  hasAdminAccess: (state: MainState): boolean | null => {
     return (
       state.userProfile &&
       state.userProfile.isSuperuser &&
       state.userProfile.isActive
     );
   },
-  loginError: (state: MainState) => state.logInError,
-  dashboardShowDrawer: (state: MainState) => state.dashboardShowDrawer,
-  dashboardMiniDrawer: (state: MainState) => state.dashboardMiniDrawer,
-  userProfile: (state: MainState) => state.userProfile,
-  token: (state: MainState) => state.token,
-  isLoggedIn: (state: MainState) => state.isLoggedIn,
-  firstNotification: (state: MainState) =>
-    state.notifications.length > 0 && state.notifications[0],
+  loginError: (state: MainState): boolean => state.logInError,
+  dashboardShowDrawer: (state: MainState): boolean => state.dashboardShowDrawer,
+  dashboardMiniDrawer: (state: MainState): boolean => state.dashboardMiniDrawer,
+  userProfile: (state: MainState): IUserProfile | null => state.userProfile,
+  token: (state: MainState): string => state.token,
+  isLoggedIn: (state: MainState): boolean | null => state.isLoggedIn,
+  firstNotification: (state: MainState): AppNotification | null =>
+    state.notifications.length > 0 ? state.notifications[0] : null,
 };
 
 const { read } = getStoreAccessors<MainState, State>("");

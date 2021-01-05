@@ -122,8 +122,9 @@ import {
 } from "../store/live/actions";
 import { readFeature, readGuest } from "../store/live/getters";
 import Sortable from "sortablejs";
+import Vue from "vue";
 
-export default {
+export default Vue.extend({
   props: {
     featureOwner: {
       required: false,
@@ -131,10 +132,12 @@ export default {
       default: true, // Set to false before deployment
     },
   },
-  data: () => ({
-    dialog: false,
-    editedItem: {},
-  }),
+  data: () => {
+    return {
+      dialog: false,
+      editedItem: {},
+    };
+  },
   computed: {
     headers() {
       const _headers = [
@@ -189,7 +192,6 @@ export default {
       row.select(false);
       row.deselect(item, false);
     },
-
     async initEditDialog(item) {
       this.editedIndex = this.currentFeature.guests.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -227,8 +229,9 @@ export default {
       },
     });
   },
-};
+});
 </script>
+
 <style scoped>
 .handle {
   cursor: move !important;

@@ -8,7 +8,7 @@ import {
   IGuestUpdate,
 } from "@/interfaces";
 import { IFeature } from "@/interfaces";
-import { client } from "@/services/api.service";
+import { client } from "@/services/http";
 
 function authHeaders(token: string) {
   return {

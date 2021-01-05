@@ -6,27 +6,29 @@ import Vue from "vue";
 export const mutations = {
   // Provide low-level state management and logging for websocket activity.
   // https://github.com/nathantsoi/vue-native-websocket#vuex-store-integration
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   SOCKET_ONOPEN(state: SocketState, event) {
     Vue.prototype.$socket = event.currentTarget;
     state.isConnected = true;
   },
-  SOCKET_ONCLOSE(state: SocketState) {
+  SOCKET_ONCLOSE(state: SocketState): void {
     state.isConnected = false;
   },
-  SOCKET_ONERROR(state: SocketState) {
+  SOCKET_ONERROR(state: SocketState): void {
     console.error(state, event);
   },
-  SOCKET_ONMESSAGE(state: SocketState, message) {
+  SOCKET_ONMESSAGE(state: SocketState, message: string): void {
     state.message = message;
   },
-  SOCKET_RECONNECT(state: SocketState, count) {
+  SOCKET_RECONNECT(state: SocketState, count: number): void {
     console.info(state, count);
   },
-  SOCKET_RECONNECT_ERROR(state: SocketState) {
+  SOCKET_RECONNECT_ERROR(state: SocketState): void {
     state.reconnectError = true;
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { commit } = getStoreAccessors<SocketState | any, State>("socket");
 
 /*

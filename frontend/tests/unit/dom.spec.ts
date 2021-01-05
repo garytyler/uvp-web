@@ -6,7 +6,7 @@ import "@testing-library/jest-dom";
 import { render, RenderResult } from "@testing-library/vue";
 import VueRouter from "vue-router";
 
-export const renderRoute = async function(
+export const renderRoute = async function (
   urlPath: string,
   routerRef?: VueRouter
 ): Promise<RenderResult> {

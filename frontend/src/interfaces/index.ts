@@ -29,16 +29,16 @@ export interface IPresenter {
 export interface IGuest {
   id: string;
   name: string;
-  feature_id: string;
+  featureId: string;
 }
 
 export interface IGuestUpdate {
   name?: string;
-  feature_id?: string;
+  featureId?: string;
 }
 
 export interface IGuestCreate {
-  id: string;
+  featureId: string;
   name: string;
 }
 

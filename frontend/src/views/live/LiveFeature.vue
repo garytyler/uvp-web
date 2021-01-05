@@ -26,14 +26,17 @@
   </div>
 </template>
 
+
+
+
 <script lang="ts">
 import Vue from "vue";
 import { store } from "@/store";
-import { urlPathToWsUrl } from "@/services/urls.js";
 import {
   dispatchGetCurrentFeature,
   dispatchGetCurrentGuest,
 } from "@/store/live/actions";
+import { getWsUrl } from "@/services/urls";
 import {
   readFeature,
   readGuest,
@@ -70,7 +73,7 @@ export default Vue.extend({
     );
     if (!this.$store.state.socket.isConnected) {
       const featureSlug = this.$route.params.featureSlug;
-      Vue.prototype.$connect(urlPathToWsUrl(`/ws/guest/${featureSlug}`));
+      Vue.prototype.$connect(getWsUrl(`/ws/guest/${featureSlug}`));
     }
   },
   async beforeRouteEnter(to, from, next) {

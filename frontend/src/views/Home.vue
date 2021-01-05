@@ -35,8 +35,9 @@ import AppContext from "@/components/AppContext.vue";
 import { appName } from "@/env";
 import { readIsLoggedIn } from "@/store/main/getters";
 import { store } from "@/store";
+import Vue from "vue";
 
-export default {
+export default Vue.extend({
   components: { AppContext },
   data: () => ({
     appName: appName,
@@ -80,5 +81,5 @@ export default {
       }
     },
   },
-};
+});
 </script>

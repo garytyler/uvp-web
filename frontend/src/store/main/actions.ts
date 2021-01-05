@@ -6,7 +6,7 @@ import { AxiosError } from "axios";
 import { getStoreAccessors } from "typesafe-vuex";
 import { ActionContext } from "vuex";
 import { State } from "../state";
-import { IUserProfileCreate } from "@/interfaces";
+import { IUserProfileCreate, IUserProfileUpdate } from "@/interfaces";
 import {
   commitAddNotification,
   commitRemoveNotification,
@@ -20,14 +20,17 @@ import { AppNotification, MainState } from "./state";
 type MainContext = ActionContext<MainState, State>;
 
 export const actions = {
-  async actionSignUp(context: MainContext, payload: IUserProfileCreate) {
+  async actionSignUp(
+    context: MainContext,
+    payload: IUserProfileCreate
+  ): Promise<void> {
     try {
       const loadingNotification = { content: "saving", showProgress: true };
       commitAddNotification(context, loadingNotification);
       const response = (
         await Promise.all([
           api.createUser(context.rootState.main.token, payload),
-          await new Promise<void>((resolve, reject) =>
+          await new Promise<void>((resolve) =>
             setTimeout(() => resolve(), 500)
           ),
         ])
@@ -44,7 +47,7 @@ export const actions = {
   async actionLogIn(
     context: MainContext,
     payload: { username: string; password: string }
-  ) {
+  ): Promise<void> {
     try {
       const response = await api.logInGetToken(
         payload.username,
@@ -57,7 +60,7 @@ export const actions = {
         commitSetLoggedIn(context, true);
         commitSetLogInError(context, false);
         await dispatchGetUserProfile(context);
-        await dispatchRouteLoggedIn(context);
+        // await dispatchRouteLoggedIn(context);
         commitAddNotification(context, {
           content: "Logged in",
           type: "success",
@@ -70,7 +73,7 @@ export const actions = {
       await dispatchLogOut(context);
     }
   },
-  async actionGetUserProfile(context: MainContext) {
+  async actionGetUserProfile(context: MainContext): Promise<void> {
     try {
       const response = await api.getCurrentUser(context.state.token);
       if (response.data) {
@@ -80,7 +83,10 @@ export const actions = {
       await dispatchCheckApiError(context, error);
     }
   },
-  async actionUpdateUserProfile(context: MainContext, payload) {
+  async actionUpdateUserProfile(
+    context: MainContext,
+    payload: IUserProfileUpdate
+  ): Promise<void> {
     try {
       const loadingNotification = { content: "saving", showProgress: true };
       commitAddNotification(context, loadingNotification);
@@ -102,7 +108,7 @@ export const actions = {
       await dispatchCheckApiError(context, error);
     }
   },
-  async actionCheckLoggedIn(context: MainContext) {
+  async actionCheckLoggedIn(context: MainContext): Promise<void> {
     if (!context.state.isLoggedIn) {
       let token = context.state.token;
       if (!token) {
@@ -125,51 +131,57 @@ export const actions = {
       }
     }
   },
-  async actionRemoveLogIn(context: MainContext) {
+  async actionRemoveLogIn(context: MainContext): Promise<void> {
     removeLocalToken();
     commitSetToken(context, "");
     commitSetLoggedIn(context, false);
   },
-  async actionLogOut(context: MainContext) {
+  async actionLogOut(context: MainContext): Promise<void> {
     await dispatchRemoveLogIn(context);
     await dispatchRouteLogOut(context);
   },
-  async actionUserLogOut(context: MainContext) {
+  async actionUserLogOut(context: MainContext): Promise<void> {
     await dispatchLogOut(context);
     commitAddNotification(context, { content: "Logged out", type: "success" });
   },
-  actionRouteLogOut(context: MainContext) {
+  actionRouteLogOut(): void {
     if (router.currentRoute.path !== "/login") {
       router.push("/login");
     }
   },
-  async actionCheckApiError(context: MainContext, payload: AxiosError) {
+  async actionCheckApiError(
+    context: MainContext,
+    payload: AxiosError
+  ): Promise<void> {
     if (payload.response) {
       if (payload.response.status === 401) {
         await dispatchLogOut(context);
       }
     }
   },
-  actionRouteLoggedIn(context: MainContext) {
-    if (
-      router.currentRoute.path === "/login" ||
-      router.currentRoute.path === "/"
-    ) {
-      router.push("/account");
-    }
-  },
+  // actionRouteLoggedIn(context: MainContext) {
+  //   if (
+  //     router.currentRoute.path === "/login" ||
+  //     router.currentRoute.path === "/"
+  //   ) {
+  //     router.push("/account");
+  //   }
+  // },
   async removeNotification(
     context: MainContext,
     payload: { notification: AppNotification; timeout: number }
-  ) {
-    return new Promise((resolve, reject) => {
+  ): Promise<void> {
+    return new Promise((resolve) => {
       setTimeout(() => {
         commitRemoveNotification(context, payload.notification);
-        resolve(true);
+        resolve();
       }, payload.timeout);
     });
   },
-  async passwordRecovery(context: MainContext, payload: { username: string }) {
+  async passwordRecovery(
+    context: MainContext,
+    payload: { username: string }
+  ): Promise<void> {
     const loadingNotification = {
       content: "Sending password recovery email",
       showProgress: true,
@@ -195,7 +207,7 @@ export const actions = {
   async resetPassword(
     context: MainContext,
     payload: { password: string; token: string }
-  ) {
+  ): Promise<void> {
     const loadingNotification = {
       content: "Resetting password",
       showProgress: true,
@@ -210,7 +222,7 @@ export const actions = {
           content: response.data.msg,
         });
       })
-      .catch((error) => {
+      .catch(() => {
         commitRemoveNotification(context, loadingNotification);
         commitAddNotification(context, {
           type: "error",
@@ -231,7 +243,7 @@ export const dispatchLogIn = dispatch(actions.actionLogIn);
 export const dispatchLogOut = dispatch(actions.actionLogOut);
 export const dispatchUserLogOut = dispatch(actions.actionUserLogOut);
 export const dispatchRemoveLogIn = dispatch(actions.actionRemoveLogIn);
-export const dispatchRouteLoggedIn = dispatch(actions.actionRouteLoggedIn);
+// export const dispatchRouteLoggedIn = dispatch(actions.actionRouteLoggedIn);
 export const dispatchRouteLogOut = dispatch(actions.actionRouteLogOut);
 export const dispatchUpdateUserProfile = dispatch(
   actions.actionUpdateUserProfile

@@ -57,14 +57,16 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { readGuest, readFeature } from "../store/live/getters";
 import {
   dispatchCreateCurrentGuest,
   dispatchGetCurrentGuest,
 } from "../store/live/actions";
-import device from "@/services/device.js";
-export default {
+import device from "@/services/device";
+import Vue from "vue";
+
+export default Vue.extend({
   name: "live-feature-join-modal",
   data: () => ({
     currentGuestLoaded: false,
@@ -84,7 +86,7 @@ export default {
     },
     numFeatureGuests() {
       const feature = readFeature(this.$store);
-      return isNaN(feature.guests?.length) ? 0 : this.feature.guests.length;
+      return feature ? (feature.guests ? this.feature.guests.length : 0) : 0;
     },
     currentGuestIsInFeatureGuests() {
       if (!this.currentGuest) return false;
@@ -103,12 +105,12 @@ export default {
       });
     },
   },
-  async beforeCreate() {
+  async beforeCreate(): Promise<void> {
     if (!readGuest(this.$store)) {
       await dispatchGetCurrentGuest(this.$store);
     }
   },
-};
+});
 </script>
 
 <style scoped></style>

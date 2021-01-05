@@ -4,8 +4,9 @@ import { IFeature } from "@/interfaces";
 import { camelizeKeys } from "humps";
 
 export const actions = {
+  // eslint-disable-next-line  @typescript-eslint/explicit-module-boundary-types
   async receiveCurrentFeature({}, data: { feature: IFeature }) {
     const feature: IFeature = data.feature;
-    await commitSetCurrentFeature(store, camelizeKeys(feature));
+    commitSetCurrentFeature(store, camelizeKeys(feature));
   },
 };

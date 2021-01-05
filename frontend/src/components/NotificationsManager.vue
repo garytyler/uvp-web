@@ -96,8 +96,7 @@ export default Vue.extend({
   },
   watch: {
     firstNotification: async function (
-      newNotification: AppNotification | false,
-      oldNotification: AppNotification | false
+      newNotification: AppNotification | false
     ) {
       if (newNotification !== this.currentNotification) {
         this.setNotification(newNotification);

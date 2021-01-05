@@ -4,7 +4,7 @@ import "vuetify/dist/vuetify.min.css";
 
 Vue.use(Vuetify);
 
-export const createVuetify = () => {
+export const createVuetify = (): Vuetify => {
   return new Vuetify({
     breakpoint: {
       mobileBreakpoint: "xs",

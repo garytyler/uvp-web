@@ -24,25 +24,24 @@ export const actions = {
     context: MainContext,
     payload: IUserProfileCreate
   ): Promise<void> {
-    try {
-      const loadingNotification = { content: "saving", showProgress: true };
-      commitAddNotification(context, loadingNotification);
-      const response = (
-        await Promise.all([
-          api.createUser(context.rootState.main.token, payload),
-          await new Promise<void>((resolve) =>
-            setTimeout(() => resolve(), 500)
-          ),
-        ])
-      )[0];
-      commitRemoveNotification(context, loadingNotification);
-      commitAddNotification(context, {
-        content: `Your account has been created with email address ${response.data.email}. You can now login.`,
-        type: "success",
+    const loadingNotification = { content: "saving", showProgress: true };
+    commitAddNotification(context, loadingNotification);
+    api
+      .createUser(context.rootState.main.token, payload)
+      .then((resp) => {
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {
+          type: "success",
+          content: `Your account has been created with email address ${resp.data.email}. You can now login.`,
+        });
+      })
+      .catch((err) => {
+        commitRemoveNotification(context, loadingNotification);
+        commitAddNotification(context, {
+          type: "error",
+          content: err.message,
+        });
       });
-    } catch (error) {
-      await dispatchCheckApiError(context, error);
-    }
   },
   async actionLogIn(
     context: MainContext,
@@ -170,11 +169,11 @@ export const actions = {
   async removeNotification(
     context: MainContext,
     payload: { notification: AppNotification; timeout: number }
-  ): Promise<void> {
+  ): Promise<boolean> {
     return new Promise((resolve) => {
       setTimeout(() => {
         commitRemoveNotification(context, payload.notification);
-        resolve();
+        resolve(true);
       }, payload.timeout);
     });
   },

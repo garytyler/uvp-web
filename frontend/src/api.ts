@@ -18,7 +18,6 @@ function authHeaders(token: string) {
   };
 }
 
-// const apiRoot = "";
 const accountsApi = {
   async logInGetToken(username: string, password: string) {
     const params = new URLSearchParams();

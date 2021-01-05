@@ -10,6 +10,7 @@
                 <v-text-field
                   label="Full Name"
                   v-model="name"
+                  @keyup.enter="submit"
                   required
                 ></v-text-field>
                 <v-text-field
@@ -19,6 +20,7 @@
                   v-validate="'required|email'"
                   data-vv-name="email"
                   :error-messages="errors.collect('email')"
+                  @keyup.enter="submit"
                   required
                 ></v-text-field>
                 <v-layout align-center>
@@ -32,6 +34,7 @@
                       v-validate="{ required: true }"
                       v-model="password1"
                       :error-messages="errors.first('password')"
+                      @keyup.enter="submit"
                     >
                     </v-text-field>
                     <v-text-field
@@ -43,6 +46,7 @@
                       v-validate="{ required: true, confirmed: 'password' }"
                       v-model="password2"
                       :error-messages="errors.first('password_confirmation')"
+                      @keyup.enter="submit"
                     >
                     </v-text-field>
                   </v-flex>
@@ -103,13 +107,15 @@ export default Vue.extend({
         newProfile.isActive = this.isActive;
         newProfile.isSuperuser = this.isSuperuser;
         newProfile.password = this.password1;
-        await dispatchSignUp(this.$store, newProfile);
-        this.$router.push("/login");
+        dispatchSignUp(this.$store, newProfile)
+          .catch()
+          .then(() => {
+            this.$router.push("/login");
+          });
       }
     },
   },
   async mounted() {
-    // await dispatchGetUsers(this.$store);
     this.reset();
   },
 });

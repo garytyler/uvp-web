@@ -6,6 +6,7 @@ import {
   IGuest,
   IGuestCreate,
   IGuestUpdate,
+  IFeatureCreate,
 } from "@/interfaces";
 import { IFeature } from "@/interfaces";
 import { client } from "@/services/http";
@@ -82,6 +83,14 @@ const featuresApi = {
   async getFeature(slugOrId: string) {
     const path = `/api/features/${slugOrId}`;
     return client.get<IFeature>(path);
+  },
+  async getFeatures() {
+    const path = `/api/features`;
+    return client.get<IFeature>(path);
+  },
+  async createFeature(token: string, data: IFeatureCreate) {
+    const path = `/api/features`;
+    return client.post<IFeature>(path, data, authHeaders(token));
   },
 };
 

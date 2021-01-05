@@ -77,6 +77,19 @@ export const routes = [
               },
             ],
           },
+          {
+            path: "features",
+            component: RouterComponent,
+            redirect: "features/create",
+            children: [
+              {
+                path: "create",
+                // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+                component: () =>
+                  import("@/views/account/features/UserFeatureCreate.vue"),
+              },
+            ],
+          },
           // {
           //   path: "admin",
           //   component: () => import("@/views/account/admin/Admin.vue"),

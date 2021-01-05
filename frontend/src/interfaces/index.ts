@@ -45,6 +45,14 @@ export interface IGuestCreate {
 export interface IFeature {
   id: string;
   title: string;
+  slug: string;
   guests: IGuest[];
   presenters: IPresenter[];
+}
+
+export interface IFeatureCreate {
+  userId: string;
+  title: string;
+  slug: string;
+  turnDuration: number;
 }

@@ -1,4 +1,4 @@
-import { IUserProfile } from "@/interfaces";
+import { IUserProfile, IFeature } from "@/interfaces";
 import { MainState, AppNotification } from "./state";
 import { getStoreAccessors } from "typesafe-vuex";
 import { State } from "../state";
@@ -30,6 +30,9 @@ export const mutations = {
       (notification) => notification !== payload
     );
   },
+  addFeature(state: MainState, payload: IFeature): void {
+    state.features.push(payload);
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,3 +50,4 @@ export const commitSetToken = commit(mutations.setToken);
 export const commitSetUserProfile = commit(mutations.setUserProfile);
 export const commitAddNotification = commit(mutations.addNotification);
 export const commitRemoveNotification = commit(mutations.removeNotification);
+export const commitAddFeature = commit(mutations.addFeature);

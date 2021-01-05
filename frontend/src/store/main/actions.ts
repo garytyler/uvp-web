@@ -6,7 +6,12 @@ import { AxiosError } from "axios";
 import { getStoreAccessors } from "typesafe-vuex";
 import { ActionContext } from "vuex";
 import { State } from "../state";
-import { IUserProfileCreate, IUserProfileUpdate } from "@/interfaces";
+import {
+  IUserProfileCreate,
+  IUserProfileUpdate,
+  IFeatureCreate,
+  IFeature,
+} from "@/interfaces";
 import {
   commitAddNotification,
   commitRemoveNotification,
@@ -14,6 +19,7 @@ import {
   commitSetLogInError,
   commitSetToken,
   commitSetUserProfile,
+  commitAddFeature,
 } from "./mutations";
 import { AppNotification, MainState } from "./state";
 
@@ -229,6 +235,40 @@ export const actions = {
         });
       });
   },
+  async actionCreateFeature(
+    context: MainContext,
+    payload: IFeatureCreate
+  ): Promise<IFeature | undefined> {
+    const loadingNotification = {
+      content: "Creating feature",
+      showProgress: true,
+    };
+    try {
+      commitAddNotification(context, loadingNotification);
+      const response = (
+        await Promise.all([
+          api.createFeature(context.state.token, payload),
+          await new Promise<void>((resolve) =>
+            setTimeout(() => resolve(), 500)
+          ),
+        ])
+      )[0];
+      commitAddFeature(context, response.data);
+      commitRemoveNotification(context, loadingNotification);
+      commitAddNotification(context, {
+        type: "success",
+        content: "Feature created",
+      });
+      return response.data;
+    } catch (error) {
+      commitRemoveNotification(context, loadingNotification);
+      commitAddNotification(context, {
+        type: "error",
+        content: "Could not create feature",
+      });
+      await dispatchCheckApiError(context, error);
+    }
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -250,3 +290,4 @@ export const dispatchUpdateUserProfile = dispatch(
 export const dispatchRemoveNotification = dispatch(actions.removeNotification);
 export const dispatchPasswordRecovery = dispatch(actions.passwordRecovery);
 export const dispatchResetPassword = dispatch(actions.resetPassword);
+export const dispatchCreateFeature = dispatch(actions.actionCreateFeature);

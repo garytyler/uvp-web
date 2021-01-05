@@ -21,6 +21,19 @@
         </v-list-item>
       </v-list>
 
+      <v-list subheader>
+        <v-subheader>Features</v-subheader>
+        <v-divider></v-divider>
+        <v-list-item to="/account/features/create">
+          <v-list-item-action>
+            <v-icon>mdi-star-circle</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Create New Feature</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+
       <v-list subheader v-show="hasAdminAccess">
         <v-divider></v-divider>
         <v-list-item to="/account/admin/users/all">

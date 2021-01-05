@@ -60,7 +60,7 @@ export const actions = {
         commitSetLoggedIn(context, true);
         commitSetLogInError(context, false);
         await dispatchGetUserProfile(context);
-        // await dispatchRouteLoggedIn(context);
+        await dispatchRouteLoggedIn(context);
         commitAddNotification(context, {
           content: "Logged in",
           type: "success",
@@ -159,14 +159,14 @@ export const actions = {
       }
     }
   },
-  // actionRouteLoggedIn(context: MainContext) {
-  //   if (
-  //     router.currentRoute.path === "/login" ||
-  //     router.currentRoute.path === "/"
-  //   ) {
-  //     router.push("/account");
-  //   }
-  // },
+  actionRouteLoggedIn(): void {
+    if (
+      router.currentRoute.path === "/login" ||
+      router.currentRoute.path === "/"
+    ) {
+      router.push("/account");
+    }
+  },
   async removeNotification(
     context: MainContext,
     payload: { notification: AppNotification; timeout: number }
@@ -243,7 +243,7 @@ export const dispatchLogIn = dispatch(actions.actionLogIn);
 export const dispatchLogOut = dispatch(actions.actionLogOut);
 export const dispatchUserLogOut = dispatch(actions.actionUserLogOut);
 export const dispatchRemoveLogIn = dispatch(actions.actionRemoveLogIn);
-// export const dispatchRouteLoggedIn = dispatch(actions.actionRouteLoggedIn);
+export const dispatchRouteLoggedIn = dispatch(actions.actionRouteLoggedIn);
 export const dispatchRouteLogOut = dispatch(actions.actionRouteLogOut);
 export const dispatchUpdateUserProfile = dispatch(
   actions.actionUpdateUserProfile

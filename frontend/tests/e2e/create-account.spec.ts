@@ -52,7 +52,7 @@ it("Create account and login", async () => {
   await page.screenshot({ path: ".pw_screens/2_filled_out_login_info.png" });
   await page.click("//button/span[normalize-space(.)='Login']");
   await page.waitForNavigation({ waitUntil: "load" });
-  await page.screenshot({ path: ".pw_screens/4_logged_in.png" });
+  await page.screenshot({ path: ".pw_screens/3_logged_in.png" });
 
   expect(await page.$(`:text("Welcome ${user_name}"):visible`)).toBeTruthy();
 

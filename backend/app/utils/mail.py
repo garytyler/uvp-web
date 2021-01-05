@@ -62,7 +62,9 @@ def send_reset_password_email(email_to: str, token: str) -> None:
         context={
             "project_name": settings.APP_TITLE,
             "action_title": "Reset Your Password",
-            "action_url": f"{settings.SERVER_HOST}/access/reset-password?token={token}",
+            "action_url": (
+                f"https://{settings.DOMAIN}/access/reset-password?token={token}"
+            ),
             "hours_valid": settings.EMAIL_PASSWORD_RESET_TOKEN_EXPIRE_HOURS,
         },
     )

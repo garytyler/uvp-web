@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { api } from "@/api";
 import { router } from "@/router";
-import { getLocalToken, removeLocalToken, saveLocalToken } from "@/utils";
+import {
+  getLocalToken,
+  removeLocalToken,
+  saveLocalToken,
+} from "@/services/localStorage.service";
 import { AxiosError } from "axios";
 import { getStoreAccessors } from "typesafe-vuex";
 import { ActionContext } from "vuex";

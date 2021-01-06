@@ -9,7 +9,7 @@ import {
   IFeatureCreate,
 } from "@/interfaces";
 import { IFeature } from "@/interfaces";
-import { client } from "@/services/http";
+import { client } from "@/services/http.service";
 
 function authHeaders(token: string) {
   return {

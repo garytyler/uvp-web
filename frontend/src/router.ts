@@ -18,8 +18,8 @@ export const routes = [
         children: [
           {
             path: "",
+            // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
             component: () => import("@/views/Landing.vue"),
-            // redirect: "/account/dashboard",
           },
           {
             path: "signup",
@@ -162,7 +162,7 @@ export const routes = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const createRouter = () => {
+export const createRouter = (): VueRouter => {
   return new VueRouter({
     mode: "history",
     base: process.env.BASE_URL,

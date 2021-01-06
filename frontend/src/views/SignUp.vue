@@ -9,11 +9,10 @@
               <validation-provider
                 v-slot="{ errors }"
                 name="Name"
-                rules="required|min:3|max:20"
+                rules="required|minUserName|maxUserName"
               >
                 <v-text-field
                   v-model="name"
-                  :counter="20"
                   :error-messages="errors"
                   label="Name"
                   @keyup.enter="submit"
@@ -38,8 +37,8 @@
 
               <validation-provider
                 vid="password"
-                name="password"
-                rules="required|min:8|confirmPassword:@confirmation"
+                name="Password"
+                rules="required|minPassword|passwordConfirm:@confirmation"
                 v-slot="{ errors }"
               >
                 <v-text-field
@@ -54,8 +53,8 @@
 
               <validation-provider
                 vid="confirmation"
-                name="confirmation"
-                rules="required|min:8"
+                name="Password"
+                rules="required|minPassword|passwordConfirm:@password"
                 v-slot="{ errors }"
               >
                 <v-text-field
@@ -83,24 +82,7 @@
 import Vue from "vue";
 import { IUserProfileCreate } from "@/interfaces";
 import { dispatchSignUp } from "@/store/main/actions";
-import {
-  required,
-  digits,
-  email,
-  max,
-  min,
-  regex,
-} from "vee-validate/dist/rules";
-import { extend, ValidationObserver, ValidationProvider } from "vee-validate";
-
-extend("confirmPassword", {
-  params: ["target"],
-  validate(value, values) {
-    console.log(values);
-    return value === values["target"];
-  },
-  message: "Password confirmation does not match",
-});
+import { ValidationObserver, ValidationProvider } from "vee-validate";
 
 export default Vue.extend({
   components: {
@@ -108,6 +90,7 @@ export default Vue.extend({
     ValidationObserver,
   },
   data: () => ({
+    // env: env,
     name: "",
     email: "",
     password: "",
@@ -127,25 +110,5 @@ export default Vue.extend({
         });
     },
   },
-});
-
-extend("min", {
-  ...min,
-  message: "{_field_} needs to be at least {length} digits. ({_value_})",
-});
-
-extend("required", {
-  ...required,
-  message: "{_field_} can not be empty",
-});
-
-extend("max", {
-  ...max,
-  message: "{_field_} may not be greater than {length} characters",
-});
-
-extend("email", {
-  ...email,
-  message: "Email must be valid",
 });
 </script>

@@ -1,4 +1,15 @@
-import Vue from "vue";
-import { ValidationProvider } from "vee-validate";
+import {
+  ValidationProvider as BaseValidationProvider,
+  configure,
+} from "vee-validate";
+import { setValidationRules } from "@/validations";
 
-Vue.component("ValidationProvider", ValidationProvider);
+const config = {
+  mode: "aggressive",
+};
+
+export const ValidationProvider = (() => {
+  configure(config);
+  setValidationRules();
+  return BaseValidationProvider;
+})();

@@ -25,6 +25,7 @@ import {
   commitSetUserProfile,
   commitAddFeature,
 } from "./mutations";
+import { readUserProfile } from "./getters";
 import { AppNotification, MainState } from "./state";
 
 type MainContext = ActionContext<MainState, State>;
@@ -36,18 +37,18 @@ export const actions = {
   ): Promise<void> {
     const loadingNotification = { content: "saving", showProgress: true };
     commitAddNotification(context, loadingNotification);
-    api
+    return api
       .createUser(context.rootState.main.token, payload)
-      .then((resp) =>
+      .then((response) => {
         commitAddNotification(context, {
           type: "success",
-          content: `Your account has been created with email address ${resp.data.email}. You can now login.`,
-        })
-      )
-      .catch((err) =>
+          content: `Your account has been created with email address ${response.data.email}. You can now login.`,
+        });
+      })
+      .catch((error) =>
         commitAddNotification(context, {
           type: "error",
-          content: err.message,
+          content: error.message,
         })
       )
       .finally(() => commitRemoveNotification(context, loadingNotification));
@@ -56,30 +57,24 @@ export const actions = {
     context: MainContext,
     payload: { username: string; password: string }
   ): Promise<void> {
-    try {
-      const response = await api.logInGetToken(
-        payload.username,
-        payload.password
-      );
-      const token = response.data.access_token;
-      if (token) {
-        saveLocalToken(token);
-        commitSetToken(context, token);
-        commitSetLoggedIn(context, true);
-        commitSetLogInError(context, false);
-        await dispatchGetUserProfile(context);
-        await dispatchRouteLoggedIn(context);
-        commitAddNotification(context, {
-          content: "Logged in",
-          type: "success",
-        });
-      } else {
+    return api
+      .logInGetToken(payload.username, payload.password)
+      .catch(async () => {
+        commitSetLogInError(context, true);
         await dispatchLogOut(context);
-      }
-    } catch (err) {
-      commitSetLogInError(context, true);
-      await dispatchLogOut(context);
-    }
+      })
+      .then(async (response) => {
+        if (response && response.data.access_token) {
+          const token = response.data.access_token;
+          saveLocalToken(token);
+          commitSetToken(context, token);
+          commitSetLoggedIn(context, true);
+          commitSetLogInError(context, false);
+          await dispatchRouteLoggedIn(context);
+        } else {
+          await dispatchLogOut(context);
+        }
+      });
   },
   async actionGetUserProfile(context: MainContext): Promise<void> {
     try {
@@ -95,26 +90,32 @@ export const actions = {
     context: MainContext,
     payload: IUserProfileUpdate
   ): Promise<void> {
-    try {
-      const loadingNotification = { content: "saving", showProgress: true };
-      commitAddNotification(context, loadingNotification);
-      const response = (
-        await Promise.all([
-          api.updateCurrentUser(context.state.token, payload),
-          await new Promise<void>((resolve) =>
-            setTimeout(() => resolve(), 500)
-          ),
-        ])
-      )[0];
-      commitSetUserProfile(context, response.data);
-      commitRemoveNotification(context, loadingNotification);
-      commitAddNotification(context, {
-        content: "Profile successfully updated",
-        type: "success",
-      });
-    } catch (error) {
-      await dispatchCheckApiError(context, error);
-    }
+    const loadingNotification = { content: "saving", showProgress: true };
+    const genericErrorMsg = "Error updating profile";
+    commitAddNotification(context, loadingNotification);
+    return api
+      .updateCurrentUser(context.state.token, payload)
+      .catch(() => {
+        commitAddNotification(context, {
+          content: genericErrorMsg,
+          type: "error",
+        });
+      })
+      .then((response) => {
+        if (response) {
+          commitSetUserProfile(context, response.data);
+          commitAddNotification(context, {
+            content: "Profile successfully updated",
+            type: "success",
+          });
+        } else {
+          commitAddNotification(context, {
+            content: genericErrorMsg,
+            type: "error",
+          });
+        }
+      })
+      .finally(() => commitRemoveNotification(context, loadingNotification));
   },
   async actionCheckLoggedIn(context: MainContext): Promise<void> {
     if (!context.state.isLoggedIn) {
@@ -150,7 +151,10 @@ export const actions = {
   },
   async actionUserLogOut(context: MainContext): Promise<void> {
     await dispatchLogOut(context);
-    commitAddNotification(context, { content: "Logged out", type: "success" });
+    commitAddNotification(context, {
+      content: "Logged out",
+      type: "warning",
+    });
   },
   actionRouteLogOut(): void {
     if (router.currentRoute.path !== "/login") {
@@ -175,7 +179,7 @@ export const actions = {
       router.push("/account");
     }
   },
-  async removeNotification(
+  async actionRemoveNotification(
     context: MainContext,
     payload: { notification: AppNotification; timeout: number }
   ): Promise<boolean> {
@@ -186,33 +190,34 @@ export const actions = {
       }, payload.timeout);
     });
   },
-  async passwordRecovery(
+  async actionSendPasswordResetEmail(
     context: MainContext,
-    payload: { username: string }
+    payload: { email: string }
   ): Promise<void> {
     const loadingNotification = {
       content: "Sending password recovery email",
       showProgress: true,
     };
     commitAddNotification(context, loadingNotification);
-    api
-      .passwordRecovery(payload.username)
-      .then((response) => {
-        commitRemoveNotification(context, loadingNotification);
-        commitAddNotification(context, {
-          type: "success",
-          content: response.data.msg,
-        });
-      })
-      .catch(() => {
-        commitRemoveNotification(context, loadingNotification);
+    return api
+      .sendPasswordResetEmail(payload.email)
+      .catch(() =>
         commitAddNotification(context, {
           type: "error",
-          content: "Incorrect username or password",
-        });
-      });
+          content: "Incorrect email or password",
+        })
+      )
+      .then((response) =>
+        commitAddNotification(context, {
+          type: "success",
+          content: response
+            ? response.data.msg
+            : `Recovery email sent to ${payload.email}`,
+        })
+      )
+      .finally(() => commitRemoveNotification(context, loadingNotification));
   },
-  async resetPassword(
+  async actionResetPassword(
     context: MainContext,
     payload: { password: string; token: string }
   ): Promise<void> {
@@ -221,22 +226,21 @@ export const actions = {
       showProgress: true,
     };
     commitAddNotification(context, loadingNotification);
-    api
+    return api
       .resetPassword(payload.password, payload.token)
-      .then((response) => {
-        commitRemoveNotification(context, loadingNotification);
+      .then((response) =>
         commitAddNotification(context, {
           type: "success",
           content: response.data.msg,
-        });
-      })
-      .catch(() => {
-        commitRemoveNotification(context, loadingNotification);
+        })
+      )
+      .catch(() =>
         commitAddNotification(context, {
           type: "error",
           content: "Error resetting password",
-        });
-      });
+        })
+      )
+      .finally(() => commitRemoveNotification(context, loadingNotification));
   },
   async actionCreateFeature(
     context: MainContext,
@@ -290,7 +294,11 @@ export const dispatchRouteLogOut = dispatch(actions.actionRouteLogOut);
 export const dispatchUpdateUserProfile = dispatch(
   actions.actionUpdateUserProfile
 );
-export const dispatchRemoveNotification = dispatch(actions.removeNotification);
-export const dispatchPasswordRecovery = dispatch(actions.passwordRecovery);
-export const dispatchResetPassword = dispatch(actions.resetPassword);
+export const dispatchRemoveNotification = dispatch(
+  actions.actionRemoveNotification
+);
+export const dispatchSendPasswordResetEmail = dispatch(
+  actions.actionSendPasswordResetEmail
+);
+export const dispatchResetPassword = dispatch(actions.actionResetPassword);
 export const dispatchCreateFeature = dispatch(actions.actionCreateFeature);

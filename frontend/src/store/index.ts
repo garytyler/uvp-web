@@ -33,7 +33,7 @@ export const createStore = () => {
       const newSocketModule = require("./socket").default;
       store.hotUpdate({
         modules: {
-          account: newMainModule,
+          main: newMainModule,
           live: newLiveModule,
           socket: newSocketModule,
         },

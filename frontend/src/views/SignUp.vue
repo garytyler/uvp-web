@@ -6,7 +6,7 @@
           <v-card-title> Create Account </v-card-title>
           <v-card-text>
             <validation-observer ref="observer" v-slot="{ invalid }">
-              <form @submit.prevent="submit">
+              <v-form @submit.prevent="submit" @keyup.native.enter="submit">
                 <validation-provider
                   v-slot="{ errors }"
                   name="Name"
@@ -16,7 +16,6 @@
                     v-model="name"
                     :error-messages="errors"
                     label="Name"
-                    @keyup.enter="submit"
                     :counter="Boolean(name)"
                     required
                   ></v-text-field>
@@ -32,7 +31,6 @@
                     v-model="email"
                     :error-messages="errors"
                     label="Email"
-                    @keyup.enter="submit"
                     required
                   ></v-text-field>
                 </validation-provider>
@@ -48,7 +46,6 @@
                     v-model="password"
                     :error-messages="errors"
                     label="Password"
-                    @keyup.enter="submit"
                     required
                   ></v-text-field>
                 </validation-provider>
@@ -64,16 +61,17 @@
                     v-model="confirmation"
                     :error-messages="errors"
                     label="Confirm Password"
-                    @keyup.enter="submit"
                     required
                   ></v-text-field>
                 </validation-provider>
 
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn @click="submit" :disabled="invalid"> Submit </v-btn>
+                  <v-btn @click.prevent="submit" :disabled="invalid">
+                    Submit
+                  </v-btn>
                 </v-card-actions>
-              </form>
+              </v-form>
             </validation-observer>
           </v-card-text>
         </v-card>
@@ -100,11 +98,9 @@ export default Vue.extend({
     confirmation: "",
   }),
   methods: {
-    async validate() {
-      return this.$refs.observer.validate();
-    },
     async submit() {
-      this.validate()
+      return this.$refs.observer
+        .validate()
         .catch()
         .then(() => {
           const newProfile: IUserProfileCreate = {
@@ -114,9 +110,7 @@ export default Vue.extend({
           };
           dispatchSignUp(this.$store, newProfile)
             .catch()
-            .then(() => {
-              this.$router.push("/login");
-            });
+            .then(() => this.$router.push("/login"));
         });
     },
   },

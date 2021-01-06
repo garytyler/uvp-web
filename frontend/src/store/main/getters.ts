@@ -19,7 +19,8 @@ export const getters = {
   token: (state: MainState): string => state.token,
   isLoggedIn: (state: MainState): boolean | null => state.isLoggedIn,
   firstNotification: (state: MainState): AppNotification | null =>
-    state.notifications.length > 0 ? state.notifications[0] : null,
+    state.notifications.length ? state.notifications[0] : null,
+  notifications: (state: MainState): AppNotification[] => state.notifications,
 };
 
 const { read } = getStoreAccessors<MainState, State>("");
@@ -32,3 +33,4 @@ export const readLoginError = read(getters.loginError);
 export const readToken = read(getters.token);
 export const readUserProfile = read(getters.userProfile);
 export const readFirstNotification = read(getters.firstNotification);
+export const readNotifications = read(getters.notifications);

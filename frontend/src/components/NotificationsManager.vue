@@ -3,15 +3,14 @@
     <v-alert
       :type="currentNotificationType"
       v-model="show"
-      :prominent="!this.$vuetify.breakpoint.mobile"
+      :prominent="true"
       dismissible
-      border="left"
-      class="mx-2 mx-sm-16"
+      class="ma-5 mx-sm-16"
     >
       <template v-slot:prepend v-if="showProgress">
         <v-progress-circular class="ma-5" indeterminate></v-progress-circular>
       </template>
-      <v-icon class="ma-5" v-else-if="!showProgress"> mdi-close </v-icon>
+      <v-icon class="ma-5" v-else> mdi-close </v-icon>
 
       <v-col class="align-self-center">
         {{ currentNotificationContent }}
@@ -25,7 +24,7 @@ import Vue from "vue";
 import { store } from "@/store";
 import { AppNotification } from "@/store/main/state";
 import { commitRemoveNotification } from "@/store/main/mutations";
-import { readFirstNotification } from "@/store/main/getters";
+import { readFirstNotification, readNotifications } from "@/store/main/getters";
 import { dispatchRemoveNotification } from "@/store/main/actions";
 
 export default Vue.extend({
@@ -34,13 +33,13 @@ export default Vue.extend({
       show: false as boolean,
       text: "" as string,
       showProgress: false as boolean,
-      currentNotification: false as AppNotification | false,
+      currentNotification: null as AppNotification | null,
     };
   },
   methods: {
     async hide() {
-      this.show = false;
       await new Promise((resolve) => setTimeout(() => resolve({}), 500));
+      this.show = false;
     },
     async close() {
       await this.hide();
@@ -51,7 +50,7 @@ export default Vue.extend({
         commitRemoveNotification(this.$store, this.currentNotification);
       }
     },
-    async setNotification(notification: AppNotification | false) {
+    async setNotification(notification: AppNotification | null) {
       if (this.show) {
         await this.hide();
       }
@@ -60,7 +59,7 @@ export default Vue.extend({
         this.showProgress = notification.showProgress || false;
         this.show = true;
       } else {
-        this.currentNotification = false;
+        this.currentNotification = null;
       }
     },
   },
@@ -95,9 +94,7 @@ export default Vue.extend({
     },
   },
   watch: {
-    firstNotification: async function (
-      newNotification: AppNotification | false
-    ) {
+    firstNotification: async function (newNotification: AppNotification) {
       if (newNotification !== this.currentNotification) {
         this.setNotification(newNotification);
         if (newNotification) {

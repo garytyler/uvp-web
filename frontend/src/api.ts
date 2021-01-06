@@ -30,7 +30,8 @@ const accountsApi = {
     return client.get<IUserProfile>(`/api/users/current`, authHeaders(token));
   },
   async updateCurrentUser(token: string, data: IUserProfileUpdate) {
-    return client.put<IUserProfile>(
+    console.log(token, data);
+    return client.patch<IUserProfile>(
       `/api/users/current`,
       data,
       authHeaders(token)
@@ -45,8 +46,10 @@ const accountsApi = {
   async createUser(token: string, data: IUserProfileCreate) {
     return client.post(`/api/users`, data);
   },
-  async passwordRecovery(email: string) {
-    return client.post(`/api/access/request-password-recovery/${email}`);
+  async sendPasswordResetEmail(email: string) {
+    return client.post<{ msg: string }>(
+      `/api/access/request-password-recovery/${email}`
+    );
   },
   async resetPassword(password: string, token: string) {
     return client.post(`/api/access/reset-password`, {

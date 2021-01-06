@@ -1,35 +1,53 @@
 <template>
-  <v-card class="ma-3 pa-3">
-    <v-card-title class="headline"> Edit User Profile </v-card-title>
-    <v-card-text>
-      <template>
-        <v-form v-model="valid" ref="form" lazy-validation>
-          <v-text-field
-            label="Full Name"
-            v-model="name"
-            required
-          ></v-text-field>
-          <v-text-field
-            label="E-mail"
-            type="email"
-            v-model="email"
-            v-validate="'required|email'"
-            data-vv-name="email"
-            :error-messages="errors.collect('email')"
-            required
-          ></v-text-field>
-        </v-form>
-      </template>
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <div class="flex-row">
-        <v-btn class="ma-1" @click="cancel">Cancel</v-btn>
-        <v-btn class="ma-1" @click="reset">Reset</v-btn>
-        <v-btn class="ma-1" @click="submit" :disabled="!valid"> Save </v-btn>
-      </div>
-    </v-card-actions>
-  </v-card>
+  <v-container fluid fill-height>
+    <v-layout align-center justify-center>
+      <v-flex xs14 sm10 md6>
+        <v-card>
+          <v-card-title> Edit User Profile </v-card-title>
+          <v-card-text>
+            <validation-observer ref="observer" v-slot="{ invalid }">
+              <v-form @keyup.native.enter="submit">
+                <validation-provider
+                  v-slot="{ errors }"
+                  name="Name"
+                  rules="required|minUserName|maxUserName"
+                >
+                  <v-text-field
+                    v-model="name"
+                    :error-messages="errors"
+                    label="Name"
+                    :counter="Boolean(name)"
+                    required
+                  ></v-text-field>
+                </validation-provider>
+
+                <validation-provider
+                  v-slot="{ errors }"
+                  name="email"
+                  rules="required|email"
+                >
+                  <v-text-field
+                    type="email"
+                    v-model="email"
+                    :error-messages="errors"
+                    label="Email"
+                    required
+                  ></v-text-field>
+                </validation-provider>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn class="ma-1" @click="reset">Reset</v-btn>
+                  <v-btn @click.prevent="submit" :disabled="invalid">
+                    Save
+                  </v-btn>
+                </v-card-actions>
+              </v-form>
+            </validation-observer>
+          </v-card-text>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -37,13 +55,15 @@ import Vue from "vue";
 import { IUserProfileUpdate } from "@/interfaces";
 import { readUserProfile } from "@/store/main/getters";
 import { dispatchUpdateUserProfile } from "@/store/main/actions";
+import { ValidationObserver, ValidationProvider } from "vee-validate";
 
 export default Vue.extend({
+  components: { ValidationObserver, ValidationProvider },
   data: () => {
     return {
-      valid: true,
       name: "",
       email: "",
+      mounted: false,
     };
   },
   computed: {
@@ -52,11 +72,7 @@ export default Vue.extend({
     },
   },
   created() {
-    const userProfile = readUserProfile(this.$store);
-    if (userProfile) {
-      this.name = userProfile.name;
-      this.email = userProfile.email;
-    }
+    this.reset();
   },
   methods: {
     reset() {
@@ -66,12 +82,9 @@ export default Vue.extend({
         this.email = userProfile.email;
       }
     },
-    cancel() {
-      this.$router.back();
-    },
+
     async submit() {
-      // eslint-disable-next-line
-      if ((this.$refs.form as any).validate()) {
+      if (this.$refs.observer.validate()) {
         const updatedProfile: IUserProfileUpdate = {};
         if (this.name) {
           updatedProfile.name = this.name;
@@ -79,8 +92,9 @@ export default Vue.extend({
         if (this.email) {
           updatedProfile.email = this.email;
         }
-        await dispatchUpdateUserProfile(this.$store, updatedProfile);
-        this.$router.push("/account/profile");
+        dispatchUpdateUserProfile(this.$store, updatedProfile)
+          .catch()
+          .then(this.$router.push("/account/profile"));
       }
     },
   },

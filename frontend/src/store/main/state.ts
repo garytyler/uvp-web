@@ -3,7 +3,7 @@ import { IUserProfile, IFeature } from "@/interfaces";
 export interface AppNotification {
   content: string;
   type?: "success" | "info" | "warning" | "error";
-  showProgress?: boolean;
+  showProgress?: boolean | undefined;
 }
 
 export interface MainState {

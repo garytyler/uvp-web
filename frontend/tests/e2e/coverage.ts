@@ -12,7 +12,9 @@ module.exports = {
     if (fs.existsSync(NYC_MERGE_DIR)) {
       fs.rmdirSync(NYC_MERGE_DIR, { recursive: true }, (err) => {});
     }
-    await fs.promises.mkdir(NYC_MERGE_DIR);
+    if (fs.existsSync(NYC_OUTPUT_DIR)) {
+      await fs.promises.mkdir(NYC_MERGE_DIR);
+    }
   },
   captureNycCoverage: async (page) => {
     if (fs.existsSync(NYC_OUTPUT_DIR)) {

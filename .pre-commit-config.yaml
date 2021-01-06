@@ -1,36 +1,36 @@
-python_settings: &python_settings
-  types: [python]
-  files: ./backend
-  exclude: >
-    (?x)^(
-      .+/migrations/.+|
-    )$
-
 repos:
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.6.4
     hooks:
-      - <<: *python_settings
-        id: isort
+      - id: isort
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
         args:
           - --settings-path=./backend/setup.cfg
   - repo: https://github.com/python/black
     rev: 20.8b1
     hooks:
-      - <<: *python_settings
-        id: black
+      - id: black
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.4
     hooks:
-      - <<: *python_settings
-        id: flake8
+      - id: flake8
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
         args:
           - --config=./backend/setup.cfg
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v0.790"
     hooks:
-      - <<: *python_settings
-        id: mypy
+      - id: mypy
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
         args:
           - --config-file=./backend/setup.cfg
         additional_dependencies: [pydantic==1.7, tortoise-orm==0.16.18]
@@ -42,9 +42,15 @@ repos:
       - id: check-toml
       - id: check-vcs-permalinks
       - id: detect-private-key
-      - <<: *python_settings
-        id: debug-statements
-      - <<: *python_settings
-        id: check-ast
-      - <<: *python_settings
-        id: check-builtin-literals
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
+      - id: debug-statements
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
+      - id: check-ast
+        types: [python]
+        files: ./backend
+        exclude: (?x)^(.+/migrations/.+|)$
+      - id: check-builtin-literals

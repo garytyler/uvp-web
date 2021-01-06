@@ -38,20 +38,19 @@ export const actions = {
     commitAddNotification(context, loadingNotification);
     api
       .createUser(context.rootState.main.token, payload)
-      .then((resp) => {
-        commitRemoveNotification(context, loadingNotification);
+      .then((resp) =>
         commitAddNotification(context, {
           type: "success",
           content: `Your account has been created with email address ${resp.data.email}. You can now login.`,
-        });
-      })
-      .catch((err) => {
-        commitRemoveNotification(context, loadingNotification);
+        })
+      )
+      .catch((err) =>
         commitAddNotification(context, {
           type: "error",
           content: err.message,
-        });
-      });
+        })
+      )
+      .finally(() => commitRemoveNotification(context, loadingNotification));
   },
   async actionLogIn(
     context: MainContext,

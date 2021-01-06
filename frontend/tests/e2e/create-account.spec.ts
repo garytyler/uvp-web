@@ -14,7 +14,7 @@ afterAll(async () => {
   await mergeNycCoverage();
 });
 
-it("Create account and login", async () => {
+it("Round trip user test", async () => {
   const userName = faker.name.findName();
   const guestName = faker.name.findName();
   const userEmail = faker.internet.exampleEmail();
@@ -28,63 +28,85 @@ it("Create account and login", async () => {
   const page = await browser.newPage();
 
   await page.goto(baseUrl);
-  await page.click("//a[normalize-space(.)='Sign up']");
-  await page.click('input[type="text"]');
-  await page.fill('input[type="text"]', userName);
-  await page.press('input[type="text"]', "Tab");
-  await page.fill('input[type="email"]', userEmail);
-  await page.press('input[type="email"]', "Tab");
-  await page.fill('input[type="password"]', userPassword);
-  await page.press('input[type="password"]', "Tab");
-  await page.fill(
-    "//div[normalize-space(.)='Confirm Password']" +
-      "/input[normalize-space(@type)='password']",
-    userPassword
-  );
-  await Promise.all([
-    page.waitForNavigation(),
-    page.click("text=/.*Submit.*/"),
-  ]);
-  await page.screenshot({
-    path: ".pw_screens/1_created_account_login_screen.png",
-  });
 
+  // Go to signup form
+  await Promise.all([
+    page.waitForNavigation({ url: `${baseUrl}/signup` }),
+    page.click("//a[normalize-space(.)='Sign up']"),
+  ]);
+
+  // Fill out signup form
+  await page.click("//div[normalize-space(.)='Name']");
+  await page.keyboard.type(userName);
+  await page.click("//div[normalize-space(.)='Email']");
+  await page.keyboard.type(userEmail);
+  await page.click("//div[normalize-space(.)='Password']");
+  await page.keyboard.type(userPassword);
+  await page.click("//div[normalize-space(.)='Confirm Password']");
+  await page.keyboard.type(userPassword);
+
+  // Submit signup form
+  await Promise.all([
+    page.waitForNavigation({ url: `${baseUrl}/login` }),
+    page.click("//button[normalize-space(.)='Submit']"),
+  ]);
+
+  // Test redirect to login page
+  await page.screenshot({
+    path: ".pw_screens/login_screen.png",
+  });
   expect(page.url()).toContain("/login");
 
-  // Login to new user account
-  await page.click('input[name="login"]');
-  await page.fill('input[name="login"]', userEmail);
-  await page.press('input[name="login"]', "Tab");
-  await page.fill('input[name="password"]', userPassword);
-  await page.screenshot({ path: ".pw_screens/2_filled_out_login_info.png" });
+  // Fill out login form
+  await page.click("//div[normalize-space(.)='Email']");
+  await page.keyboard.type(userEmail);
+  await page.click("//div[normalize-space(.)='Password']");
+  await page.keyboard.type(userPassword);
+  await page.screenshot({ path: ".pw_screens/login_form_filled_out.png" });
+
+  // Submit login form
   await Promise.all([
     page.waitForNavigation(),
     page.click("//button/span[normalize-space(.)='Login']"),
   ]);
-  await page.screenshot({ path: ".pw_screens/3_logged_in.png" });
+  await page.screenshot({ path: ".pw_screens/logged_in_redirect_page.png" });
 
+  // Test redirect to dashboard
   expect(await page.$(`:text("Welcome ${userName}"):visible`)).toBeTruthy();
 
+  // Go to 'create feature' form
   await Promise.all([
     page.waitForNavigation(),
     page.click('text="Create New Feature"'),
   ]);
-  await page.click('input[type="text"]');
-  await page.fill('input[type="text"]', featureTitle);
-  await page.press('input[type="text"]', "Tab");
-  await page.fill(
-    "//div[normalize-space(.)='Slug']/input[normalize-space(@type)='text']",
-    featureSlug
-  );
-  await page.click("//span[normalize-space(.)='Create']");
-  await page.goto(`${baseUrl}/live/${featureSlug}`);
-  await page.goto(`${baseUrl}/live/${featureSlug}/lobby`);
-  await page.click(`div[role="document"] >> text="${featureTitle}"`);
 
+  // Fill out 'create feature' form
+  await page.click("//div[normalize-space(.)='Title']");
+  await page.keyboard.type(featureTitle);
+  await page.click("//div[normalize-space(.)='Slug']");
+  await page.keyboard.type(featureSlug);
+  await page.screenshot({
+    path: ".pw_screens/create_feature_form_filled_out.png",
+  });
+
+  // Submit 'create feature' form
+  await page.click("//span[normalize-space(.)='Create']");
+
+  // Go to feature live page
+  const featureLiveBaseUrl = `${baseUrl}/live/${featureSlug}`;
+  await Promise.all([
+    page.goto(featureLiveBaseUrl),
+    page.waitForLoadState("load"),
+    page.waitForNavigation({ url: `${featureLiveBaseUrl}/lobby` }),
+  ]);
+
+  // Test feature live page display
+  await page.screenshot({ path: ".pw_screens/feature_live_page.png" });
   expect(await page.$(`:text("${featureTitle}"):visible`)).toBeTruthy();
 
-  await page.click('input[type="text"]');
-  await page.fill('input[type="text"]', guestName);
+  // Fill out 'guest' signin form
+  await page.click("//div[normalize-space(.)='Your Name']");
+  await page.keyboard.type(guestName);
 
   await captureNycCoverage(page);
 

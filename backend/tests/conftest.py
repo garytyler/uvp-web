@@ -5,6 +5,7 @@ import socket
 import uuid
 from typing import Callable, List
 
+import docker
 import pytest
 from asgi_lifespan import LifespanManager
 from docker import DockerClient
@@ -36,6 +37,7 @@ def settings():
 
 @pytest.fixture(scope="session")
 def docker_client() -> DockerClient:
+    # return docker.from_env()
     return DockerClient(base_url="unix:///var/run/docker.sock")
 
 

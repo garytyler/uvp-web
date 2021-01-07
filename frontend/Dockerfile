@@ -65,7 +65,7 @@ RUN yarn install
 
 FROM install-stage as dev-stage
 
-CMD [ "npm", "run", "serve", "--", "--host=0.0.0.0", "--port=80"]
+CMD [ "npm", "run", "serve", "--", "--host=0.0.0.0", "--port=8080"]
 
 FROM install-stage as build-stage
 

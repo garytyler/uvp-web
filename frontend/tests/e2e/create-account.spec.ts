@@ -33,7 +33,7 @@ it("Round trip user test", async () => {
   const featureTitle = createFakeFeatureTitle();
   const featureSlug = createFakeFeatureSlug();
 
-  const baseUrl = "http://localhost";
+  const baseUrl = "http://localhost:8080";
 
   const browser = await chromium.launch({ ignoreHTTPSErrors: true });
   const page = await browser.newPage();

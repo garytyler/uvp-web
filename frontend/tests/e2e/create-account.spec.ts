@@ -1,7 +1,7 @@
 const { chromium, globals } = require("playwright");
 const faker = require("faker");
 const assert = require("assert");
-const { userNameMaxLength } = require("../../src/env");
+const { userNameMaxLength, featureTitleMaxLength } = require("../../src/env");
 const {
   cleanMergeFiles,
   captureNycCoverage,
@@ -16,13 +16,22 @@ afterAll(async () => {
   await mergeNycCoverage();
 });
 
+const createFakeUserName = () =>
+  faker.name.findName().substring(0, userNameMaxLength).trim();
+const createFakeGuestName = () => faker.name.findName();
+const createFakeUserEmail = () => faker.internet.exampleEmail();
+const createFakeUserPassword = () => faker.internet.password();
+const createFakeFeatureTitle = () =>
+  faker.commerce.productName().substring(0, featureTitleMaxLength).trim();
+const createFeatureSlug = () => faker.lorem.slug();
+
 it("Round trip user test", async () => {
-  const userName = faker.name.findName().substring(0, userNameMaxLength).trim();
-  const guestName = faker.name.findName();
-  const userEmail = faker.internet.exampleEmail();
-  const userPassword = faker.internet.password();
-  const featureTitle = faker.commerce.productName();
-  const featureSlug = faker.lorem.slug();
+  const userName = createFakeUserName();
+  const guestName = createFakeGuestName();
+  const userEmail = createFakeUserEmail();
+  const userPassword = createFakeUserPassword();
+  const featureTitle = createFakeFeatureTitle();
+  const featureSlug = createFeatureSlug();
 
   const baseUrl = "http://localhost";
 
@@ -74,7 +83,7 @@ it("Round trip user test", async () => {
   await page.screenshot({ path: ".pw_screens/logged_in_redirect_page.png" });
 
   // Test redirect to dashboard
-  expect(await page.$(`:text("Welcome ${userName}"):visible`));
+  // expect(await page.$(`:text("Welcome ${userName}"):visible`));
 
   // Go to 'create feature' form
   await Promise.all([

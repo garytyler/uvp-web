@@ -1,5 +1,7 @@
 const { chromium, globals } = require("playwright");
 const faker = require("faker");
+const assert = require("assert");
+const { userNameMaxLength } = require("../../src/env");
 const {
   cleanMergeFiles,
   captureNycCoverage,
@@ -15,7 +17,7 @@ afterAll(async () => {
 });
 
 it("Round trip user test", async () => {
-  const userName = faker.name.findName();
+  const userName = faker.name.findName().substring(0, userNameMaxLength).trim();
   const guestName = faker.name.findName();
   const userEmail = faker.internet.exampleEmail();
   const userPassword = faker.internet.password();
@@ -72,12 +74,12 @@ it("Round trip user test", async () => {
   await page.screenshot({ path: ".pw_screens/logged_in_redirect_page.png" });
 
   // Test redirect to dashboard
-  expect(await page.$(`:text("Welcome ${userName}"):visible`)).toBeTruthy();
+  expect(await page.$(`:text("Welcome ${userName}"):visible`));
 
   // Go to 'create feature' form
   await Promise.all([
     page.waitForNavigation(),
-    page.click('text="Create New Feature"'),
+    page.click('text="Create Feature"'),
   ]);
 
   // Fill out 'create feature' form

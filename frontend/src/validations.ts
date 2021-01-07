@@ -6,8 +6,16 @@ import {
   max,
   min,
   regex,
+  alpha_dash,
 } from "vee-validate/dist/rules";
-import { passwordMinLength, userNameMinLength, userNameMaxLength } from "@/env";
+import {
+  passwordMinLength,
+  userNameMinLength,
+  userNameMaxLength,
+  featureTitleMinLength,
+  featureTitleMaxLength,
+  featureSlugMinLength,
+} from "@/env";
 
 export const setValidationRules = (): void => {
   extend("required", {
@@ -37,7 +45,13 @@ export const setValidationRules = (): void => {
 
   extend("digits", {
     ...digits,
-    message: "{_field_} needs to be {length} digits. ({_value_})",
+    message: "{_field_} needs to be {length} digits",
+  });
+
+  extend("alpha_dash", {
+    ...alpha_dash,
+    message:
+      "{_field_} may only contain alphabetic characters, numbers, dashes or underscores",
   });
 
   extend("passwordConfirm", {
@@ -65,5 +79,26 @@ export const setValidationRules = (): void => {
       return userNameMaxLength >= value.length;
     },
     message: `{_field_} may not be greater than ${userNameMaxLength} characters`,
+  });
+
+  extend("minFeatureTitle", {
+    validate: (value) => {
+      return featureTitleMinLength <= value.length;
+    },
+    message: `{_field_} needs to be at least ${userNameMinLength} characters`,
+  });
+
+  extend("maxFeatureTitle", {
+    validate: (value: string) => {
+      return featureTitleMaxLength >= value.length;
+    },
+    message: `{_field_} may not be greater than ${userNameMaxLength} characters`,
+  });
+
+  extend("minFeatureSlug", {
+    validate: (value) => {
+      return featureSlugMinLength <= value.length;
+    },
+    message: `{_field_} needs to be at least ${userNameMinLength} characters`,
   });
 };

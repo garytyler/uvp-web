@@ -12,4 +12,7 @@
 .v-app-bar .v-btn--active:before {
   background-color: unset;
 }
+.v-card__title {
+  word-break: break-word !important;
+}
 </style>

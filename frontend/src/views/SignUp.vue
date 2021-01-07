@@ -13,6 +13,7 @@
                   rules="required|minUserName|maxUserName"
                 >
                   <v-text-field
+                    type="text"
                     v-model="name"
                     :error-messages="errors"
                     label="Name"

@@ -77,7 +77,4 @@ export default Vue.extend({
 </script>
 
 <style>
-.v-card__title {
-  word-break: break-word;
-}
 </style>

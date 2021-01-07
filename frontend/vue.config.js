@@ -10,11 +10,11 @@ module.exports = {
   devServer: {
     proxy: {
       "/api/": {
-        target: "http://backend:80",
+        target: "http://backend:8000",
         https: true,
       },
       "/ws/": {
-        target: "ws://backend:80",
+        target: "ws://backend:8000",
         secure: false,
         ws: true,
       },

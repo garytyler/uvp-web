@@ -4,13 +4,9 @@ from importlib import import_module
 from inspect import getmembers, isclass
 from pathlib import Path
 
-import aioconsole
 import asyncclick as click
-import uvicorn
-from asgi_lifespan import LifespanManager
 
 from app.core.security import get_password_hash, verify_password
-from app.schemas.users import UserDbCreate
 
 BACKEND_BASE_DIR = Path(__file__).resolve(strict=True).parent
 
@@ -22,7 +18,9 @@ def cli():
 
 @cli.command()
 async def shell():
-    # from app.core.db import TORTOISE_ORM
+    import aioconsole
+    from asgi_lifespan import LifespanManager
+
     from app.core.db import get_tortoise_config
 
     tortoise_config = get_tortoise_config()
@@ -51,7 +49,7 @@ async def shell():
 
 @cli.command()
 @click.option("--host", expose_value=True, default="0.0.0.0")
-@click.option("--port", expose_value=True, default=80)
+@click.option("--port", expose_value=True, default=8000)
 @click.option("--log-level", expose_value=True, default="trace")
 async def runserver(
     host: str,
@@ -60,6 +58,8 @@ async def runserver(
     reload: bool = True,
     use_colors: bool = True,
 ):
+    import uvicorn
+
     uvicorn.run(
         "app.main:app",
         host=host,
@@ -75,8 +75,11 @@ async def runserver(
 @click.option("--password", "--pass", "-p", required=True)
 @click.option("--name", "-n")
 async def createsuperuser(email, password, name=None):
+    from asgi_lifespan import LifespanManager
+
     from app.main import app
     from app.models.users import User
+    from app.schemas.users import UserDbCreate
 
     async with LifespanManager(app):
         user_create = UserDbCreate(

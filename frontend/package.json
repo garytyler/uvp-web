@@ -8,7 +8,7 @@
     "test:unit": "vue-cli-service test:unit",
     "coverage:unit": "vue-cli-service test:unit --coverage",
     "test:e2e": "jest --config=jest.e2e.config.js --run-in-band",
-    "coverage:e2e": "nyc --exclude-after-remap=false --reporter=text --reporter=lcov --report-dir=coverage-e2e -- npm run test:e2e",
+    "coverage:e2e": "nyc --exclude-after-remap=false --report-dir=coverage-e2e -r=text -r=html -r=lcov -r=cobertura -- npm run test:e2e",
     "lint": "vue-cli-service lint",
     "vue": "vue"
   },
@@ -27,9 +27,7 @@
     "vuex": "^3.5.1"
   },
   "devDependencies": {
-    "@babel/register": "^7.12.10",
     "@mdi/font": "^5.8.55",
-    "@playwright/test": "^0.171.0",
     "@types/node": "^14.14.20",
     "@typescript-eslint/eslint-plugin": "^4.12.0",
     "@typescript-eslint/parser": "^4.12.0",

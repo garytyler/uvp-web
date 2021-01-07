@@ -2,8 +2,6 @@ x-shared-environment:
   &shared-environment # Pass to build environments and containers for all services
   APP_TITLE: &app-title "UVP Interactive"
   APP_DESCRIPTION: &app-description "Urban Video Project Interactive's web app"
-  # images
-  POSTGRES_IMAGE: &POSTGRES_IMAGE "postgres:13.1-alpine"
   # dns
   DOMAIN:
   # postgres
@@ -34,7 +32,6 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 8080:8080 # traefik dashboard
     depends_on:
       - frontend
       - backend
@@ -61,7 +58,7 @@ services:
       context: ./frontend
       target: prod-stage
     ports:
-      - 8888:80
+      - 8080:8080
     labels:
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
@@ -90,7 +87,7 @@ services:
       target: prod-stage
     command: ${BACKEND_CMD-}
     ports:
-      - 8000:80
+      - 8000:8000
     depends_on:
       - frontend
       - postgres
@@ -107,8 +104,9 @@ services:
     container_name: redis
     environment:
       <<: *shared-environment
+
   postgres:
-    image: *POSTGRES_IMAGE
+    image: postgres:13.1-alpine
     container_name: postgres
     environment:
       <<: *shared-environment

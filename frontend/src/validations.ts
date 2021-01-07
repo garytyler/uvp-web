@@ -7,6 +7,7 @@ import {
   min,
   regex,
   alpha_dash,
+  integer,
 } from "vee-validate/dist/rules";
 import {
   passwordMinLength,
@@ -46,6 +47,11 @@ export const setValidationRules = (): void => {
   extend("digits", {
     ...digits,
     message: "{_field_} needs to be {length} digits",
+  });
+
+  extend("integer", {
+    ...integer,
+    message: "The field under validation must be a valid integer value.",
   });
 
   extend("alpha_dash", {

@@ -17,7 +17,7 @@
                     v-model="title"
                     :error-messages="errors"
                     label="Title"
-                    :counter="Boolean(name)"
+                    :counter="Boolean(title)"
                     required
                   ></v-text-field>
                 </validation-provider>
@@ -32,9 +32,24 @@
                     v-model="slug"
                     :error-messages="errors"
                     label="Slug"
-                    :counter="Boolean(name)"
+                    :counter="Boolean(slug)"
                     required
                   ></v-text-field>
+                </validation-provider>
+
+                <validation-provider
+                  v-slot="{ errors }"
+                  name="Turn Duration"
+                  rules="required|integer"
+                >
+                  <v-select
+                    v-model="turnDuration"
+                    :items="durationItems"
+                    :error-messages="errors"
+                    label="Turn Duration"
+                    type="number"
+                    required
+                  ></v-select>
                 </validation-provider>
 
                 <v-card-actions>
@@ -64,10 +79,54 @@ export default Vue.extend({
     ValidationProvider,
     ValidationObserver,
   },
+  props: {},
   data: () => {
     return {
-      title: "",
-      slug: "",
+      title: "" as string,
+      slug: "" as string,
+      turnDuration: Number,
+      durationItems: [
+        {
+          text: "30 seconds",
+          value: 30,
+        },
+        {
+          text: "1 minute",
+          value: 60,
+        },
+        {
+          text: "1 min. 30 sec.",
+          value: 90,
+        },
+        {
+          text: "2 minutes",
+          value: 120,
+        },
+        {
+          text: "2 min. 30 sec.",
+          value: 150,
+        },
+        {
+          text: "3 minutes",
+          value: 180,
+        },
+        {
+          text: "3 min. 30 sec.",
+          value: 210,
+        },
+        {
+          text: "4 minutes",
+          value: 240,
+        },
+        {
+          text: "4 min. 30 sec.",
+          value: 270,
+        },
+        {
+          text: "5 minutes",
+          value: 300,
+        },
+      ],
     };
   },
   computed: {
@@ -84,14 +143,12 @@ export default Vue.extend({
           const newFeature: IFeatureCreate = {
             title: this.title,
             slug: this.slug,
-            turnDuration: 180,
+            turnDuration: this.turnDuration,
             userId: this.userProfile.id,
           };
           dispatchCreateFeature(this.$store, newFeature)
             .catch()
-            .then(() => {
-              const liveUrl = `/live/${newFeature.slug}`;
-            });
+            .then(() => this.$router.push("/account/dashboard"));
         });
     },
   },

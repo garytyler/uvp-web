@@ -23,7 +23,7 @@ const createFakeUserEmail = () => faker.internet.exampleEmail();
 const createFakeUserPassword = () => faker.internet.password();
 const createFakeFeatureTitle = () =>
   faker.commerce.productName().substring(0, featureTitleMaxLength).trim();
-const createFeatureSlug = () => faker.lorem.slug();
+const createFakeFeatureSlug = () => faker.lorem.slug();
 
 it("Round trip user test", async () => {
   const userName = createFakeUserName();
@@ -31,7 +31,7 @@ it("Round trip user test", async () => {
   const userEmail = createFakeUserEmail();
   const userPassword = createFakeUserPassword();
   const featureTitle = createFakeFeatureTitle();
-  const featureSlug = createFeatureSlug();
+  const featureSlug = createFakeFeatureSlug();
 
   const baseUrl = "http://localhost";
 
@@ -83,7 +83,7 @@ it("Round trip user test", async () => {
   await page.screenshot({ path: ".pw_screens/logged_in_redirect_page.png" });
 
   // Test redirect to dashboard
-  // expect(await page.$(`:text("Welcome ${userName}"):visible`));
+  expect(await page.$(`:text("Welcome ${userName}"):visible`));
 
   // Go to 'create feature' form
   await Promise.all([
@@ -96,6 +96,9 @@ it("Round trip user test", async () => {
   await page.keyboard.type(featureTitle);
   await page.click("//div[normalize-space(.)='Slug']");
   await page.keyboard.type(featureSlug);
+  await page.click("//div[normalize-space(.)='Turn Duration']");
+  await page.click('text="30 seconds"');
+
   await page.screenshot({
     path: ".pw_screens/create_feature_form_filled_out.png",
   });

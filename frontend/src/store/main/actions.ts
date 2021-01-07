@@ -68,23 +68,30 @@ export const actions = {
           const token = response.data.access_token;
           saveLocalToken(token);
           commitSetToken(context, token);
-          commitSetLoggedIn(context, true);
-          commitSetLogInError(context, false);
-          await dispatchRouteLoggedIn(context);
+          dispatchGetCurrentUserProfile(context)
+            .catch(async () => {
+              await dispatchLogOut(context);
+            })
+            .then(async () => {
+              commitSetLoggedIn(context, true);
+              commitSetLogInError(context, false);
+              await dispatchRouteLoggedIn(context);
+            });
         } else {
           await dispatchLogOut(context);
         }
       });
   },
-  async actionGetUserProfile(context: MainContext): Promise<void> {
-    try {
-      const response = await api.getCurrentUser(context.state.token);
-      if (response.data) {
-        commitSetUserProfile(context, response.data);
-      }
-    } catch (error) {
-      await dispatchCheckApiError(context, error);
-    }
+  async actionGetCurrentUserProfile(context: MainContext): Promise<void> {
+    return api
+      .getCurrentUser(context.state.token)
+      .catch(async (error) => await dispatchCheckApiError(context, error))
+      .then(
+        async (response) =>
+          response &&
+          response.data &&
+          commitSetUserProfile(context, response.data)
+      );
   },
   async actionUpdateUserProfile(
     context: MainContext,
@@ -283,7 +290,9 @@ const { dispatch } = getStoreAccessors<MainState | any, State>("");
 
 export const dispatchCheckApiError = dispatch(actions.actionCheckApiError);
 export const dispatchCheckLoggedIn = dispatch(actions.actionCheckLoggedIn);
-export const dispatchGetUserProfile = dispatch(actions.actionGetUserProfile);
+export const dispatchGetCurrentUserProfile = dispatch(
+  actions.actionGetCurrentUserProfile
+);
 export const dispatchSignUp = dispatch(actions.actionSignUp);
 export const dispatchLogIn = dispatch(actions.actionLogIn);
 export const dispatchLogOut = dispatch(actions.actionLogOut);

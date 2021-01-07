@@ -27,8 +27,6 @@
 </template>
 
 
-
-
 <script lang="ts">
 import Vue from "vue";
 import { store } from "@/store";
@@ -36,7 +34,7 @@ import {
   dispatchGetCurrentFeature,
   dispatchGetCurrentGuest,
 } from "@/store/live/actions";
-import { getWsUrl } from "@/services/urls";
+import { getWsUrl } from "@/services/urls.service";
 import {
   readFeature,
   readGuest,

@@ -18,8 +18,8 @@ export const routes = [
         children: [
           {
             path: "",
+            // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
             component: () => import("@/views/Landing.vue"),
-            // redirect: "/account/dashboard",
           },
           {
             path: "signup",
@@ -34,7 +34,7 @@ export const routes = [
           {
             path: "access/request-password-recovery",
             // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-            component: () => import("@/views/access/RecoverPassword.vue"),
+            component: () => import("@/views/access/RequestPasswordReset.vue"),
           },
           {
             path: "access/reset-password",
@@ -47,11 +47,8 @@ export const routes = [
         path: "account",
         // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
         component: () => import("@/views/account/Account.vue"),
+        redirect: "/account/dashboard",
         children: [
-          {
-            path: "",
-            redirect: "/account/dashboard",
-          },
           {
             path: "dashboard",
             // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -60,14 +57,8 @@ export const routes = [
           {
             path: "profile",
             component: RouterComponent,
-            redirect: "profile/view",
+            redirect: "profile/edit",
             children: [
-              {
-                path: "view",
-                // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-                component: () =>
-                  import("@/views/account/profile/UserProfile.vue"),
-              },
               {
                 path: "edit",
                 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -78,7 +69,8 @@ export const routes = [
                 path: "password",
                 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
                 component: () =>
-                  import("@/views/account/profile/UserProfileEditPassword.vue"),
+                  // import("@/views/account/profile/UserProfileEditPassword.vue"),
+                  import("@/views/access/RequestPasswordReset.vue"),
               },
             ],
           },
@@ -162,7 +154,7 @@ export const routes = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const createRouter = () => {
+export const createRouter = (): VueRouter => {
   return new VueRouter({
     mode: "history",
     base: process.env.BASE_URL,

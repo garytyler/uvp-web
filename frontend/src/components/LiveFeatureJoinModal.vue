@@ -63,7 +63,7 @@ import {
   dispatchCreateCurrentGuest,
   dispatchGetCurrentGuest,
 } from "../store/live/actions";
-import device from "@/services/device";
+import { getOrientationPermissions } from "@/services/device.service";
 import Vue from "vue";
 
 export default Vue.extend({
@@ -98,7 +98,7 @@ export default Vue.extend({
   },
   methods: {
     async handleSignUpSubmit() {
-      await device.getOrientationPermissions();
+      await getOrientationPermissions();
       await dispatchCreateCurrentGuest(this.$store, {
         name: this.editedItem.name,
         featureId: this.feature.id,

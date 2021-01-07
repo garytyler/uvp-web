@@ -40,13 +40,14 @@ import Vue from "vue";
 import { store } from "@/store";
 import { readIsFeaturePresenterOnline, readGuest } from "@/store/live/getters";
 import { dispatchDeleteGuest } from "@/store/live/actions";
-import device from "@/services/device";
+import { MotionSender } from "@/services/device.service";
 
 export default Vue.extend({
   data() {
     return {
       isSending: false,
       dialog: true,
+      motionSender: new MotionSender(),
     };
   },
   computed: {
@@ -56,12 +57,12 @@ export default Vue.extend({
   },
   methods: {
     startSendingDeviceMotion() {
-      device.motionSender.start(Vue.prototype.$socket, 30);
-      this.isSending = device.motionSender.isSending;
+      this.motionSender.start(Vue.prototype.$socket, 30);
+      this.isSending = this.motionSender.isSending;
     },
     stopSendingDeviceMotion() {
-      device.motionSender.stop();
-      this.isSending = device.motionSender.isSending;
+      this.motionSender.stop();
+      this.isSending = this.motionSender.isSending;
     },
     handleDeviceError(message) {
       alert(message);

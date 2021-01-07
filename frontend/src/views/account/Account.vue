@@ -2,15 +2,6 @@
   <AppContext dashboardMode v-on="$listeners">
     <template v-slot:left-nav-drawer>
       <v-list>
-        <!-- <v-list-item v-if="$vuetify.breakpoint.mobile">
-          <v-list-item-content>
-            <v-toolbar-title v-text="appName" class="font-weight-black">
-            </v-toolbar-title>
-          </v-list-item-content>
-        </v-list-item>
-
-        <v-divider v-if="$vuetify.breakpoint.mobile"></v-divider> -->
-
         <v-list-item to="/account/dashboard">
           <v-list-item-action>
             <v-icon>mdi-view-dashboard</v-icon>
@@ -19,17 +10,15 @@
             <v-list-item-title>Dashboard</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-      </v-list>
 
-      <v-list subheader>
-        <v-subheader>Features</v-subheader>
         <v-divider></v-divider>
+
         <v-list-item to="/account/features/create">
           <v-list-item-action>
             <v-icon>mdi-star-circle</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Create New Feature</v-list-item-title>
+            <v-list-item-title>Create Feature</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -73,19 +62,19 @@ const routeGuardAccount = async (to, from, next) => {
   if (readIsLoggedIn(store)) {
     next();
   } else {
-    next("/login");
+    await dispatchCheckLoggedIn(store);
+    if (readIsLoggedIn(store)) {
+      next();
+    } else {
+      next("/login");
+    }
   }
 };
 
 export default Vue.extend({
   components: { AppContext },
   data: () => {
-    return {
-      appName: appName,
-      leftNavDrawerIsMiniature: false,
-      leftNavDrawerIsVisible: false,
-      rightNavDrawerIsVisible: false,
-    };
+    return {};
   },
   computed: {
     hasAdminAccess() {

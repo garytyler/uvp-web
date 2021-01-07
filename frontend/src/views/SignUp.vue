@@ -5,59 +5,76 @@
         <v-card>
           <v-card-title> Create Account </v-card-title>
           <v-card-text>
-            <template>
-              <v-form v-model="valid" ref="form" lazy-validation>
-                <v-text-field
-                  label="Full Name"
-                  v-model="name"
-                  @keyup.enter="submit"
-                  required
-                ></v-text-field>
-                <v-text-field
-                  label="Email"
-                  type="email"
-                  v-model="email"
-                  v-validate="'required|email'"
-                  data-vv-name="email"
-                  :error-messages="errors.collect('email')"
-                  @keyup.enter="submit"
-                  required
-                ></v-text-field>
-                <v-layout align-center>
-                  <v-flex>
-                    <v-text-field
-                      type="password"
-                      ref="password"
-                      label="Password"
-                      data-vv-name="password"
-                      data-vv-delay="100"
-                      v-validate="{ required: true }"
-                      v-model="password1"
-                      :error-messages="errors.first('password')"
-                      @keyup.enter="submit"
-                    >
-                    </v-text-field>
-                    <v-text-field
-                      type="password"
-                      label="Confirm Password"
-                      data-vv-name="password_confirmation"
-                      data-vv-delay="100"
-                      data-vv-as="password"
-                      v-validate="{ required: true, confirmed: 'password' }"
-                      v-model="password2"
-                      :error-messages="errors.first('password_confirmation')"
-                      @keyup.enter="submit"
-                    >
-                    </v-text-field>
-                  </v-flex>
-                </v-layout>
+            <validation-observer ref="observer" v-slot="{ invalid }">
+              <v-form @submit.prevent="submit" @keyup.native.enter="submit">
+                <validation-provider
+                  v-slot="{ errors }"
+                  name="Name"
+                  rules="required|minUserName|maxUserName"
+                >
+                  <v-text-field
+                    type="text"
+                    v-model="name"
+                    :error-messages="errors"
+                    label="Name"
+                    :counter="Boolean(name)"
+                    required
+                  ></v-text-field>
+                </validation-provider>
+
+                <validation-provider
+                  v-slot="{ errors }"
+                  name="email"
+                  rules="required|email"
+                >
+                  <v-text-field
+                    type="email"
+                    v-model="email"
+                    :error-messages="errors"
+                    label="Email"
+                    required
+                  ></v-text-field>
+                </validation-provider>
+
+                <validation-provider
+                  vid="password"
+                  name="Password"
+                  rules="required|minPassword|passwordConfirm:@confirmation"
+                  v-slot="{ errors }"
+                >
+                  <v-text-field
+                    type="password"
+                    v-model="password"
+                    :error-messages="errors"
+                    label="Password"
+                    required
+                  ></v-text-field>
+                </validation-provider>
+
+                <validation-provider
+                  vid="confirmation"
+                  name="Password"
+                  rules="required|minPassword|passwordConfirm:@password"
+                  v-slot="{ errors }"
+                >
+                  <v-text-field
+                    type="password"
+                    v-model="confirmation"
+                    :error-messages="errors"
+                    label="Confirm Password"
+                    required
+                  ></v-text-field>
+                </validation-provider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn @click.prevent="submit" :disabled="invalid">
+                    Submit
+                  </v-btn>
+                </v-card-actions>
               </v-form>
-            </template>
+            </validation-observer>
           </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn @click="submit" :disabled="!valid"> Submit </v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
     </v-layout>
@@ -67,56 +84,36 @@
 <script lang="ts">
 import Vue from "vue";
 import { IUserProfileCreate } from "@/interfaces";
-// import { dispatchGetUsers } from "@/store/admin/actions";
 import { dispatchSignUp } from "@/store/main/actions";
+import { ValidationObserver, ValidationProvider } from "vee-validate";
 
 export default Vue.extend({
-  data: () => {
-    return {
-      valid: false,
-      name: "",
-      email: "",
-      isActive: true,
-      isSuperuser: false,
-      setPassword: false,
-      password1: "",
-      password2: "",
-    };
+  components: {
+    ValidationProvider,
+    ValidationObserver,
   },
+  data: () => ({
+    name: "",
+    email: "",
+    password: "",
+    confirmation: "",
+  }),
   methods: {
-    reset() {
-      this.password1 = "";
-      this.password2 = "";
-      this.name = "";
-      this.email = "";
-      this.isActive = true;
-      this.isSuperuser = false;
-      this.$validator.reset();
-    },
     async submit() {
-      if (await this.$validator.validateAll()) {
-        const newProfile: IUserProfileCreate = {
-          email: this.email,
-        };
-        if (this.name) {
-          newProfile.name = this.name;
-        }
-        if (this.email) {
-          newProfile.email = this.email;
-        }
-        newProfile.isActive = this.isActive;
-        newProfile.isSuperuser = this.isSuperuser;
-        newProfile.password = this.password1;
-        dispatchSignUp(this.$store, newProfile)
-          .catch()
-          .then(() => {
-            this.$router.push("/login");
-          });
-      }
+      return this.$refs.observer
+        .validate()
+        .catch()
+        .then(() => {
+          const newProfile: IUserProfileCreate = {
+            email: this.email,
+            name: this.name,
+            password: this.password,
+          };
+          dispatchSignUp(this.$store, newProfile)
+            .catch()
+            .then(() => this.$router.push("/login"));
+        });
     },
-  },
-  async mounted() {
-    this.reset();
   },
 });
 </script>

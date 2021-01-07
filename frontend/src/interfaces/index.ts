@@ -3,7 +3,7 @@ export interface IUserProfile {
   isActive: boolean;
   isSuperuser: boolean;
   name: string;
-  id: number;
+  id: string;
 }
 
 export interface IUserProfileUpdate {

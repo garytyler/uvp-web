@@ -34,7 +34,7 @@
         v-if="isLoggedIn"
         @click="rightNavDrawerVisible = !rightNavDrawerVisible"
       >
-        <v-btn icon small>
+        <v-btn icon x-large color="accent darken-4">
           <v-icon>mdi-account-cog</v-icon>
         </v-btn>
       </v-app-bar-nav-icon>
@@ -84,7 +84,7 @@
     >
       <template v-slot:prepend>
         <v-toolbar elevation="0" color="transparent">
-          <v-icon large right>mdi-account-cog</v-icon>
+          <v-icon large right color="accent darken-4">mdi-account-cog</v-icon>
 
           <v-spacer></v-spacer>
 
@@ -150,7 +150,7 @@
       <v-container fluid>
         <router-view></router-view>
       </v-container>
-      <NotificationsManager></NotificationsManager>
+      <notifications-manager></notifications-manager>
     </v-main>
   </v-app>
 </template>

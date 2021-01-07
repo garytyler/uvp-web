@@ -7,7 +7,7 @@ Vue.use(Vuetify);
 export const createVuetify = (): Vuetify => {
   return new Vuetify({
     breakpoint: {
-      mobileBreakpoint: "xs",
+      mobileBreakpoint: "sm",
     },
     theme: {
       dark: false,

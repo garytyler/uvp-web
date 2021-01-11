@@ -18,7 +18,7 @@ WORKDIR $WORKDIR
 RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
     | POETRY_VERSION=1.1.4 POETRY_HOME=$POETRY_HOME python \
     && ln -s ${POETRY_HOME}/bin/poetry /usr/local/bin/poetry \
-    && poetry config virtualenvs.create false --no-interaction
+    && poetry config --no-interaction virtualenvs.create false
 
 FROM base-stage  AS install-stage
 

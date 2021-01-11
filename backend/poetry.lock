@@ -856,6 +856,17 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests (==2.0.2)", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
+name = "pytest-randomly"
+version = "3.5.0"
+description = "Pytest plugin to randomly order tests and control random.seed."
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+pytest = "*"
+
+[[package]]
 name = "pytest-xprocess"
 version = "0.17.0"
 description = "A pytest plugin for managing processes across test runs."
@@ -1190,7 +1201,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "d7223decdcc04822830ed30d046ae0049422b32827bfb1ee0befec44a3f7e79f"
+content-hash = "6c38d814c6082b193b9c633ef5ca0dd635fb9ca7c2cd0a53a528ce95bbdd36b0"
 
 [metadata.files]
 aioconsole = [
@@ -1778,6 +1789,10 @@ pytest-asyncio = [
 pytest-cov = [
     {file = "pytest-cov-2.10.1.tar.gz", hash = "sha256:47bd0ce14056fdd79f93e1713f88fad7bdcc583dcd7783da86ef2f085a0bb88e"},
     {file = "pytest_cov-2.10.1-py2.py3-none-any.whl", hash = "sha256:45ec2d5182f89a81fc3eb29e3d1ed3113b9e9a873bcddb2a71faaab066110191"},
+]
+pytest-randomly = [
+    {file = "pytest-randomly-3.5.0.tar.gz", hash = "sha256:440cec143fd9b0adeb072006c71e0294402a2bc2ccd08079c2341087ba4cf2d1"},
+    {file = "pytest_randomly-3.5.0-py3-none-any.whl", hash = "sha256:9db10d160237f3f8ee60cef72e4cb9ea88d2893c9dd5c8aa334b060cdeb67c3a"},
 ]
 pytest-xprocess = [
     {file = "pytest-xprocess-0.17.0.tar.gz", hash = "sha256:2506d637c4f54c65dd195c1d094abdeedacc9bf0689131d847a324ad0fc951c0"},

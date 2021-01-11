@@ -106,22 +106,3 @@ async def test_update_own_user_password(
     new_user_obj = await User.get(id=old_user_obj.id)
     assert new_user_obj
     assert verify_password(new_password, new_user_obj.hashed_password)
-
-
-@pytest.mark.asyncio
-async def test_get_user_by_id(app, create_random_user) -> None:
-    user_obj = await create_random_user()
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.get(f"/api/users/{user_obj.id}")
-    assert r.status_code == 200
-    assert r.json()["email"] == user_obj.email
-
-
-@pytest.mark.asyncio
-async def test_get_users(app, create_random_user) -> None:
-    user_objs = [await create_random_user() for _ in range(5)]
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        r = await ac.get("/api/users")
-    assert r.status_code == 200
-    assert [any([str(obj.id) == i["id"] for i in r.json()]) for obj in user_objs]
-    assert [any([str(obj.email) == i["email"] for i in r.json()]) for obj in user_objs]

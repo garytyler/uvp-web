@@ -1,6 +1,3 @@
-from typing import List
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from tortoise.transactions import in_transaction
 
@@ -13,23 +10,8 @@ router = APIRouter()
 
 
 @router.get("/users/current", response_model=UserOut)
-async def read_current_user(current_user: User = Depends(get_current_active_user)):
-    return current_user
-
-
-@router.get("/users/{id}", response_model=UserOut)
-async def read_user_by_id(id: UUID):
-    if not (user_obj := await User.get_or_none(id=id)):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="User already exists",
-        )
-    return user_obj
-
-
-@router.get("/users", response_model=List[UserOut])  # type: ignore
-async def read_users():
-    return await User.all()
+async def read_current_user(current_user_obj: User = Depends(get_current_active_user)):
+    return current_user_obj
 
 
 @router.patch("/users/current", response_model=UserOut)

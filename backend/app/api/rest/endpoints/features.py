@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from tortoise.transactions import in_transaction
@@ -21,7 +21,7 @@ async def create_feature(feature_in: FeatureCreate = Depends(validate_feature_sl
 
 
 @router.get("/features/{id_or_slug}", response_model=FeatureOut)
-async def get_feature(id_or_slug: str):
+async def get_feature_single(id_or_slug: str):
     try:
         feature_id: uuid.UUID = uuid.UUID(id_or_slug, version=4)
     except ValueError:
@@ -36,13 +36,21 @@ async def get_feature(id_or_slug: str):
     return feature_obj
 
 
-@router.get("/features", response_model=List[FeatureOut])  # type: ignore
-async def get_all_features():
-    async with in_transaction():
-        features = await Feature.all()
-        for i in features:
-            await i.fetch_related("guests", "presenters")
-    return features
+@router.get("/features", response_model=List)
+async def get_feature_list(
+    id: Optional[uuid.UUID] = None,
+    slug: Optional[str] = None,
+    user_id: Optional[uuid.UUID] = None,
+):
+    search_kwargs = {}
+    if user_id:
+        search_kwargs["user_id"] = user_id
+    feature_objs = await Feature.filter(**search_kwargs)
+
+    print(feature_objs)
+    if not feature_objs:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return list(feature_objs)
 
 
 @router.delete("/features/{id}", response_model=int)

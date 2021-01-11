@@ -5,7 +5,6 @@ FROM python AS base-stage
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     USERNAME=backenduser \
-    POETRY_NO_INTERACTION=1 \
     POETRY_HOME=/opt/.poetry
 
 RUN useradd -ms /bin/bash $USERNAME
@@ -19,15 +18,15 @@ WORKDIR $WORKDIR
 RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
     | POETRY_VERSION=1.1.4 POETRY_HOME=$POETRY_HOME python \
     && ln -s ${POETRY_HOME}/bin/poetry /usr/local/bin/poetry \
-    && poetry config virtualenvs.create false
+    && poetry config virtualenvs.create false --no-interaction
 
 FROM base-stage  AS install-stage
 
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-interaction --no-root --no-dev
 
 FROM install-stage  AS install-dev-stage
 
-RUN poetry install --no-root
+RUN poetry install --no-interaction --no-root
 
 FROM install-dev-stage AS dev-stage
 

@@ -2,8 +2,6 @@ x-shared-environment:
   &shared-environment # Pass to build environments and containers for all services
   APP_TITLE: &app-title "UVP Interactive"
   APP_DESCRIPTION: &app-description "Urban Video Project Interactive's web app"
-  # images
-  POSTGRES_IMAGE: &POSTGRES_IMAGE "postgres:13.1-alpine"
   # dns
   DOMAIN:
   # postgres
@@ -15,39 +13,39 @@ x-shared-environment:
   REDIS_URL:
 
 services:
-  # proxy:
-  #   image: traefik:v2.2
-  #   container_name: proxy
-  #   environment:
-  #     <<: *shared-environment
-  #   command:
-  #     - --api.insecure=true
-  #     - --providers.docker.exposedbydefault=false
-  #     - --entrypoints.web.address=:80
-  #     - --entrypoints.websecure.address=:443
-  #     - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-  #     - --certificatesresolvers.letsencrypt.acme.email=
-  #     - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/lets-encrypt/acme.json
-  #   volumes:
-  #     - ./traefik:/etc/traefik
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-  #   depends_on:
-  #     - frontend
-  #     - backend
-  #   labels:
-  #     - traefik.enable=true
-  #     - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)
-  #     - traefik.http.routers.dashboard.entrypoints=websecure
-  #     - traefik.http.routers.dashboard.tls=true
-  #     - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
-  #     # HTTP Redirect
-  #     - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-  #     - traefik.http.routers.redirect-https.rule=hostregexp(`{host:.+}`)
-  #     - traefik.http.routers.redirect-https.entrypoints=web
-  #     - traefik.http.routers.redirect-https.middlewares=redirect-to-https
+  proxy:
+    image: traefik:v2.2
+    container_name: proxy
+    environment:
+      <<: *shared-environment
+    command:
+      - --api.insecure=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=
+      - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/lets-encrypt/acme.json
+    volumes:
+      - ./traefik:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - frontend
+      - backend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls=true
+      - traefik.http.routers.dashboard.tls.certresolver=letsencrypt
+      # HTTP Redirect
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.redirect-https.rule=hostregexp(`{host:.+}`)
+      - traefik.http.routers.redirect-https.entrypoints=web
+      - traefik.http.routers.redirect-https.middlewares=redirect-to-https
 
   frontend:
     container_name: frontend
@@ -61,12 +59,12 @@ services:
       target: prod-stage
     ports:
       - 8080:8080
-    # labels:
-    #   - traefik.enable=true
-    #   - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
-    #   - traefik.http.routers.frontend.entrypoints=websecure
-    #   - traefik.http.routers.frontend.tls=true
-    #   - traefik.http.routers.frontend.tls.certresolver=letsencrypt
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.frontend.entrypoints=websecure
+      - traefik.http.routers.frontend.tls=true
+      - traefik.http.routers.frontend.tls.certresolver=letsencrypt
 
   backend:
     container_name: backend
@@ -94,20 +92,21 @@ services:
       - frontend
       - postgres
       - redis
-    # labels:
-    #   - traefik.enable=true
-    #   - traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
-    #   - traefik.http.routers.backend.entrypoints=websecure
-    #   - traefik.http.routers.backend.tls=true
-    #   - traefik.http.routers.backend.tls.certresolver=letsencrypt
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/token`,`/api`,`/ws`,`/docs`,`/redoc`)
+      - traefik.http.routers.backend.entrypoints=websecure
+      - traefik.http.routers.backend.tls=true
+      - traefik.http.routers.backend.tls.certresolver=letsencrypt
 
   redis:
     image: redis:5-alpine
     container_name: redis
     environment:
       <<: *shared-environment
+
   postgres:
-    image: *POSTGRES_IMAGE
+    image: postgres:13.1-alpine
     container_name: postgres
     environment:
       <<: *shared-environment
@@ -125,13 +124,13 @@ services:
       PGADMIN_DEFAULT_PASSWORD:
     depends_on:
       - postgres
-    # labels:
-    #   - traefik.enable=true
-    #   - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN}`)
-    #   - traefik.http.routers.pgadmin.entrypoints=websecure
-    #   - traefik.http.routers.pgadmin.tls=true
-    #   - traefik.http.routers.pgadmin.tls.certresolver=letsencrypt
-    #   - traefik.http.services.pgadmin.loadbalancer.server.port=5050
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.${DOMAIN}`)
+      - traefik.http.routers.pgadmin.entrypoints=websecure
+      - traefik.http.routers.pgadmin.tls=true
+      - traefik.http.routers.pgadmin.tls.certresolver=letsencrypt
+      - traefik.http.services.pgadmin.loadbalancer.server.port=5050
 
 volumes:
   postgres_data: null

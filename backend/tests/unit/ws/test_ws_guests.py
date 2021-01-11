@@ -1,6 +1,5 @@
-# import pytest
-# from async_asgi_testclient import TestClient
-
+import pytest
+from async_asgi_testclient import TestClient
 
 # @pytest.mark.asyncio
 # async def test_guest_ws_broadcasts_feature_to_guests_on_connect(

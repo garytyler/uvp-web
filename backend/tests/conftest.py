@@ -42,36 +42,39 @@ def docker_client() -> DockerClient:
 
 
 @pytest.fixture(autouse=True)
-def postgres_container(docker_client) -> Container:
+def initialize_tortoise_orm(request):
     os.environ["DB_SUFFIX"] = "_test"
-    label = "test-postgres-container"
-    docker_client.containers.prune(filters={"label": label})
     tortoise_config: dict = get_tortoise_config()
-    container = docker_client.containers.run(
-        image=os.environ.get("POSTGRES_IMAGE"),
-        name=f"test-postgres-{uuid.uuid4()}",
-        detach=True,
-        environment=dict(
-            POSTGRES_HOST_AUTH_METHOD="trust",
-        ),
-        labels=[label],
+    tortoise_test_initializer(
+        modules=tortoise_config["apps"]["models"]["models"],
+        db_url=tortoise_config["connections"]["default"],
+        app_label="models",
     )
+    request.addfinalizer(tortoise_test_finalizer)
+
+
+@pytest.fixture(autouse=True)
+def pg_container(docker_client) -> Container:
+    pg_main_container = docker_client.containers.get("postgres")
     try:
-        tortoise_test_initializer(
-            modules=tortoise_config["apps"]["models"]["models"],
-            db_url=tortoise_config["connections"]["default"],
-            app_label="models",
+        pg_test_container = docker_client.containers.run(
+            image=pg_main_container.attrs["Config"]["Image"],
+            environment=dict(
+                POSTGRES_HOST_AUTH_METHOD="trust",
+            ),
+            detach=True,
         )
-        yield container
+        yield pg_test_container
     finally:
-        tortoise_test_finalizer()
-        container.kill()
-        container.remove()
+        try:
+            pg_test_container.remove(v=True, force=True)
+        except Exception:
+            pass
 
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def app(postgres_container):
+async def app():
     app = get_app()
     async with LifespanManager(app):
         yield app

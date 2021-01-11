@@ -9,9 +9,9 @@ jobs:
       - uses: actions/checkout@v2
       - run: docker-compose up --detach --build
       - run: docker-compose logs
-      - run: docker-compose --log-level=DEBUG exec -T --user=0 backend pytest --cov=app --cov-report=xml
-      - run: docker-compose --log-level=DEBUG exec -T frontend npm run coverage:unit
-      - run: docker-compose --log-level=DEBUG exec -T frontend npm run coverage:e2e
+      - run: docker-compose exec -T --user=0 backend pytest -s --cov=app --cov-report=xml
+      - run: docker-compose exec -T --user=0 frontend npm run coverage:unit
+      - run: docker-compose exec -T --user=0 frontend npm run build
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos

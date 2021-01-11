@@ -8,21 +8,21 @@ x-shared-environment: &shared-environment
   REDIS_URL: redis://redis:6379/0
 
 services:
-  # proxy:
-  #   environment:
-  #     <<: *shared-environment
-  #   command:
-  #     - --api.insecure=true
-  #     - --providers.docker.exposedbydefault=false
-  #     - --entrypoints.web.address=:80
-  #     - --entrypoints.websecure.address=:443
-  #     - --entrypoints.traefik.address=:8888 # traefik dashboard
-  #     # - --providers.file.directory=/etc/traefik/
-  #     - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
-  #   ports:
-  #     - 8888:8888 # traefik dashboard
-  #   labels:
-  #     - traefik.http.middlewares.testheader.headers.isDevelopment=true
+  proxy:
+    environment:
+      <<: *shared-environment
+    command:
+      - --api.insecure=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.traefik.address=:8888 # traefik dashboard
+      - --providers.file.directory=/etc/traefik/
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=false
+    ports:
+      - 8888:8888 # traefik dashboard
+    labels:
+      - traefik.http.middlewares.testheader.headers.isDevelopment=true
 
   frontend:
     build:

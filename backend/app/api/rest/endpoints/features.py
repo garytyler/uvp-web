@@ -46,8 +46,6 @@ async def get_feature_list(
     if user_id:
         search_kwargs["user_id"] = user_id
     feature_objs = await Feature.filter(**search_kwargs)
-
-    print(feature_objs)
     if not feature_objs:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return list(feature_objs)

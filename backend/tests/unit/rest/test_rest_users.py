@@ -19,9 +19,11 @@ async def test_create_user(app, faker, create_random_password) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_own_user(app, create_random_password, create_random_user) -> None:
+async def test_get_own_user(
+    app, create_random_password, create_random_user_obj
+) -> None:
     user_password = create_random_password()
-    user_obj = await create_random_user(password=user_password)
+    user_obj = await create_random_user_obj(password=user_password)
 
     # get access token
     payload = dict(username=user_obj.email, password=user_password)
@@ -44,10 +46,10 @@ async def test_get_own_user(app, create_random_password, create_random_user) -> 
 
 @pytest.mark.asyncio
 async def test_update_own_user_email(
-    app, create_random_password, create_random_user, faker
+    app, create_random_password, create_random_user_obj, faker
 ) -> None:
     user_password = create_random_password()
-    old_user_obj = await create_random_user(password=user_password)
+    old_user_obj = await create_random_user_obj(password=user_password)
 
     # get access token
     payload = dict(username=old_user_obj.email, password=user_password)
@@ -75,10 +77,10 @@ async def test_update_own_user_email(
 
 @pytest.mark.asyncio
 async def test_update_own_user_password(
-    app, create_random_password, create_random_user, faker
+    app, create_random_password, create_random_user_obj, faker
 ) -> None:
     old_password = create_random_password()
-    old_user_obj = await create_random_user(password=old_password)
+    old_user_obj = await create_random_user_obj(password=old_password)
 
     # get access token
     payload = dict(

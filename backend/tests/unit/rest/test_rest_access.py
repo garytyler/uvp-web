@@ -18,10 +18,10 @@ async def test_hash_password(create_random_password):
 
 @pytest.mark.asyncio
 async def test_rest_read_access_token_succeeds(
-    app, create_random_user, create_random_password
+    app, create_random_user_obj, create_random_password
 ) -> None:
     user_password = create_random_password()
-    user_obj = await create_random_user(password=user_password)
+    user_obj = await create_random_user_obj(password=user_password)
     async with AsyncClient(app=app, base_url="http://test") as ac:
         payload = {"username": user_obj.email, "password": user_password}
         r = await ac.post("/api/access/token", data=payload)
@@ -54,12 +54,12 @@ async def test_rest_create_user_and_login(app, faker, create_random_password) ->
 async def test_rest_access_reset_password_with_reset_endpoint(
     app,
     faker,
-    create_random_user,
+    create_random_user_obj,
     create_random_password,
 ) -> None:
     # create user
     old_password = create_random_password()
-    old_user_obj = await create_random_user(password=old_password)
+    old_user_obj = await create_random_user_obj(password=old_password)
     assert verify_password(old_password, old_user_obj.hashed_password)
 
     # reset password with endpoint

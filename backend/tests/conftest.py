@@ -3,9 +3,9 @@ import os
 import random
 import socket
 import uuid
+from random import randint
 from typing import Callable, List
 
-import docker
 import pytest
 from asgi_lifespan import LifespanManager
 from docker import DockerClient
@@ -37,52 +37,33 @@ def settings():
 
 @pytest.fixture(scope="session")
 def docker_client() -> DockerClient:
-    # return docker.from_env()
     return DockerClient(base_url="unix:///var/run/docker.sock")
 
 
 @pytest.fixture(autouse=True)
-def initialize_tortoise_orm(request):
-    os.environ["DB_SUFFIX"] = "_test"
+def initialize_db(request):
+    os.environ["DB_SUFFIX"] = f"_test_{uuid.uuid4()}"
     tortoise_config: dict = get_tortoise_config()
     tortoise_test_initializer(
         modules=tortoise_config["apps"]["models"]["models"],
         db_url=tortoise_config["connections"]["default"],
         app_label="models",
     )
-    request.addfinalizer(tortoise_test_finalizer)
-
-
-@pytest.fixture(autouse=True)
-def pg_container(docker_client) -> Container:
-    pg_main_container = docker_client.containers.get("postgres")
-    try:
-        pg_test_container = docker_client.containers.run(
-            image=pg_main_container.attrs["Config"]["Image"],
-            environment=dict(
-                POSTGRES_HOST_AUTH_METHOD="trust",
-            ),
-            detach=True,
-        )
-        yield pg_test_container
-    finally:
-        try:
-            pg_test_container.remove(v=True, force=True)
-        except Exception:
-            pass
+    yield
+    tortoise_test_finalizer()
 
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def app():
+async def app(initialize_db):
     app = get_app()
     async with LifespanManager(app):
         yield app
 
 
 @pytest.fixture
-def create_random_fake_session_key() -> Callable:
-    def _create_random_fake_session_key():
+def create_random_session_key() -> Callable:
+    def _create_random_session_key():
         return randstr(
             min_length=32,
             max_length=32,
@@ -93,7 +74,7 @@ def create_random_fake_session_key() -> Callable:
             numbers=True,
         )
 
-    return _create_random_fake_session_key
+    return _create_random_session_key
 
 
 @pytest.fixture
@@ -113,8 +94,8 @@ def create_random_guest_obj(faker):
 
 
 @pytest.fixture
-def create_random_feature_title() -> Callable:
-    def _create_random_feature_title() -> str:
+def create_random_feature_obj_title() -> Callable:
+    def _create_random_feature_obj_title() -> str:
         return randstr(
             min_length=10,
             max_length=25,
@@ -126,12 +107,12 @@ def create_random_feature_title() -> Callable:
             numbers=True,
         )
 
-    return _create_random_feature_title
+    return _create_random_feature_obj_title
 
 
 @pytest.fixture
-def create_random_feature_slug() -> Callable:
-    def _create_random_feature_slug() -> str:
+def create_random_feature_obj_slug() -> Callable:
+    def _create_random_feature_obj_slug() -> str:
         string = randstr(
             min_length=2,
             max_length=15,
@@ -144,21 +125,7 @@ def create_random_feature_slug() -> Callable:
         )
         return "-".join(string.split()).lower()
 
-    return _create_random_feature_slug
-
-
-@pytest.fixture
-def create_random_feature_obj(
-    create_random_feature_title, create_random_feature_slug
-) -> Callable:
-    async def _create_random_feature_obj() -> Feature:
-        return await Feature.create(
-            title=create_random_feature_title(),
-            slug=create_random_feature_slug(),
-            turn_duration=random.randint(1, 99),
-        )
-
-    return _create_random_feature_obj
+    return _create_random_feature_obj_slug
 
 
 def _get_unused_tcp_port():
@@ -192,8 +159,8 @@ def create_random_password():
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def create_random_user(faker, create_random_password):
-    async def _create_random_user(email=None, password=None, name=None):
+async def create_random_user_obj(faker, create_random_password):
+    async def _create_random_user_obj(email=None, password=None, name=None):
         user_create_db = UserDbCreate(
             name=name or faker.name(),
             hashed_password=get_password_hash(password or create_random_password()),
@@ -201,27 +168,72 @@ async def create_random_user(faker, create_random_password):
         )
         return await User.create(**user_create_db.dict())
 
-    return _create_random_user
+    return _create_random_user_obj
 
 
 @pytest.fixture
 @pytest.mark.asyncio
-async def create_random_feature(
-    create_random_user,
-    create_random_feature_title,
-    create_random_feature_slug,
+async def create_random_feature_obj(
+    create_random_user_obj,
+    create_random_feature_obj_title,
+    create_random_feature_obj_slug,
 ):
-    async def _create_random_feature(
+    async def _create_random_feature_obj(
         title: str = None,
         slug: str = None,
         user_id: User = None,
         turn_duration: int = None,
     ):
         return await Feature.create(
-            title=title or create_random_feature_title(),
-            slug=slug or create_random_feature_slug(),
-            user_id=user_id or (await create_random_user()).id,
+            title=title or create_random_feature_obj_title(),
+            slug=slug or create_random_feature_obj_slug(),
+            user_id=user_id or (await create_random_user_obj()).id,
             turn_duration=turn_duration or 30,
         )
 
-    return _create_random_feature
+    return _create_random_feature_obj
+
+
+@pytest.fixture(autouse=True)
+@pytest.mark.asyncio
+async def initial_user_objs(initialize_db, create_random_user_obj):
+    return [await create_random_user_obj() for _ in range(randint(5, 9))]
+
+
+@pytest.fixture(autouse=True)
+@pytest.mark.asyncio
+async def initial_feature_objs(
+    initialize_db, initial_user_objs, create_random_feature_obj
+):
+    feature_objs = []
+    for user_obj in initial_user_objs:
+        for _ in range(randint(1, 9)):
+            feature_objs.append(await create_random_feature_obj(user_id=user_obj.id))
+    return feature_objs
+
+
+@pytest.fixture(autouse=True)
+@pytest.mark.asyncio
+async def initial_guest_objs(
+    initialize_db, initial_feature_objs, create_random_guest_obj
+):
+    guest_objs = []
+    for feature_obj in initial_feature_objs:
+        guest_objs = [
+            await create_random_guest_obj(feature=feature_obj)
+            for _ in range(randint(1, 9))
+        ]
+    return guest_objs
+
+
+@pytest.fixture(autouse=True)
+@pytest.mark.asyncio
+async def fetch_initial_relations(
+    initialize_db, initial_user_objs, initial_feature_objs, initial_guest_objs
+):
+    for i in initial_user_objs:
+        await i.fetch_related("features")
+    for i in initial_feature_objs:
+        await i.fetch_related("user", "guests", "presenters")
+    for i in initial_guest_objs:
+        await i.fetch_related("feature")

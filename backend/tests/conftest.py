@@ -4,19 +4,23 @@ import random
 import socket
 import uuid
 from random import randint
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import pytest
 from asgi_lifespan import LifespanManager
 from docker import DockerClient
 from docker.models.containers import Container
+from httpx import AsyncClient
 from randstr_plus import randstr
 from tortoise.contrib.test import finalizer as tortoise_test_finalizer
 from tortoise.contrib.test import initializer as tortoise_test_initializer
 
+from app.api.dependencies.users import authenticate_user
 from app.core import config
 from app.core.db import get_tortoise_config
-from app.core.security import get_password_hash
+
+#     return _login_user
+from app.core.security import create_access_token, get_password_hash
 from app.main import get_app
 from app.models.features import Feature
 from app.models.guests import Guest
@@ -169,6 +173,27 @@ async def create_random_user_obj(faker, create_random_password):
         return await User.create(**user_create_db.dict())
 
     return _create_random_user_obj
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def get_auth_headers(app, create_random_user_obj, create_random_password):
+    async def _get_auth_headers(
+        user: Optional[User] = None, password: Optional[str] = None
+    ):
+        if user and password:
+            user_password = password
+            user_obj = user
+        elif user or password:
+            raise RuntimeError("Accepts both a user_obj and a password or neither.")
+        else:
+            user_password = create_random_password()
+            user_obj = await create_random_user_obj(password=user_password)
+        user_obj = await authenticate_user(email=user_obj.email, password=user_password)
+        access_token = create_access_token(data={"sub": user_obj.email})
+        return {"Authorization": f"Bearer {access_token}"}
+
+    return _get_auth_headers
 
 
 @pytest.fixture

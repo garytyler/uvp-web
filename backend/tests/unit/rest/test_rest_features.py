@@ -14,6 +14,7 @@ async def test_create_with_custom_slug(
     create_random_feature_obj_slug,
     create_random_feature_obj_title,
     create_random_user_obj,
+    get_auth_headers,
 ):
     user_obj = await create_random_user_obj()
     path = "/api/features"
@@ -24,7 +25,7 @@ async def test_create_with_custom_slug(
             "turn_duration": randint(0, 99),
             "user_id": str(user_obj.id),
         }
-        r = await client.post(path, json=data)
+        r = await client.post(path, json=data, headers=await get_auth_headers())
         assert r.status_code == 200
         content = r.json()
         assert content["title"] == data["title"]
@@ -43,7 +44,7 @@ async def test_create_with_custom_slug(
 
 @pytest.mark.asyncio
 async def test_create_without_custom_slug(
-    app, create_random_user_obj, create_random_feature_obj_title
+    app, create_random_user_obj, create_random_feature_obj_title, get_auth_headers
 ):
     user_obj = await create_random_user_obj()
     path = "/api/features"
@@ -53,7 +54,7 @@ async def test_create_without_custom_slug(
             "turn_duration": randint(0, 99),
             "user_id": str(user_obj.id),
         }
-        r = await client.post(path, json=data)
+        r = await client.post(path, json=data, headers=await get_auth_headers())
         assert r.status_code == 200
         content = r.json()
         assert content["slug"].strip()
@@ -106,11 +107,13 @@ async def test_get_single_by_slug(
 
 
 @pytest.mark.asyncio
-async def test_get_list_by_user_id_query(app, initial_user_objs):
+async def test_get_list_by_user_id_query(app, initial_user_objs, get_auth_headers):
     path = "/api/features"
     async with AsyncClient(app=app, base_url="http://test") as client:
         user_obj = initial_user_objs[randint(0, len(initial_user_objs) - 1)]
-        r = await client.get(path, params=dict(user_id=user_obj.id))
+        r = await client.get(
+            path, params=dict(user_id=user_obj.id), headers=await get_auth_headers()
+        )
         assert r.status_code == 200
         content = r.json()
         assert content
@@ -121,10 +124,10 @@ async def test_get_list_by_user_id_query(app, initial_user_objs):
 
 
 @pytest.mark.asyncio
-async def test_get_list_all(app, initial_feature_objs):
+async def test_get_list_all(app, initial_feature_objs, get_auth_headers):
     path = "/api/features"
     async with AsyncClient(app=app, base_url="http://test") as client:
-        r = await client.get(path)
+        r = await client.get(path, headers=await get_auth_headers())
         assert r.status_code == 200
         content = r.json()
         assert content
@@ -133,17 +136,23 @@ async def test_get_list_all(app, initial_feature_objs):
 
 
 @pytest.mark.asyncio
-async def test_delete_existing_succeeds(app, create_random_feature_obj):
+async def test_delete_existing_succeeds(
+    app, create_random_feature_obj, get_auth_headers
+):
     path = "/api/features/{id}"
     async with AsyncClient(app=app, base_url="http://test") as client:
         features = [await create_random_feature_obj() for _ in range(5)]
-        r = await client.delete(path.format(id=features[3].id))
+        r = await client.delete(
+            path.format(id=features[3].id), headers=await get_auth_headers()
+        )
         assert r.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_delete_nonexisting_raises(app, create_random_feature_obj):
+async def test_delete_nonexisting_raises(app, get_auth_headers):
     path = "/api/features/{id}"
     async with AsyncClient(app=app, base_url="http://test") as client:
-        r = await client.delete(path.format(id=uuid.uuid4()))
+        r = await client.delete(
+            path.format(id=uuid.uuid4()), headers=await get_auth_headers()
+        )
         assert r.status_code == 404

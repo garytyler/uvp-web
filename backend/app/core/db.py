@@ -7,6 +7,7 @@ from app.core.config import get_settings
 
 def get_tortoise_config() -> dict:
     db_suffix = os.environ.get("DB_SUFFIX", "")
+
     return {
         "connections": {
             "default": f"{get_settings().DATABASE_URL}{db_suffix}",

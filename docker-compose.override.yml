@@ -27,6 +27,7 @@ services:
   frontend:
     build:
       target: dev-stage
+
     volumes:
       - .:/srv/app:rw
       - node_modules:/srv/app/frontend/node_modules
@@ -34,6 +35,7 @@ services:
       <<: *shared-environment
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: 1
+      VUE_APP_DEV_PROXY_API_HOST: backend:8001
     tty: true
     stdin_open: true
 
@@ -44,8 +46,12 @@ services:
       SECRET_KEY: notsecret
       ALLOWED_HOSTS: '["*"]'
       BACKEND_CORS_ORIGINS: '["*"]'
+    links:
+      - postgres
     build:
       target: dev-stage
+    ports:
+      - 8001 # For e2e testing
     volumes:
       - .:/srv/app:rw
       - /var/run/docker.sock:/var/run/docker.sock

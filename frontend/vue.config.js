@@ -10,11 +10,11 @@ module.exports = {
   devServer: {
     proxy: {
       "/api/": {
-        target: "http://backend:8000",
+        target: `http://${process.env.VUE_APP_DEV_PROXY_API_HOST}`,
         https: true,
       },
       "/ws/": {
-        target: "ws://backend:8000",
+        target: `ws://${process.env.VUE_APP_DEV_PROXY_API_HOST}`,
         secure: false,
         ws: true,
       },

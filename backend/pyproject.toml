@@ -50,4 +50,4 @@ build-backend = "poetry.masonry.api"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = ["--verbose"]
-testpaths = ["tests"]
+testpaths = ["tests/unit"]

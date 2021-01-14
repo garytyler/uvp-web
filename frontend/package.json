@@ -6,9 +6,9 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
-    "coverage:unit": "vue-cli-service test:unit --coverage",
+    "coverage:unit": "vue-cli-service test:unit --coverage --coverageReporters=text --coverageReporters=text-summary",
     "test:e2e": "jest --config=jest.e2e.config.js --run-in-band",
-    "coverage:e2e": "nyc --exclude-after-remap=false --report-dir=coverage-e2e -r=text -r=html -r=lcov -r=cobertura -- npm run test:e2e",
+    "coverage:e2e": "nyc --exclude-after-remap=false --report-dir=coverage-e2e -r=text -r=text-summary -r=html -r=lcov -r=cobertura -- npm run test:e2e",
     "lint": "vue-cli-service lint",
     "vue": "vue"
   },

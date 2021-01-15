@@ -77,8 +77,14 @@ export const routes = [
           {
             path: "features",
             component: RouterComponent,
-            redirect: "features/create",
+            redirect: "features/list",
             children: [
+              {
+                path: "list",
+                // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+                component: () =>
+                  import("@/views/account/features/UserFeatureList.vue"),
+              },
               {
                 path: "create",
                 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

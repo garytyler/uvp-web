@@ -2,7 +2,7 @@ import { MainState } from "./state";
 import { getStoreAccessors } from "typesafe-vuex";
 import { State } from "../state";
 import { AppNotification } from "@/store/main/state";
-import { IUserProfile } from "@/interfaces";
+import { IUserProfile, IFeature } from "@/interfaces";
 
 export const getters = {
   hasAdminAccess: (state: MainState): boolean | null => {
@@ -21,6 +21,11 @@ export const getters = {
   firstNotification: (state: MainState): AppNotification | null =>
     state.notifications.length ? state.notifications[0] : null,
   notifications: (state: MainState): AppNotification[] => state.notifications,
+  features: (state: MainState): IFeature[] => state.features,
+  currentUserFeatures: (state: MainState): IFeature[] =>
+    state.features.filter(
+      (feature) => feature.userId === state.userProfile?.id
+    ),
 };
 
 const { read } = getStoreAccessors<MainState, State>("");
@@ -34,3 +39,5 @@ export const readToken = read(getters.token);
 export const readUserProfile = read(getters.userProfile);
 export const readFirstNotification = read(getters.firstNotification);
 export const readNotifications = read(getters.notifications);
+export const readFeatures = read(getters.features);
+export const readCurrentUserFeatures = read(getters.currentUserFeatures);

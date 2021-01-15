@@ -24,8 +24,10 @@ export const actions = {
       if (response.data) {
         commitSetCurrentFeature(context, response.data);
       }
-    } catch (error) {
-      console.debug(error);
+    } catch {
+      () => {
+        // TODO Log event
+      };
     }
   },
   async actionGetCurrentGuest(context: MainContext): Promise<void> {
@@ -34,8 +36,10 @@ export const actions = {
       if (response.data) {
         commitSetCurrentGuest(context, response.data);
       }
-    } catch (error) {
-      console.log(error);
+    } catch {
+      () => {
+        // TODO Log event
+      };
     }
   },
   async actionCreateCurrentGuest(
@@ -49,8 +53,8 @@ export const actions = {
           commitSetCurrentGuest(context, resp.data);
         }
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
+        // TODO Log event
       });
   },
   async actionUpdateCurrentGuest(
@@ -62,8 +66,10 @@ export const actions = {
       if (response.data) {
         commitSetCurrentGuest(context, response.data);
       }
-    } catch (error) {
-      console.log(error);
+    } catch {
+      () => {
+        // TODO Log event
+      };
     }
   },
   async actionDeleteGuest(
@@ -71,7 +77,7 @@ export const actions = {
     payload: { guestId: string }
   ): Promise<void> {
     if (!context.state.currentFeature) {
-      console.log("API ERROR"); // TODO
+      // TODO Log event
     } else {
       try {
         const response = await api.deleteGuest(
@@ -81,8 +87,10 @@ export const actions = {
         if (response.data) {
           commitDeleteGuest(context, response.data);
         }
-      } catch (error) {
-        console.log(error);
+      } catch {
+        () => {
+          // TODO Log event
+        };
       }
     }
   },

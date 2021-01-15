@@ -13,9 +13,18 @@
 
         <v-divider></v-divider>
 
+        <v-list-item to="/account/features/list">
+          <v-list-item-action>
+            <v-icon>mdi-star-box-multiple-outline</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>My Features</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
         <v-list-item to="/account/features/create">
           <v-list-item-action>
-            <v-icon>mdi-star-circle</v-icon>
+            <v-icon>mdi-star-plus</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>Create Feature</v-list-item-title>

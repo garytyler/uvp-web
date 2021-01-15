@@ -46,6 +46,7 @@ export interface IFeature {
   id: string;
   title: string;
   slug: string;
+  userId: string;
   guests: IGuest[];
   presenters: IPresenter[];
 }

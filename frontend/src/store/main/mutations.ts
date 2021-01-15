@@ -33,6 +33,14 @@ export const mutations = {
   addFeature(state: MainState, payload: IFeature): void {
     state.features.push(payload);
   },
+  removeFeature(state: MainState, payload: IFeature): void {
+    state.features = state.features.filter((feature) => feature !== payload);
+  },
+  removeFeaturesByUser(state: MainState, userId: string): void {
+    state.features = state.features.filter(
+      (feature) => feature.userId !== userId
+    );
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,3 +59,7 @@ export const commitSetUserProfile = commit(mutations.setUserProfile);
 export const commitAddNotification = commit(mutations.addNotification);
 export const commitRemoveNotification = commit(mutations.removeNotification);
 export const commitAddFeature = commit(mutations.addFeature);
+export const commitRemoveFeature = commit(mutations.removeFeature);
+export const commitRemoveFeaturesByUser = commit(
+  mutations.removeFeaturesByUser
+);

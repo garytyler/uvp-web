@@ -30,7 +30,6 @@ const accountsApi = {
     return client.get<IUserProfile>(`/api/users/current`, authHeaders(token));
   },
   async updateCurrentUser(token: string, data: IUserProfileUpdate) {
-    console.log(token, data);
     return client.patch<IUserProfile>(
       `/api/users/current`,
       data,
@@ -87,9 +86,12 @@ const featuresApi = {
     const path = `/api/features/${slugOrId}`;
     return client.get<IFeature>(path);
   },
-  async getFeatures() {
+  async getUserFeatures(token: string, userId: string) {
     const path = `/api/features`;
-    return client.get<IFeature>(path);
+    return client.get<IFeature[]>(path, {
+      ...authHeaders(token),
+      params: { userId: userId },
+    });
   },
   async createFeature(token: string, data: IFeatureCreate) {
     const path = `/api/features`;

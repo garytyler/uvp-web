@@ -16,7 +16,8 @@ const decamelizeRequest = (config: AxiosRequestConfig) => {
 const camelizeResponse = (response: AxiosResponse) => {
   if (
     response.data &&
-    response.headers["Content-Type"] === "application/json"
+    (response.headers["Content-Type"] === "application/json" ||
+      response.headers["content-type"] === "application/json")
   ) {
     response.data = camelizeKeys(response.data);
   }
@@ -30,7 +31,7 @@ client.interceptors.request.use(
     return decamelizeRequest(config);
   },
   (err) => {
-    return Promise.reject(err);
+    return Promise.reject(decamelizeRequest(err));
   }
 );
 
@@ -39,7 +40,7 @@ client.interceptors.response.use(
     return camelizeResponse(response);
   },
   (err) => {
-    return Promise.reject(err);
+    return Promise.reject(camelizeResponse(err));
   }
 );
 

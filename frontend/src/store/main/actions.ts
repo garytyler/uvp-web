@@ -23,7 +23,11 @@ import {
   commitSetLogInError,
   commitSetToken,
   commitSetUserProfile,
+  // commitAddUserFeature,
+  // setUserFeatures
   commitAddFeature,
+  commitRemoveFeature,
+  commitRemoveFeaturesByUser,
 } from "./mutations";
 import { readUserProfile } from "./getters";
 import { AppNotification, MainState } from "./state";
@@ -283,6 +287,46 @@ export const actions = {
       await dispatchCheckApiError(context, error);
     }
   },
+  async actionGetUserFeatures(context: MainContext): Promise<void> {
+    const loadingNotification = {
+      content: "Loading...",
+      showProgress: true,
+    };
+    commitAddNotification(context, loadingNotification);
+    if (!context.state.userProfile) {
+      commitRemoveNotification(context, loadingNotification);
+      await dispatchLogOut(context);
+      return;
+    }
+    return api
+      .getUserFeatures(context.state.token, context.state.userProfile.id)
+      .then(async (response) => {
+        if (!response.data) {
+          // TODO: Log event
+        } else {
+          if (!context.state.userProfile) {
+            await dispatchLogOut(context);
+          } else {
+            commitRemoveFeaturesByUser(context, context.state.userProfile.id);
+            for (const i of response.data) {
+              commitAddFeature(context, i);
+            }
+          }
+        }
+      })
+      .catch(async (error) => {
+        if (error.code === 404) {
+          if (!context.state.userProfile) {
+            await dispatchLogOut(context);
+          } else {
+            commitRemoveFeaturesByUser(context, context.state.userProfile.id);
+          }
+        } else {
+          // TODO: Log event
+        }
+      })
+      .finally(() => commitRemoveNotification(context, loadingNotification));
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -311,3 +355,4 @@ export const dispatchSendPasswordResetEmail = dispatch(
 );
 export const dispatchResetPassword = dispatch(actions.actionResetPassword);
 export const dispatchCreateFeature = dispatch(actions.actionCreateFeature);
+export const dispatchGetUserFeatures = dispatch(actions.actionGetUserFeatures);

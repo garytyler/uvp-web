@@ -7,12 +7,12 @@
         </div>
         <v-row justify="center">
           <div v-if="isFeaturePresenterOnline">
-            <v-alert dense icon="lens" color="success" text>
+            <v-alert dense icon="mdi-broadcast-on" color="success" text>
               <span class="success--text">Online</span>
             </v-alert>
           </div>
           <div v-else>
-            <v-alert dense icon="error_outline" color="error" text>
+            <v-alert dense icon="mdi-broadcast-off" color="error" text>
               <span class="error--text">Offline</span>
             </v-alert>
           </div>

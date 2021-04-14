@@ -56,6 +56,7 @@ services:
       NODE_ENV: production
       VUE_APP_TITLE: *app-title
       VUE_APP_DESCRIPTION: *app-description
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     build:
       context: ./frontend
       target: prod-stage

@@ -3,8 +3,7 @@ FROM nginx:stable-alpine as nginx
 
 FROM node as base-stage
 
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
-    USERNAME=node
+ENV USERNAME=node
 
 ARG WORKDIR=/srv/app/frontend
 

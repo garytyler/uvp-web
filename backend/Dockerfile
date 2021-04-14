@@ -5,7 +5,8 @@ FROM python AS base-stage
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     USERNAME=backenduser \
-    POETRY_HOME=/opt/.poetry
+    POETRY_HOME=/opt/.poetry \
+    POETRY_VERSION=1.1.5
 
 RUN useradd -ms /bin/bash $USERNAME
 
@@ -15,8 +16,7 @@ COPY --chown=$USERNAME:$USERNAME ./pyproject.toml ./poetry.lock* $WORKDIR/
 
 WORKDIR $WORKDIR
 
-RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-    | POETRY_VERSION=1.1.4 POETRY_HOME=$POETRY_HOME python \
+RUN wget -qO - https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python \
     && ln -s ${POETRY_HOME}/bin/poetry /usr/local/bin/poetry \
     && poetry config --no-interaction virtualenvs.create false
 

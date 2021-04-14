@@ -1,26 +1,17 @@
 import contextlib
-import copy
-import json
-import os
 import random
 import socket
-import uuid
-from random import randint
 from typing import Callable, List, Optional
 
-import docker
 import pytest
-from asgi_lifespan import LifespanManager
 from docker import DockerClient
+from docker.models.containers import Container
+from pydantic import PostgresDsn
 from randstr_plus import randstr
-from tortoise.contrib.test import finalizer as tortoise_test_finalizer
-from tortoise.contrib.test import initializer as tortoise_test_initializer
 
 from app.api.dependencies.users import authenticate_user
-from app.core import config
-from app.core.db import get_tortoise_config
+from app.core import config, db
 from app.core.security import create_access_token, get_password_hash
-from app.main import get_app
 from app.models.features import Feature
 from app.models.guests import Guest
 from app.models.users import User
@@ -41,6 +32,81 @@ def settings():
 @pytest.fixture(scope="session")
 def docker_client() -> DockerClient:
     return DockerClient(base_url="unix:///var/run/docker.sock")
+
+
+# Database setup
+
+
+@pytest.fixture
+def pg_test_container_name(settings, worker_id):
+    return f"{settings.POSTGRES_DB}-test-{worker_id}"
+
+
+@pytest.fixture
+def pg_test_db_url(settings, pg_test_container_name) -> PostgresDsn:
+    return PostgresDsn.build(
+        scheme="postgres",
+        user=settings.POSTGRES_USER,
+        password=settings.POSTGRES_PASSWORD,
+        host=pg_test_container_name,
+        path=f"/{settings.POSTGRES_DB.lstrip('/')}",
+    )
+
+
+@pytest.fixture(autouse=True)
+@pytest.mark.asyncio
+async def pg_container(
+    monkeypatch,
+    docker_client,
+    settings,
+    pg_test_db_url,
+    pg_test_container_name,
+) -> Container:
+
+    _tortoise_config = db.get_tortoise_config()
+
+    def get_test_tortoise_config():
+        nonlocal _tortoise_config
+        _tortoise_config["connections"]["default"] = pg_test_db_url
+        return _tortoise_config
+
+    monkeypatch.setattr(db, "get_tortoise_config", get_test_tortoise_config)
+
+    pg_prod_container = docker_client.containers.get("postgres")
+    pg_test_container = docker_client.containers.run(
+        name=pg_test_container_name,
+        image=pg_prod_container.image,
+        command=["postgres", "-c", "log_statement=all"],
+        environment=dict(
+            POSTGRES_HOST=pg_test_container_name,
+            POSTGRES_USER=settings.POSTGRES_USER,
+            POSTGRES_DB=settings.POSTGRES_DB,
+            POSTGRES_HOST_AUTH_METHOD="trust",
+        ),
+        network=pg_prod_container.attrs["HostConfig"]["NetworkMode"],
+        publish_all_ports=True,
+        detach=True,
+        remove=True,
+        auto_remove=True,
+    )
+    try:
+        while True:
+            response = pg_test_container.exec_run(
+                [
+                    "pg_isready",
+                    f"--host={pg_test_container_name}",
+                    f"--dbname={settings.POSTGRES_DB}",
+                    f"--username={settings.POSTGRES_USER}",
+                ]
+            )
+            if response.exit_code == 0:
+                break
+        yield pg_test_container
+    finally:
+        pg_test_container.remove(v=True, force=True)
+
+
+# Factory fixtures
 
 
 @pytest.fixture

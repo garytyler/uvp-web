@@ -50,8 +50,6 @@ services:
       - traefik.http.routers.redirect-https.middlewares=redirect-to-https
 
   frontend:
-    # networks:
-    #   - app
     container_name: frontend
     environment:
       <<: *shared-environment
@@ -71,8 +69,6 @@ services:
       - traefik.http.routers.frontend.tls.certresolver=letsencrypt
 
   backend:
-    # networks:
-    #   - app
     container_name: backend
     environment:
       <<: *shared-environment
@@ -106,16 +102,12 @@ services:
       - traefik.http.routers.backend.tls.certresolver=letsencrypt
 
   redis:
-    # networks:
-    #   - app
     image: redis:5-alpine
     container_name: redis
     environment:
       <<: *shared-environment
 
   postgres:
-    # networks:
-    #   - app
     image: postgres:13.1-alpine
     container_name: postgres
     environment:
@@ -125,8 +117,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   pgadmin:
-    # networks:
-    #   - app
     image: dpage/pgadmin4
     container_name: pgadmin
     environment:
@@ -146,5 +136,3 @@ services:
 
 volumes:
   postgres_data: null
-# networks:
-#   app:

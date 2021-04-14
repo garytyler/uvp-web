@@ -59,6 +59,8 @@ services:
   postgres:
     environment:
       <<: *shared-environment
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    command: ["postgres", "-c", "log_statement=all"]
 
   redis:
     environment:

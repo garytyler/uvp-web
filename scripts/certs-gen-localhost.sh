@@ -3,6 +3,7 @@
 set -e
 
 if [ ! $(command -v mkcert) ]; then
+    echo "$(basename $0): Aborting. mkcert command not found."
     exit $?
 fi
 
@@ -14,8 +15,8 @@ rm -rf "$SELFSIGNED_DIR"
 mkdir --parents "$SELFSIGNED_DIR"
 
 mkcert \
-    --cert-file "$SELFSIGNED_DIR/localhost.cert" \
-    --key-file "$SELFSIGNED_DIR/localhost.key" \
+    --cert-file "$SELFSIGNED_DIR/localhost-cert.pem" \
+    --key-file "$SELFSIGNED_DIR/localhost-key.pem" \
     "localhost" \
     "traefik.localhost" \
     "pgadmin.localhost"
